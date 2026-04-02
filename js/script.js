@@ -168,6 +168,26 @@ function progList(id, items, max, colorFn) {
     </div>`).join('');
 }
 
+// ─── POPULATE COUNTRY DROPDOWN ────────────────────────────────
+function buildCountryDropdown() {
+  const select = document.getElementById('country-select');
+  if (!select) return;
+
+  // Get countries from data (automatically includes any new ones)
+  const countries = ['All', ...C];
+
+  // Preserve current selection
+  const currentValue = select.value;
+
+  // Clear and rebuild options
+  select.innerHTML = countries.map(c =>
+    `<option value="${c}">${c === 'All' ? 'All Countries' : c}</option>`
+  ).join('');
+
+  // Restore selection
+  select.value = currentValue;
+}
+
 // ─── DISTRICT LIST ─────────────────────────────────────────────
 function buildDistrictList() {
   const el = document.getElementById('district-list');
@@ -349,13 +369,9 @@ document.querySelectorAll('.level-btn').forEach(btn=>{
   });
 });
 
-// Country filter
-document.getElementById('country-list').addEventListener('click', e=>{
-  const opt = e.target.closest('[data-c]');
-  if (!opt) return;
-  document.querySelectorAll('#country-list [data-c]').forEach(el=>el.classList.remove('selected'));
-  opt.classList.add('selected');
-  sel.country = opt.dataset.c;
+// Country filter - dropdown
+document.getElementById('country-select').addEventListener('change', e=>{
+  sel.country = e.target.value;
   rebuildActive();
 });
 
@@ -373,5 +389,6 @@ document.querySelectorAll('[data-disagg]').forEach(el=>{
 document.getElementById('district-search').addEventListener('input', buildDistrictList);
 
 // ─── INIT ──────────────────────────────────────────────────────
+buildCountryDropdown();
 buildDistrictList();
 rebuildActive();
