@@ -308,21 +308,10 @@
             <div class="filter-section">
                 <div class="filter-section-title">Date Range</div>
                 <div class="date-range-container">
-                    <div class="date-inputs-row">
-                        <div class="date-input-group">
-                            <label class="date-input-label">From</label>
-                            <input type="number" id="date-start" class="date-input" min="2020" max="2030" value="2020">
-                        </div>
-                        <div class="date-input-group">
-                            <label class="date-input-label">To</label>
-                            <input type="number" id="date-end" class="date-input" min="2020" max="2030" value="2030">
-                        </div>
-                    </div>
-                    <div class="date-range-slider-container">
-                        <input type="range" id="date-range-start" class="date-range-slider start" min="2020" max="2030" value="2020">
-                        <input type="range" id="date-range-end" class="date-range-slider end" min="2020" max="2030" value="2030">
-                        <div class="date-track"></div>
-                        <div class="date-fill"></div>
+                    <div class="date-display" id="date-display">2020 — 2030</div>
+                    <div class="date-sliders-wrapper">
+                        <input type="range" id="date-range-start" class="date-slider" min="2020" max="2030" value="2020">
+                        <input type="range" id="date-range-end" class="date-slider" min="2020" max="2030" value="2030">
                     </div>
                 </div>
             </div>
