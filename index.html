@@ -306,13 +306,25 @@
         <div class="filter-panel">
 
             <div class="filter-section">
+                <div class="filter-section-title">Date Range</div>
+                <div class="date-range-container">
+                    <input type="range" id="date-slider" class="date-slider" min="2020" max="2030" value="2025">
+                    <div class="date-range-labels">
+                        <span class="date-label-start">2020</span>
+                        <span class="date-label-current" id="date-label">2025</span>
+                        <span class="date-label-end">2030</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
                 <div class="filter-section-title">Country</div>
                 <select id="country-select" class="country-dropdown">
                     <option value="All">All Countries</option>
                 </select>
             </div>
 
-<div class="filter-section">
+            <div class="filter-section">
                 <div class="filter-section-title">Disaggregation</div>
                 <div class="filter-option selected" data-disagg="Annual"><div class="filter-radio"></div>Annual</div>
                 <div class="filter-option" data-disagg="Newly supported"><div class="filter-radio"></div>Newly Supported</div>

@@ -41,7 +41,7 @@ const D = {
 };
 
 // ─── STATE ─────────────────────────────────────────────────────
-let sel = { country: 'All', disagg: 'Annual' };
+let sel = { country: 'All', disagg: 'Annual', year: 2025 };
 const charts = {};
 
 // ─── HELPERS ───────────────────────────────────────────────────
@@ -361,6 +361,13 @@ document.querySelectorAll('.level-btn').forEach(btn=>{
 // Country filter - dropdown
 document.getElementById('country-select').addEventListener('change', e=>{
   sel.country = e.target.value;
+  rebuildActive();
+});
+
+// Date range slider
+document.getElementById('date-slider').addEventListener('input', e=>{
+  sel.year = parseInt(e.target.value);
+  document.getElementById('date-label').textContent = sel.year;
   rebuildActive();
 });
 
