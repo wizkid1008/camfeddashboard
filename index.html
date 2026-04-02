@@ -308,11 +308,21 @@
             <div class="filter-section">
                 <div class="filter-section-title">Date Range</div>
                 <div class="date-range-container">
-                    <input type="range" id="date-slider" class="date-slider" min="2020" max="2030" value="2025">
-                    <div class="date-range-labels">
-                        <span class="date-label-start">2020</span>
-                        <span class="date-label-current" id="date-label">2025</span>
-                        <span class="date-label-end">2030</span>
+                    <div class="date-inputs-row">
+                        <div class="date-input-group">
+                            <label class="date-input-label">From</label>
+                            <input type="number" id="date-start" class="date-input" min="2020" max="2030" value="2020">
+                        </div>
+                        <div class="date-input-group">
+                            <label class="date-input-label">To</label>
+                            <input type="number" id="date-end" class="date-input" min="2020" max="2030" value="2030">
+                        </div>
+                    </div>
+                    <div class="date-range-slider-container">
+                        <input type="range" id="date-range-start" class="date-range-slider start" min="2020" max="2030" value="2020">
+                        <input type="range" id="date-range-end" class="date-range-slider end" min="2020" max="2030" value="2030">
+                        <div class="date-track"></div>
+                        <div class="date-fill"></div>
                     </div>
                 </div>
             </div>
@@ -322,14 +332,6 @@
                 <select id="country-select" class="country-dropdown">
                     <option value="All">All Countries</option>
                 </select>
-            </div>
-
-            <div class="filter-section">
-                <div class="filter-section-title">Disaggregation</div>
-                <div class="filter-option selected" data-disagg="Annual"><div class="filter-radio"></div>Annual</div>
-                <div class="filter-option" data-disagg="Newly supported"><div class="filter-radio"></div>Newly Supported</div>
-                <div class="filter-option" data-disagg="Cumulative (2020-2030)"><div class="filter-radio"></div>Cumulative 2020–2030</div>
-                <div class="filter-option" data-disagg="Cumulative (all-time)"><div class="filter-radio"></div>Cumulative All-time</div>
             </div>
 
         </div>
