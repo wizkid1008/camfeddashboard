@@ -84,31 +84,17 @@ body::before {
   gap: 16px;
 }
 
-.header-back {
-  width: 48px; height: 48px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  color: rgba(255,255,255,0.7);
-  transition: all 0.15s;
+.header-logo-section {
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
-  background: rgba(255,255,255,0.06);
 }
-
-.header-back:hover {
-  background: rgba(255,255,255,0.14);
-  color: white;
-}
-
-.header-back svg { width:22px; height:22px; }
 
 .header-title {
   font-family: 'Lato', sans-serif;
   font-size: 1.3rem;
   font-weight: 700;
   color: white;
-  flex: 1;
 }
 
 /* CAMFED Logo (SVG text recreation) */
@@ -606,23 +592,10 @@ body::before {
   .header {
     padding: 10px 16px;
     gap: 12px;
-    flex-wrap: wrap;
   }
 
   .header-title {
     font-size: 1rem;
-  }
-
-  .header-proto {
-    font-size: 0.75rem;
-    order: 3;
-    width: 100%;
-    text-align: center;
-  }
-
-  /* Hide CAMFED logo on smaller tablets */
-  .header > div:nth-child(3) {
-    display: none;
   }
 
   /* Level navigation - stack and scroll */
@@ -766,17 +739,6 @@ body::before {
 
   .header-title {
     font-size: 0.9rem;
-  }
-
-  .header-back {
-    width: 40px;
-    height: 40px;
-  }
-
-  .header-back svg { width:18px; height:18px; }
-
-  .header-proto {
-    font-size: 0.65rem;
   }
 
   /* Level navigation */
