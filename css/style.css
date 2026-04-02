@@ -305,22 +305,94 @@ body::before {
   padding: 16px;
 }
 
-.date-slider {
+.date-inputs-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.date-input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.date-input-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.date-input {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(200,136,42,0.4);
+  border-radius: 4px;
+  padding: 6px 8px;
+  color: white;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.date-input:hover {
+  border-color: rgba(200,136,42,0.6);
+  background: rgba(255,255,255,0.1);
+}
+
+.date-input:focus {
+  border-color: var(--gold-light);
+  background: rgba(255,255,255,0.12);
+  box-shadow: 0 0 0 3px rgba(200,160,60,0.2);
+}
+
+.date-range-slider-container {
+  position: relative;
+  height: 28px;
+  margin-top: 8px;
+}
+
+.date-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 6px;
+  background: rgba(200,136,42,0.2);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.date-fill {
+  position: absolute;
+  height: 6px;
+  background: linear-gradient(to right, var(--gold), var(--gold-light));
+  border-radius: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(200,136,42,0.3);
+}
+
+.date-range-slider {
+  position: absolute;
   width: 100%;
   height: 6px;
-  border-radius: 3px;
-  background: linear-gradient(to right,
-    rgba(200,136,42,0.3) 0%,
-    rgba(200,136,42,0.6) 50%,
-    rgba(200,136,42,0.3) 100%);
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
   outline: none;
-  -webkit-appearance: none;
-  appearance: none;
-  cursor: pointer;
-  margin: 0 0 12px 0;
 }
 
-.date-slider::-webkit-slider-thumb {
+.date-range-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 18px;
@@ -330,16 +402,17 @@ body::before {
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   border: 2px solid var(--gold);
+  pointer-events: all;
   transition: all 0.2s;
 }
 
-.date-slider::-webkit-slider-thumb:hover {
+.date-range-slider::-webkit-slider-thumb:hover {
   width: 20px;
   height: 20px;
   box-shadow: 0 4px 12px rgba(200,136,42,0.5);
 }
 
-.date-slider::-moz-range-thumb {
+.date-range-slider::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -347,34 +420,14 @@ body::before {
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   border: 2px solid var(--gold);
+  pointer-events: all;
   transition: all 0.2s;
 }
 
-.date-slider::-moz-range-thumb:hover {
+.date-range-slider::-moz-range-thumb:hover {
   width: 20px;
   height: 20px;
   box-shadow: 0 4px 12px rgba(200,136,42,0.5);
-}
-
-.date-range-labels {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.7);
-  font-weight: 600;
-  gap: 8px;
-}
-
-.date-label-current {
-  background: var(--gold);
-  color: white;
-  padding: 2px 8px;
-  border-radius: 3px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  flex: 1;
-  text-align: center;
 }
 
 /* ── COUNTRY DROPDOWN ── */

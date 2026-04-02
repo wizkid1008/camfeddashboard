@@ -41,7 +41,7 @@ const D = {
 };
 
 // ─── STATE ─────────────────────────────────────────────────────
-let sel = { country: 'All', disagg: 'Annual', year: 2025 };
+let sel = { country: 'All', dateStart: 2020, dateEnd: 2030 };
 const charts = {};
 
 // ─── HELPERS ───────────────────────────────────────────────────
@@ -176,16 +176,19 @@ function buildCountryDropdown() {
   // Get countries from data (automatically includes any new ones)
   const countries = ['All', ...C];
 
-  // Preserve current selection
-  const currentValue = select.value;
+  // Clear existing options first
+  select.innerHTML = '';
 
-  // Clear and rebuild options
-  select.innerHTML = countries.map(c =>
-    `<option value="${c}">${c === 'All' ? 'All Countries' : c}</option>`
-  ).join('');
+  // Add each country as an option
+  countries.forEach(country => {
+    const option = document.createElement('option');
+    option.value = country;
+    option.textContent = country === 'All' ? 'All Countries' : country;
+    select.appendChild(option);
+  });
 
-  // Restore selection
-  select.value = currentValue;
+  // Set default selection
+  select.value = 'All';
 }
 
 // ─── UPDATE STATS ──────────────────────────────────────────────
@@ -197,13 +200,7 @@ function updateStats() {
   document.getElementById('s-cama-school').textContent = fmt(cv(D.kpi12.annual.total));
   document.getElementById('s-sls').textContent = fmt(cv(D.kpi13.annual.total));
   document.getElementById('s-lg').textContent = fmt(cv(D.kpi19.total));
-  const disaggMap = {
-    Annual:D.kpi11.annual.total,
-    'Newly supported':D.kpi11.newly.total,
-    'Cumulative (2020-2030)':D.kpi11.cum2030.total,
-    'Cumulative (all-time)':D.kpi11.cumAll.total
-  };
-  document.getElementById('s-alltime').textContent = fmt(cv(disaggMap[sel.disagg]||D.kpi11.cumAll.total));
+  document.getElementById('s-alltime').textContent = fmt(cv(D.kpi11.cumAll.total));
 
   // Headline
   const cLabel = c==='All'?'All Countries':c;
@@ -223,17 +220,10 @@ function updateStats() {
 // ─── BUILD LEVEL 1 ─────────────────────────────────────────────
 function buildL1() {
   const c = sel.country;
-  const disaggMap = {
-    'Annual':D.kpi11.annual.total,
-    'Newly supported':D.kpi11.newly.total,
-    'Cumulative (2020-2030)':D.kpi11.cum2030.total,
-    'Cumulative (all-time)':D.kpi11.cumAll.total
-  };
-  const activeData = disaggMap[sel.disagg] || D.kpi11.annual.total;
 
   // Bursary chart
   if (c==='All') {
-    bar('l1-bursary-chart', C, [{data:C.map(n=>activeData[n]||0), backgroundColor:BARS}]);
+    bar('l1-bursary-chart', C, [{data:C.map(n=>D.kpi11.annual.total[n]||0), backgroundColor:BARS}]);
   } else {
     const periods = ['Annual','Newly Supp.','Cum. 20–30','Cum. All-time'];
     const vals = [
@@ -364,23 +354,71 @@ document.getElementById('country-select').addEventListener('change', e=>{
   rebuildActive();
 });
 
-// Date range slider
-document.getElementById('date-slider').addEventListener('input', e=>{
-  sel.year = parseInt(e.target.value);
-  document.getElementById('date-label').textContent = sel.year;
+// Date range sliders and inputs
+function updateDateFill() {
+  const startVal = parseInt(document.getElementById('date-start').value);
+  const endVal = parseInt(document.getElementById('date-end').value);
+  const min = 2020;
+  const max = 2030;
+  const range = max - min;
+
+  const startPercent = ((startVal - min) / range) * 100;
+  const endPercent = ((endVal - min) / range) * 100;
+
+  const fill = document.querySelector('.date-fill');
+  fill.style.left = startPercent + '%';
+  fill.style.right = (100 - endPercent) + '%';
+
+  sel.dateStart = startVal;
+  sel.dateEnd = endVal;
   rebuildActive();
+}
+
+document.getElementById('date-start').addEventListener('change', e=>{
+  const start = parseInt(e.target.value);
+  const end = parseInt(document.getElementById('date-end').value);
+  if (start > end) {
+    e.target.value = end;
+  } else {
+    document.getElementById('date-range-start').value = start;
+    updateDateFill();
+  }
 });
 
-// Disagg filter
-document.querySelectorAll('[data-disagg]').forEach(el=>{
-  el.addEventListener('click',()=>{
-    document.querySelectorAll('[data-disagg]').forEach(e=>e.classList.remove('selected'));
-    el.classList.add('selected');
-    sel.disagg = el.dataset.disagg;
-    rebuildActive();
-  });
+document.getElementById('date-end').addEventListener('change', e=>{
+  const end = parseInt(e.target.value);
+  const start = parseInt(document.getElementById('date-start').value);
+  if (end < start) {
+    e.target.value = start;
+  } else {
+    document.getElementById('date-range-end').value = end;
+    updateDateFill();
+  }
+});
+
+document.getElementById('date-range-start').addEventListener('input', e=>{
+  const start = parseInt(e.target.value);
+  const end = parseInt(document.getElementById('date-range-end').value);
+  if (start > end) {
+    e.target.value = end;
+  } else {
+    document.getElementById('date-start').value = start;
+    updateDateFill();
+  }
+});
+
+document.getElementById('date-range-end').addEventListener('input', e=>{
+  const end = parseInt(e.target.value);
+  const start = parseInt(document.getElementById('date-range-start').value);
+  if (end < start) {
+    e.target.value = start;
+  } else {
+    document.getElementById('date-end').value = end;
+    updateDateFill();
+  }
 });
 
 // ─── INIT ──────────────────────────────────────────────────────
 buildCountryDropdown();
+updateDateFill();
 rebuildActive();
