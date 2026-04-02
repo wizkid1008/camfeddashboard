@@ -25,22 +25,40 @@
     <div class="header">
         <!-- CAMFED Logo -->
         <div class="header-logo-section">
-            <div class="camfed-logo">
-                <div class="camfed-logo-figure">
-                    <div class="figure-shape alt"></div>
-                    <div class="figure-shape"></div>
-                </div>
-                <div class="camfed-logo-text">CAMFED</div>
-            </div>
+            <img src="images/camfed-logo.png" alt="CAMFED Logo" class="camfed-logo-img">
         </div>
         <div class="header-title">CAMFED Dashboards</div>
     </div>
 
-    <!-- LEVEL NAV -->
-    <div class="level-nav">
-        <button class="level-btn active" data-tab="level1">Level 1 Girls' Education</button>
-        <button class="level-btn" data-tab="level2">Level 2 – Livelihoods &amp; Leadership</button>
-        <button class="level-btn" data-tab="level3">Level 3 – Education Systems</button>
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+        <div class="filter-bar-item">
+            <label class="filter-bar-label">Indicator Type</label>
+            <select id="indicator-select" class="indicator-dropdown">
+                <option value="" disabled selected>Select Indicator Type</option>
+                <option value="level1">Level 1 — Girls' Education</option>
+                <option value="level2">Level 2 — Livelihoods & Leadership</option>
+                <option value="level3">Level 3 — Education Systems</option>
+            </select>
+        </div>
+
+        <div class="filter-bar-item">
+            <label class="filter-bar-label">Date Range</label>
+            <div class="date-range-compact">
+                <div class="date-display" id="date-display">2020 — 2030</div>
+                <div class="date-sliders-wrapper">
+                    <input type="range" id="date-range-start" class="date-slider" min="2020" max="2030" value="2020">
+                    <input type="range" id="date-range-end" class="date-slider" min="2020" max="2030" value="2030">
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-bar-item">
+            <label class="filter-bar-label">Country</label>
+            <select id="country-select" class="country-dropdown">
+                <option value="All">All Countries</option>
+            </select>
+        </div>
     </div>
 
     <!-- BODY -->

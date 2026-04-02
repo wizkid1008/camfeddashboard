@@ -331,21 +331,27 @@ function buildL3() {
 // ─── REBUILD ACTIVE TAB ────────────────────────────────────────
 function rebuildActive() {
   updateStats();
-  const tab = document.querySelector('.level-btn.active')?.dataset.tab;
-  if (tab==='level1') buildL1();
-  else if (tab==='level2') buildL2();
-  else if (tab==='level3') buildL3();
+  const indicator = document.getElementById('indicator-select').value;
+  if (indicator === 'level1') buildL1();
+  else if (indicator === 'level2') buildL2();
+  else if (indicator === 'level3') buildL3();
 }
 
-// ─── NAVIGATION ───────────────────────────────────────────────
-document.querySelectorAll('.level-btn').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('panel-'+btn.dataset.tab)?.classList.add('active');
-    rebuildActive();
-  });
+// ─── INDICATOR DROPDOWN ────────────────────────────────────────
+document.getElementById('indicator-select').addEventListener('change', e=>{
+  const value = e.target.value;
+  if (!value) return;
+
+  // Hide all tab panels
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+
+  // Show selected panel
+  document.getElementById('panel-' + value)?.classList.add('active');
+
+  // Build the appropriate chart
+  if (value === 'level1') buildL1();
+  else if (value === 'level2') buildL2();
+  else if (value === 'level3') buildL3();
 });
 
 // Country filter - dropdown
@@ -395,6 +401,10 @@ console.log('After buildCountryDropdown, options:', document.getElementById('cou
 for (let i = 0; i < document.getElementById('country-select').options.length; i++) {
   console.log('Option', i, ':', document.getElementById('country-select').options[i].text, '=', document.getElementById('country-select').options[i].value);
 }
+
+// Set default indicator to Level 1
+document.getElementById('indicator-select').value = 'level1';
+document.getElementById('panel-level1').classList.add('active');
 
 updateDateDisplay();
 rebuildActive();

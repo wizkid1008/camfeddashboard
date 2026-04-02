@@ -90,6 +90,12 @@ body::before {
   flex-shrink: 0;
 }
 
+.camfed-logo-img {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+}
+
 .header-title {
   font-family: 'Lato', sans-serif;
   font-size: 1.3rem;
@@ -97,84 +103,73 @@ body::before {
   color: white;
 }
 
-/* CAMFED Logo (SVG text recreation) */
-.camfed-logo {
+
+/* ── FILTER BAR ── */
+.filter-bar {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.camfed-logo-figure {
-  display: flex;
-  gap: 3px;
-  align-items: flex-end;
-  margin-bottom: 2px;
-}
-
-.figure-shape {
-  width: 14px; height: 26px;
-  background: var(--gold-light);
-  border-radius: 50% 50% 40% 40%;
-  position: relative;
-}
-
-.figure-shape::before {
-  content: '';
-  position: absolute;
-  top: -8px; left: 50%;
-  transform: translateX(-50%);
-  width: 10px; height: 10px;
-  background: var(--gold-light);
-  border-radius: 50%;
-}
-
-.figure-shape.alt { background: #c87820; height: 22px; }
-
-.camfed-logo-text {
-  font-family: 'Merriweather', serif;
-  font-size: 1.4rem;
-  font-weight: 900;
-  color: var(--gold-light);
-  letter-spacing: 0.08em;
-}
-
-
-/* ── LEVEL NAV BUTTONS (Gold) ── */
-.level-nav {
-  display: flex;
-  gap: 10px;
+  gap: 24px;
   padding: 14px 24px;
   background: rgba(40,10,65,0.35);
   border-bottom: 1px solid rgba(255,255,255,0.08);
+  align-items: flex-end;
 }
 
-.level-btn {
-  padding: 12px 28px;
-  background: var(--gold);
-  color: var(--gold-text);
-  border: none;
+.filter-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-bar-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── INDICATOR DROPDOWN ── */
+.indicator-dropdown {
+  background: var(--purple-mid);
+  border: 1px solid var(--gold);
   border-radius: 6px;
+  padding: 10px 28px 10px 12px;
+  color: white;
   font-family: 'Lato', sans-serif;
   font-size: 0.9rem;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
-  letter-spacing: 0.01em;
-  text-align: center;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-  line-height: 1.3;
+  outline: none;
+  transition: all 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23dda03a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-color: var(--purple-mid);
 }
 
-.level-btn:hover {
-  background: var(--gold-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 5px 16px rgba(0,0,0,0.35);
+.indicator-dropdown:hover {
+  border-color: var(--gold-light);
+  background-color: var(--purple-light);
+  box-shadow: 0 0 0 3px rgba(200,160,60,0.15);
 }
 
-.level-btn.active {
-  background: var(--gold-light);
-  box-shadow: 0 4px 14px rgba(200,136,42,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+.indicator-dropdown:focus {
+  border-color: var(--gold-light);
+  background-color: var(--purple-light);
+  box-shadow: 0 0 0 4px rgba(200,160,60,0.25);
+}
+
+.indicator-dropdown option {
+  background: var(--purple-deep);
+  color: white;
+  padding: 8px 12px;
+}
+
+.indicator-dropdown option:hover {
+  background: var(--purple-mid);
 }
 
 /* ── BODY LAYOUT ── */
@@ -301,23 +296,23 @@ body::before {
 .district-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
 
 /* ── DATE RANGE SLIDER ── */
-.date-range-container {
-  padding: 16px;
+.date-range-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .date-display {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--gold-light);
   text-align: center;
-  margin-bottom: 16px;
   letter-spacing: 0.02em;
 }
 
 .date-sliders-wrapper {
   position: relative;
-  height: 28px;
-  margin-top: 12px;
+  height: 24px;
 }
 
 .date-slider {
@@ -384,9 +379,8 @@ body::before {
 
 /* ── COUNTRY DROPDOWN ── */
 .country-dropdown {
-  width: calc(100% - 32px);
-  background: rgba(255,255,255,0.08);
-  border: 2px solid rgba(200,136,42,0.4);
+  background: var(--purple-mid);
+  border: 1px solid var(--gold);
   border-radius: 6px;
   padding: 10px 28px 10px 12px;
   color: white;
@@ -395,24 +389,23 @@ body::before {
   font-weight: 600;
   cursor: pointer;
   outline: none;
-  margin: 0 16px;
   transition: all 0.2s;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23dda03a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
-  background-color: rgba(255,255,255,0.08);
+  background-color: var(--purple-mid);
 }
 
 .country-dropdown:hover {
-  background-color: rgba(255,255,255,0.12);
-  border-color: rgba(200,136,42,0.6);
+  border-color: var(--gold-light);
+  background-color: var(--purple-light);
   box-shadow: 0 0 0 3px rgba(200,160,60,0.15);
 }
 
 .country-dropdown:focus {
   border-color: var(--gold-light);
-  background-color: rgba(255,255,255,0.14);
+  background-color: var(--purple-light);
   box-shadow: 0 0 0 4px rgba(200,160,60,0.25);
 }
 
@@ -420,7 +413,6 @@ body::before {
   background: var(--purple-deep);
   color: white;
   padding: 8px 12px;
-  font-weight: 500;
 }
 
 .country-dropdown option:hover {
@@ -677,8 +669,38 @@ body::before {
     gap: 12px;
   }
 
+  .camfed-logo-img {
+    height: 40px;
+  }
+
   .header-title {
     font-size: 1rem;
+  }
+
+  /* Filter bar adjustments */
+  .filter-bar {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .filter-bar-item {
+    min-width: auto;
+    flex: 1;
+  }
+
+  .filter-bar-label {
+    font-size: 0.65rem;
+  }
+
+  .indicator-dropdown,
+  .country-dropdown {
+    font-size: 0.8rem;
+    padding: 8px 24px 8px 10px;
+  }
+
+  .date-display {
+    font-size: 0.75rem;
   }
 
   /* Level navigation - stack and scroll */
@@ -824,8 +846,29 @@ body::before {
     gap: 8px;
   }
 
+  .camfed-logo-img {
+    height: 35px;
+  }
+
   .header-title {
     font-size: 0.9rem;
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .indicator-dropdown,
+  .country-dropdown {
+    font-size: 0.75rem;
+    padding: 7px 22px 7px 8px;
+  }
+
+  .date-display {
+    font-size: 0.7rem;
   }
 
   /* Level navigation */
