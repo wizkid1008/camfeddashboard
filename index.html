@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAMFED Dashboards</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+    <div class="blob blob-5"></div>
+</div>
+
+<div class="app">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        </div>
+        <div class="header-title">CAMFED Dashboards</div>
+
+        <!-- CAMFED Logo -->
+        <div style="flex:1; display:flex; justify-content:center;">
+            <div class="camfed-logo">
+                <div class="camfed-logo-figure">
+                    <div class="figure-shape alt"></div>
+                    <div class="figure-shape"></div>
+                </div>
+                <div class="camfed-logo-text">CAMFED</div>
+            </div>
+        </div>
+
+        <div class="header-proto">Prototype For Testing</div>
+    </div>
+
+    <!-- LEVEL NAV -->
+    <div class="level-nav">
+        <button class="level-btn active" data-tab="level1">Level 1 Girls' Education</button>
+        <button class="level-btn" data-tab="level2">Level 2 – Livelihoods &amp; Leadership</button>
+        <button class="level-btn" data-tab="level3">Level 3 – Education Systems</button>
+    </div>
+
+    <!-- BODY -->
+    <div class="body-layout">
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+
+            <!-- ══ LEVEL 1 ══ -->
+            <div class="tab-panel active" id="panel-level1">
+
+                <div class="headline-banner">
+                    <h2 id="l1-headline">Select a country to view Level 1 data — Girls' Education &amp; Bursary Support</h2>
+                </div>
+
+                <!-- Stat strip -->
+                <div class="stat-strip stat-strip-5" id="l1-stats">
+                    <div class="stat-cell">
+                        <div class="stat-cell-label">Girls — Bursary Annual</div>
+                        <div class="stat-cell-value gold" id="s-bursary">149,673</div>
+                        <div class="stat-cell-sub">KPI 1.1 · Girls Total</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-cell-label">CAMA &amp; Community Support</div>
+                        <div class="stat-cell-value gold" id="s-cama-school">888,029</div>
+                        <div class="stat-cell-sub">KPI 1.2 · Girls Total</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-cell-label">Social &amp; Learning Support</div>
+                        <div class="stat-cell-value gold" id="s-sls">1,925,873</div>
+                        <div class="stat-cell-sub">KPI 1.3 · Annual</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-cell-label">Learner Guides Active</div>
+                        <div class="stat-cell-value gold" id="s-lg">21,153</div>
+                        <div class="stat-cell-sub">KPI 1.9 · Annual Total</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-cell-label">Girls Bursary — All-time</div>
+                        <div class="stat-cell-value gold" id="s-alltime">1,222,743</div>
+                        <div class="stat-cell-sub">KPI 1.1 · Cumulative</div>
+                    </div>
+                </div>
+
+                <div class="card-grid-2">
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            Children Supported in School with Education Bursaries
+                            <button class="current-data-btn">Current Data</button>
+                        </div>
+                        <div class="data-card-body">
+                            <div class="chart-container h200"><canvas id="l1-bursary-chart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            Active Learner Guides
+                            <span class="data-card-badge">KPI 1.9</span>
+                        </div>
+                        <div class="data-card-body">
+                            <div class="chart-container h200"><canvas id="l1-lg-chart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-grid-2">
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            Number of Girls by School Level (Primary vs Secondary)
+                            <span class="data-card-badge">KPI 1.1</span>
+                        </div>
+                        <div class="data-card-body">
+                            <div class="chart-container h200"><canvas id="l1-levels-chart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            Bursary Support — Annual to Cumulative
+                            <span class="data-card-badge purple">All Periods</span>
+                        </div>
+                        <div class="data-card-body">
+                            <div class="chart-container h200"><canvas id="l1-periods-chart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-grid-3">
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            Dropout Rate — Pregnancy / Early Marriage
+                            <span class="data-card-badge">KPI 1.5</span>
+                        </div>
+                        <div class="data-card-body">
+                            <div class="prog-list" id="l1-dropout"></div>
+                        </div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-header">Social &amp; Learning Support Recipients</div>
+                        <div class="data-card-body">
+                            <div class="chart-container h140"><canvas id="l1-sls-chart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            Number of Clients by Form / Dropout Rate
+                            <span class="data-card-badge">P9</span>
+                        </div>
+                        <div class="data-card-body">
+                            <div class="prog-list" id="l1-dropout-form"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ══ LEVEL 2 ══ -->
+            <div class="tab-panel" id="panel-level2">
+
+                <div class="headline-banner">
+                    <h2 id="l2-headline">Level 2 — Young women transition to secure livelihoods &amp; join CAMA</h2>
+                </div>
+
+                <div class="stat-strip stat-strip-3">
+                    <div class="stat-cell">
+                        <div class="stat-cell-label">CAMA Members Cumulative</div>
+                        <div class="stat-cell-value gold" id="s2-cama">312,747</div>
+                        <div class="stat-cell-sub">KPI 2.1</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-cell-label">Jobs Created (Annual)</div>
+                        <div class="stat-cell-value gold" id="s2-jobs">34,558</div>
+                        <div class="stat-cell-sub">KPI 2.9</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-cell-label">Female Entrepreneurs</div>
+                        <div class="stat-cell-value gold" id="s2-ent">12,344</div>
+                        <div class="stat-cell-sub">KPI 2.6 · Annual</div>
+                    </div>
+                </div>
+
+                <div class="card-grid-2">
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            Total CAMA Members by Country
+                            <span class="data-card-badge">KPI 2.1</span>
+                        </div>
+                        <div class="data-card-body">
+                            <div class="chart-container h220"><canvas id="l2-cama-chart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            Active Guides — Transition, Agriculture &amp; Business
+                            <span class="data-card-badge">KPI 2.2</span>
+                        </div>
+                        <div class="data-card-body">
+                            <div class="chart-container h220"><canvas id="l2-guides-chart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-grid-2">
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            Businesses Supported by Enterprise Guides
+                            <span class="data-card-badge">KPI 2.7</span>
+                        </div>
+                        <div class="data-card-body">
+                            <div class="chart-container h200"><canvas id="l2-biz-chart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-header">Jobs Created Through Enterprise Programme</div>
+                        <div class="data-card-body">
+                            <div class="chart-container h200"><canvas id="l2-jobs-chart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-grid-3">
+                    <div class="data-card">
+                        <div class="data-card-header">Income Increase (%)<span class="data-card-badge">KPI 2.10</span></div>
+                        <div class="data-card-body"><div class="prog-list" id="l2-income"></div></div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-header">Making a Profit (%)<span class="data-card-badge">KPI 2.11</span></div>
+                        <div class="data-card-body"><div class="prog-list" id="l2-profit"></div></div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-header">Business Survival — 1yr (%)<span class="data-card-badge">KPI 2.12</span></div>
+                        <div class="data-card-body"><div class="prog-list" id="l2-survival"></div></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ══ LEVEL 3 ══ -->
+            <div class="tab-panel" id="panel-level3">
+
+                <div class="headline-banner">
+                    <h2>Level 3 — Adoption of best practices in national education systems at scale</h2>
+                </div>
+
+                <div class="stat-strip stat-strip-3">
+                    <div class="stat-cell">
+                        <div class="stat-cell-label">Total Schools (all delivery)</div>
+                        <div class="stat-cell-value gold" id="s3-schools">7,537</div>
+                        <div class="stat-cell-sub">KPI 3.1</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-cell-label">Partner Districts</div>
+                        <div class="stat-cell-value gold" id="s3-districts">199</div>
+                        <div class="stat-cell-sub">KPI 3.4</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-cell-label">Children in Partner Schools</div>
+                        <div class="stat-cell-value gold" id="s3-children">5,090,492</div>
+                        <div class="stat-cell-sub">KPI 3.5 · Annual Total</div>
+                    </div>
+                </div>
+
+                <div class="card-grid-2">
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            Schools with Active Structures by Country &amp; Type
+                            <span class="data-card-badge">KPI 3.1</span>
+                        </div>
+                        <div class="data-card-body">
+                            <div class="chart-container h220"><canvas id="l3-schools-chart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            Children in Improved Learning Environment
+                            <span class="data-card-badge">KPI 3.5</span>
+                        </div>
+                        <div class="data-card-body">
+                            <div class="chart-container h220"><canvas id="l3-children-chart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-grid-2">
+                    <div class="data-card">
+                        <div class="data-card-header">Partner Districts by Country<span class="data-card-badge">KPI 3.4</span></div>
+                        <div class="data-card-body">
+                            <div class="chart-container h180"><canvas id="l3-districts-chart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-header">Total Children Supported — P1 Annual</div>
+                        <div class="data-card-body">
+                            <div class="chart-container h180"><canvas id="l3-p1-chart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div><!-- /main-content -->
+
+        <!-- FILTER PANEL -->
+        <div class="filter-panel">
+
+            <div class="filter-section">
+                <div class="filter-section-title">Country</div>
+                <div id="country-list">
+                    <div class="filter-option selected" data-c="All">
+                        <div class="filter-radio"></div>All Countries
+                    </div>
+                    <div class="filter-option" data-c="Ghana">
+                        <div class="filter-radio"></div>Ghana
+                    </div>
+                    <div class="filter-option" data-c="Malawi">
+                        <div class="filter-radio"></div>Malawi
+                    </div>
+                    <div class="filter-option" data-c="Tanzania">
+                        <div class="filter-radio"></div>Tanzania
+                    </div>
+                    <div class="filter-option" data-c="Zambia">
+                        <div class="filter-radio"></div>Zambia
+                    </div>
+                    <div class="filter-option" data-c="Zimbabwe">
+                        <div class="filter-radio"></div>Zimbabwe
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-section-title">District</div>
+                <div class="filter-search">
+                    <input type="text" placeholder="Search" id="district-search">
+                </div>
+                <div class="district-list" id="district-list">
+                    <div class="filter-option" data-d="all" style="font-weight:700; color:rgba(255,255,255,0.9);">All Districts</div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-section-title">Disaggregation</div>
+                <div class="filter-option selected" data-disagg="Annual"><div class="filter-radio"></div>Annual</div>
+                <div class="filter-option" data-disagg="Newly supported"><div class="filter-radio"></div>Newly Supported</div>
+                <div class="filter-option" data-disagg="Cumulative (2020-2030)"><div class="filter-radio"></div>Cumulative 2020–2030</div>
+                <div class="filter-option" data-disagg="Cumulative (all-time)"><div class="filter-radio"></div>Cumulative All-time</div>
+            </div>
+
+        </div>
+
+    </div><!-- /body-layout -->
+
+</div><!-- /app -->
+
+<script src="js/script.js"></script>
+</body>
+</html>
