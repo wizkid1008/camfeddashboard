@@ -306,20 +306,22 @@
         <div class="filter-panel">
 
             <div class="filter-section">
+                <div class="filter-section-title">Date Range</div>
+                <div class="date-range-container">
+                    <input type="range" id="date-slider" class="date-slider" min="2020" max="2030" value="2025">
+                    <div class="date-range-labels">
+                        <span class="date-label-start">2020</span>
+                        <span class="date-label-current" id="date-label">2025</span>
+                        <span class="date-label-end">2030</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
                 <div class="filter-section-title">Country</div>
                 <select id="country-select" class="country-dropdown">
                     <option value="All">All Countries</option>
                 </select>
-            </div>
-
-            <div class="filter-section">
-                <div class="filter-section-title">District</div>
-                <div class="filter-search">
-                    <input type="text" placeholder="Search" id="district-search">
-                </div>
-                <div class="district-list" id="district-list">
-                    <div class="filter-option" data-d="all" style="font-weight:700; color:rgba(255,255,255,0.9);">All Districts</div>
-                </div>
             </div>
 
             <div class="filter-section">

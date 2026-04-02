@@ -300,44 +300,122 @@ body::before {
 .district-list::-webkit-scrollbar-track { background: transparent; }
 .district-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
 
+/* ── DATE RANGE SLIDER ── */
+.date-range-container {
+  padding: 16px;
+}
+
+.date-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right,
+    rgba(200,136,42,0.3) 0%,
+    rgba(200,136,42,0.6) 50%,
+    rgba(200,136,42,0.3) 100%);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  margin: 0 0 12px 0;
+}
+
+.date-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border: 2px solid var(--gold);
+  transition: all 0.2s;
+}
+
+.date-slider::-webkit-slider-thumb:hover {
+  width: 20px;
+  height: 20px;
+  box-shadow: 0 4px 12px rgba(200,136,42,0.5);
+}
+
+.date-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border: 2px solid var(--gold);
+  transition: all 0.2s;
+}
+
+.date-slider::-moz-range-thumb:hover {
+  width: 20px;
+  height: 20px;
+  box-shadow: 0 4px 12px rgba(200,136,42,0.5);
+}
+
+.date-range-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.7);
+  font-weight: 600;
+  gap: 8px;
+}
+
+.date-label-current {
+  background: var(--gold);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex: 1;
+  text-align: center;
+}
+
 /* ── COUNTRY DROPDOWN ── */
 .country-dropdown {
-  width: 100%;
+  width: calc(100% - 32px);
   background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 4px;
-  padding: 8px 12px;
+  border: 2px solid rgba(200,136,42,0.4);
+  border-radius: 6px;
+  padding: 10px 28px 10px 12px;
   color: white;
   font-family: 'Lato', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 400;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
   outline: none;
   margin: 0 16px;
-  width: calc(100% - 32px);
-  transition: all 0.12s;
+  transition: all 0.2s;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='white' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23dda03a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
-  padding-right: 30px;
+  background-color: rgba(255,255,255,0.08);
 }
 
 .country-dropdown:hover {
   background-color: rgba(255,255,255,0.12);
-  border-color: rgba(200,136,42,0.4);
+  border-color: rgba(200,136,42,0.6);
+  box-shadow: 0 0 0 3px rgba(200,160,60,0.15);
 }
 
 .country-dropdown:focus {
-  border-color: rgba(200,136,42,0.6);
-  background-color: rgba(255,255,255,0.12);
-  box-shadow: 0 0 0 3px rgba(200,160,60,0.2);
+  border-color: var(--gold-light);
+  background-color: rgba(255,255,255,0.14);
+  box-shadow: 0 0 0 4px rgba(200,160,60,0.25);
 }
 
 .country-dropdown option {
   background: var(--purple-deep);
   color: white;
-  padding: 8px;
+  padding: 8px 12px;
+  font-weight: 500;
 }
 
 .country-dropdown option:hover {
@@ -644,6 +722,29 @@ body::before {
   .country-dropdown {
     font-size: 0.8rem;
     padding: 6px 28px 6px 10px;
+  }
+
+  .date-slider {
+    height: 5px;
+  }
+
+  .date-slider::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+  }
+
+  .date-slider::-webkit-slider-thumb:hover {
+    width: 18px;
+    height: 18px;
+  }
+
+  .date-range-labels {
+    font-size: 0.7rem;
+  }
+
+  .date-label-current {
+    padding: 2px 6px;
+    font-size: 0.75rem;
   }
 
   /* Main content padding */
