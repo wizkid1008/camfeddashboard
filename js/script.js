@@ -354,47 +354,15 @@ document.getElementById('country-select').addEventListener('change', e=>{
   rebuildActive();
 });
 
-// Date range sliders and inputs
-function updateDateFill() {
-  const startVal = parseInt(document.getElementById('date-start').value);
-  const endVal = parseInt(document.getElementById('date-end').value);
-  const min = 2020;
-  const max = 2030;
-  const range = max - min;
-
-  const startPercent = ((startVal - min) / range) * 100;
-  const endPercent = ((endVal - min) / range) * 100;
-
-  const fill = document.querySelector('.date-fill');
-  fill.style.left = startPercent + '%';
-  fill.style.right = (100 - endPercent) + '%';
-
-  sel.dateStart = startVal;
-  sel.dateEnd = endVal;
+// Date range sliders
+function updateDateDisplay() {
+  const start = parseInt(document.getElementById('date-range-start').value);
+  const end = parseInt(document.getElementById('date-range-end').value);
+  document.getElementById('date-display').textContent = `${start} — ${end}`;
+  sel.dateStart = start;
+  sel.dateEnd = end;
   rebuildActive();
 }
-
-document.getElementById('date-start').addEventListener('change', e=>{
-  const start = parseInt(e.target.value);
-  const end = parseInt(document.getElementById('date-end').value);
-  if (start > end) {
-    e.target.value = end;
-  } else {
-    document.getElementById('date-range-start').value = start;
-    updateDateFill();
-  }
-});
-
-document.getElementById('date-end').addEventListener('change', e=>{
-  const end = parseInt(e.target.value);
-  const start = parseInt(document.getElementById('date-start').value);
-  if (end < start) {
-    e.target.value = start;
-  } else {
-    document.getElementById('date-range-end').value = end;
-    updateDateFill();
-  }
-});
 
 document.getElementById('date-range-start').addEventListener('input', e=>{
   const start = parseInt(e.target.value);
@@ -402,8 +370,7 @@ document.getElementById('date-range-start').addEventListener('input', e=>{
   if (start > end) {
     e.target.value = end;
   } else {
-    document.getElementById('date-start').value = start;
-    updateDateFill();
+    updateDateDisplay();
   }
 });
 
@@ -413,12 +380,21 @@ document.getElementById('date-range-end').addEventListener('input', e=>{
   if (end < start) {
     e.target.value = start;
   } else {
-    document.getElementById('date-end').value = end;
-    updateDateFill();
+    updateDateDisplay();
   }
 });
 
 // ─── INIT ──────────────────────────────────────────────────────
+console.log('Initializing...');
+console.log('Countries array C:', C);
+console.log('Country select element:', document.getElementById('country-select'));
+
 buildCountryDropdown();
-updateDateFill();
+
+console.log('After buildCountryDropdown, options:', document.getElementById('country-select').options.length);
+for (let i = 0; i < document.getElementById('country-select').options.length; i++) {
+  console.log('Option', i, ':', document.getElementById('country-select').options[i].text, '=', document.getElementById('country-select').options[i].value);
+}
+
+updateDateDisplay();
 rebuildActive();
