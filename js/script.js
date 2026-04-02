@@ -188,16 +188,6 @@ function buildCountryDropdown() {
   select.value = currentValue;
 }
 
-// ─── DISTRICT LIST ─────────────────────────────────────────────
-function buildDistrictList() {
-  const el = document.getElementById('district-list');
-  const search = (document.getElementById('district-search').value||'').toLowerCase();
-  const dists = sel.country==='All' ? Object.values(D.districts).flat() : (D.districts[sel.country]||[]);
-  const filtered = dists.filter(d=>d.toLowerCase().includes(search));
-  el.innerHTML = `<div class="filter-option selected" data-d="all" style="font-weight:700;color:rgba(255,255,255,0.9);">All Districts</div>`
-    + filtered.map(d=>`<div class="filter-option" data-d="${d}"><div class="filter-radio"></div>${d}</div>`).join('');
-}
-
 // ─── UPDATE STATS ──────────────────────────────────────────────
 function updateStats() {
   const c = sel.country;
@@ -351,7 +341,6 @@ function buildL3() {
 // ─── REBUILD ACTIVE TAB ────────────────────────────────────────
 function rebuildActive() {
   updateStats();
-  buildDistrictList();
   const tab = document.querySelector('.level-btn.active')?.dataset.tab;
   if (tab==='level1') buildL1();
   else if (tab==='level2') buildL2();
@@ -385,10 +374,6 @@ document.querySelectorAll('[data-disagg]').forEach(el=>{
   });
 });
 
-// District search
-document.getElementById('district-search').addEventListener('input', buildDistrictList);
-
 // ─── INIT ──────────────────────────────────────────────────────
 buildCountryDropdown();
-buildDistrictList();
 rebuildActive();
