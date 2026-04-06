@@ -7,7 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23dda03a'>C</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body>
 
@@ -28,6 +28,7 @@
             <img src="images/camfed-logo.png" alt="CAMFED Logo" class="camfed-logo-img">
         </div>
         <div class="header-title">CAMFED Dashboards</div>
+        <button id="dd-toggle-btn" class="dd-toggle-btn">Dynamic Data</button>
     </div>
 
     <!-- FILTER BAR -->
@@ -338,6 +339,53 @@
 
     </div><!-- /body-layout -->
 
+
+    <!-- DYNAMIC DATA VIEW (hidden by default; toggled by header button) -->
+    <div id="dynamic-data-view" style="display:none">
+
+      <!-- DD filter bar: Country / District / School / Year -->
+      <div class="filter-bar">
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">Country</label>
+          <select id="dd-country-select" class="indicator-dropdown">
+            <option value="" disabled selected>Select Country</option>
+          </select>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">District</label>
+          <select id="dd-district-select" class="indicator-dropdown" disabled>
+            <option value="" disabled selected>Select District</option>
+          </select>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">School</label>
+          <select id="dd-school-select" class="indicator-dropdown" disabled>
+            <option value="" disabled selected>Select School</option>
+          </select>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">Date Range</label>
+          <div class="date-range-compact">
+            <div class="date-display" id="dd-date-display">2020 — 2030</div>
+            <div class="date-sliders-wrapper">
+              <input type="range" id="dd-date-start" class="date-slider" min="2020" max="2030" value="2020">
+              <input type="range" id="dd-date-end" class="date-slider" min="2020" max="2030" value="2030">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DD content area -->
+      <div class="body-layout">
+        <div class="main-content">
+          <div id="dd-choose-geo" class="headline-banner">
+            <h2>Choose Geography First — Select a Country to begin</h2>
+          </div>
+          <div id="dd-content" style="display:none"></div>
+        </div>
+      </div>
+
+    </div><!-- /dynamic-data-view -->
 </div><!-- /app -->
 
 <script src="js/script.js?v=3"></script>
