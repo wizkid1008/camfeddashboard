@@ -28,6 +28,7 @@
             <img src="images/camfed-logo.png" alt="CAMFED Logo" class="camfed-logo-img">
         </div>
         <div class="header-title">CAMFED Dashboards</div>
+        <button id="dd-toggle-btn" class="dd-toggle-btn">Dynamic Data</button>
     </div>
 
     <!-- FILTER BAR -->
@@ -338,6 +339,53 @@
 
     </div><!-- /body-layout -->
 
+
+    <!-- DYNAMIC DATA VIEW (hidden by default; toggled by header button) -->
+    <div id="dynamic-data-view" style="display:none">
+
+      <!-- DD filter bar: Country / District / School / Year -->
+      <div class="filter-bar">
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">Country</label>
+          <select id="dd-country-select" class="indicator-dropdown">
+            <option value="" disabled selected>Select Country</option>
+          </select>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">District</label>
+          <select id="dd-district-select" class="indicator-dropdown" disabled>
+            <option value="" disabled selected>Select District</option>
+          </select>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">School</label>
+          <select id="dd-school-select" class="indicator-dropdown" disabled>
+            <option value="" disabled selected>Select School</option>
+          </select>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">Date Range</label>
+          <div class="date-range-compact">
+            <div class="date-display" id="dd-date-display">2020 — 2030</div>
+            <div class="date-sliders-wrapper">
+              <input type="range" id="dd-date-start" class="date-slider" min="2020" max="2030" value="2020">
+              <input type="range" id="dd-date-end" class="date-slider" min="2020" max="2030" value="2030">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DD content area -->
+      <div class="body-layout">
+        <div class="main-content">
+          <div id="dd-choose-geo" class="headline-banner">
+            <h2>Choose Geography First — Select a Country to begin</h2>
+          </div>
+          <div id="dd-content" style="display:none"></div>
+        </div>
+      </div>
+
+    </div><!-- /dynamic-data-view -->
 </div><!-- /app -->
 
 <script src="js/script.js?v=3"></script>

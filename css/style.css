@@ -1101,3 +1101,89 @@ body::before {
     justify-content: center;
   }
 }
+
+/* ── DYNAMIC DATA TOGGLE BUTTON ── */
+.dd-toggle-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 2px solid var(--gold);
+  color: var(--gold-light);
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.dd-toggle-btn:hover { background: rgba(200,136,42,0.2); }
+.dd-toggle-btn.active { background: var(--gold); color: white; }
+
+/* ── DYNAMIC DATA CONTENT ── */
+.dd-breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0 2px;
+}
+
+.dd-breadcrumb {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dd-geo-level-badge {
+  background: var(--purple-mid);
+  color: var(--gold-light);
+  border: 1px solid var(--gold);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dd-year-badge {
+  background: var(--purple-bg);
+  color: rgba(255,255,255,0.6);
+  border: 1px solid rgba(255,255,255,0.2);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.dd-year-badge.single {
+  color: var(--gold-light);
+  border-color: rgba(200,136,42,0.4);
+}
+
+.dd-number-display {
+  font-family: 'Merriweather', serif;
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: var(--gold);
+  text-align: center;
+  padding: 28px 0 8px;
+  line-height: 1;
+}
+
+.dd-number-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-bottom: 12px;
+}

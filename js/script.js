@@ -633,3 +633,382 @@ buildLevelDropdown();
 
 // No default level pre-selected; panels hidden until user picks a Level
 updateDateDisplay();
+
+// ═══════════════════════════════════════════════════════════════
+// ── DYNAMIC DATA MODULE ──
+// ═══════════════════════════════════════════════════════════════
+
+// 1. Geography hierarchy: Country → District → School (placeholder data)
+const geographyData = [
+  {
+    country: 'Ghana',
+    districts: [
+      { district: 'Accra Metro',       schools: ['Achimota School', 'Labone Secondary', 'Accra High School'] },
+      { district: 'Kumasi Metro',      schools: ['Prempeh College', "St. Louis Girls' Secondary", 'Kumasi Academy'] },
+      { district: 'Ejura Sekyedumase', schools: ['Ejura Senior High', 'Sekyedumase SHTS'] }
+    ]
+  },
+  {
+    country: 'Malawi',
+    districts: [
+      { district: 'Lilongwe', schools: ['Likuni Girls Secondary', 'Area 25 CDSS', 'Chitukula Secondary'] },
+      { district: 'Blantyre', schools: ['Ndirande Secondary', 'Henry Henderson Institute', 'Chilomoni CDSS'] },
+      { district: 'Mzimba',   schools: ['Mzuzu Secondary', 'Ekwendeni Girls', 'Embangweni CDSS'] }
+    ]
+  },
+  {
+    country: 'Tanzania',
+    districts: [
+      { district: 'Bagamoyo', schools: ['Bagamoyo Secondary', 'Dunda Secondary', 'Kaole Secondary'] },
+      { district: 'Chamwino', schools: ['Chamwino Secondary', 'Nkuhungu Secondary'] },
+      { district: 'Chato',    schools: ['Chato Secondary', 'Nyamihorera Secondary'] }
+    ]
+  },
+  {
+    country: 'Zambia',
+    districts: [
+      { district: 'Kabwe',   schools: ['Kabwe Girls Secondary', 'Bwacha Secondary', 'Mukobeko Secondary'] },
+      { district: 'Chipata', schools: ['Chipata Secondary', 'Kamoto Secondary', 'Msoro Secondary'] },
+      { district: 'Kafue',   schools: ['Kafue Secondary', 'Kafue Boys', 'Shimabala Secondary'] }
+    ]
+  },
+  {
+    country: 'Zimbabwe',
+    districts: [
+      { district: 'Buhera',   schools: ['Buhera Secondary', 'Murambinda Secondary', 'Bvukururu Secondary'] },
+      { district: 'Bulawayo', schools: ['Mzilikazi Secondary', 'Townsend Secondary', 'Christian Brothers College'] },
+      { district: 'Chiredzi', schools: ['Chiredzi Secondary', 'Hippo Valley Secondary'] }
+    ]
+  }
+];
+
+// 2. Checklist metadata — drives which metrics show and how they render.
+// "Children Supported in School with Education Bursaries" merged into one entry
+// using the more specific display rule (vertical-bar / double-line).
+const checklistData = [
+  {
+    label: 'Children Supported in School with Education Bursaries',
+    geography: { country: true, district: true, school: true },
+    displayType: { singleYear: 'vertical-bar', multiYear: 'double-line' }
+  },
+  {
+    label: 'Active Learner Guides',
+    geography: { country: true, district: true, school: true },
+    displayType: { singleYear: 'number', multiYear: 'line' }
+  },
+  {
+    label: 'Number of Clients by Form',
+    geography: { country: true, district: true, school: true },
+    displayType: { singleYear: 'number', multiYear: 'line' }
+  },
+  {
+    label: 'Active Partner Schools',
+    geography: { country: true, district: true, school: false },
+    displayType: { singleYear: 'number', multiYear: 'line' }
+  },
+  {
+    label: 'Number of Women Supported by CAMFED in Tertiary Education',
+    geography: { country: true, district: true, school: false },
+    displayType: { singleYear: 'number', multiYear: 'line' }
+  },
+  {
+    label: 'Active Guides by Type',
+    geography: { country: true, district: true, school: true },
+    displayType: { singleYear: 'pie', multiYear: 'pie' }
+  },
+  {
+    label: 'Number of Post School Clients',
+    geography: { country: true, district: true, school: true },
+    displayType: { singleYear: 'number', multiYear: 'line' }
+  },
+  {
+    label: 'Grants Disbursed',
+    geography: { country: true, district: true, school: true },
+    displayType: { singleYear: 'number', multiYear: 'line' }
+  },
+  {
+    label: 'Loans Disbursed',
+    geography: { country: true, district: true, school: true },
+    displayType: { singleYear: 'number', multiYear: 'line' }
+  },
+  {
+    label: 'CAMA Members',
+    geography: { country: true, district: true, school: true },
+    displayType: { singleYear: 'number', multiYear: 'line' }
+  }
+];
+
+// 3. Derived state and rendering logic
+
+const ddSel = { country: '', district: '', school: '', yearStart: 2020, yearEnd: 2030 };
+const ddCharts = {};
+
+function ddGeoLevel() {
+  if (ddSel.country && ddSel.district && ddSel.school) return 'school';
+  if (ddSel.country && ddSel.district) return 'district';
+  if (ddSel.country) return 'country';
+  return null;
+}
+
+function ddMultiYear() { return ddSel.yearEnd > ddSel.yearStart; }
+
+function ddVisibleMetrics() {
+  const level = ddGeoLevel();
+  if (!level) return [];
+  return checklistData.filter(m => m.geography[level]);
+}
+
+function ddDisplayType(metric) {
+  return ddMultiYear() ? metric.displayType.multiYear : metric.displayType.singleYear;
+}
+
+function ddTypeLabel(type) {
+  return { number: 'Number', line: 'Line Chart', 'vertical-bar': 'Bar Chart', 'double-line': 'Double Line', pie: 'Pie Chart' }[type] || type;
+}
+
+function ddDestroyChart(id) {
+  if (ddCharts[id]) { ddCharts[id].destroy(); delete ddCharts[id]; }
+}
+
+function ddPlaceholderValues(count) {
+  return Array.from({ length: count }, () => Math.floor(Math.random() * 80000) + 10000);
+}
+
+function ddRenderChart(canvasId, type) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  ddDestroyChart(canvasId);
+
+  const years = [2020, 2021, 2022, 2023, 2024, 2025];
+  const baseOpts = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridC }, ticks: { color: tickC, font: { size: 10 } } },
+      y: { grid: { color: gridC }, ticks: { color: tickC, font: { size: 10 }, callback: v => fmtK(v) } }
+    }
+  };
+
+  if (type === 'pie') {
+    ddCharts[canvasId] = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Type A', 'Type B', 'Type C', 'Type D'],
+        datasets: [{ data: [35, 28, 22, 15], backgroundColor: ['#c8882a','#5e2580','#7b3fa0','#dda03a'], borderColor: '#f5f0e3', borderWidth: 3 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '58%', plugins: { legend: { position: 'right', labels: { color: tickC, font: { size: 10 }, usePointStyle: true, pointStyle: 'circle' } } } }
+    });
+    return;
+  }
+
+  if (type === 'vertical-bar') {
+    ddCharts[canvasId] = new Chart(canvas, {
+      type: 'bar',
+      data: { labels: years, datasets: [{ data: ddPlaceholderValues(6), backgroundColor: '#c8882a', borderRadius: 4, borderSkipped: false }] },
+      options: baseOpts
+    });
+    return;
+  }
+
+  if (type === 'double-line') {
+    ddCharts[canvasId] = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: years,
+        datasets: [
+          { label: 'Primary',   data: ddPlaceholderValues(6), borderColor: '#c8882a', backgroundColor: 'rgba(200,136,42,0.1)', tension: 0.4, fill: true },
+          { label: 'Secondary', data: ddPlaceholderValues(6), borderColor: '#7b3fa0', backgroundColor: 'rgba(123,63,160,0.1)', tension: 0.4, fill: true }
+        ]
+      },
+      options: { ...baseOpts, plugins: { legend: { display: true, labels: { color: tickC, font: { size: 10 }, usePointStyle: true } } } }
+    });
+    return;
+  }
+
+  // line
+  ddCharts[canvasId] = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [{ data: ddPlaceholderValues(6), borderColor: '#c8882a', backgroundColor: 'rgba(200,136,42,0.1)', tension: 0.4, fill: true }]
+    },
+    options: baseOpts
+  });
+}
+
+function ddRender() {
+  const level = ddGeoLevel();
+  const chooseGeo = document.getElementById('dd-choose-geo');
+  const content   = document.getElementById('dd-content');
+
+  if (!level) {
+    chooseGeo.style.display = '';
+    content.style.display = 'none';
+    return;
+  }
+
+  chooseGeo.style.display = 'none';
+  content.style.display   = '';
+
+  // Destroy previous DD charts before rebuilding
+  Object.keys(ddCharts).forEach(id => ddDestroyChart(id));
+
+  const metrics   = ddVisibleMetrics();
+  const multiYear = ddMultiYear();
+  const levelLabel = { country: 'Country Level', district: 'District Level', school: 'School Level' }[level];
+
+  let breadcrumb = ddSel.country;
+  if (ddSel.district) breadcrumb += ` › ${ddSel.district}`;
+  if (ddSel.school)   breadcrumb += ` › ${ddSel.school}`;
+
+  const yearBadge = multiYear
+    ? '<span class="dd-year-badge">Multi-Year</span>'
+    : `<span class="dd-year-badge single">Single Year: ${ddSel.yearStart}</span>`;
+
+  content.innerHTML = `
+    <div class="dd-breadcrumb-bar">
+      <span class="dd-breadcrumb">${breadcrumb}</span>
+      <span class="dd-geo-level-badge">${levelLabel}</span>
+      ${yearBadge}
+    </div>
+    <div class="card-grid-2" id="dd-metrics-grid"></div>
+  `;
+
+  const grid = document.getElementById('dd-metrics-grid');
+
+  metrics.forEach((metric, i) => {
+    const type     = ddDisplayType(metric);
+    const canvasId = `dd-chart-${i}`;
+    const isNumber = type === 'number';
+
+    const card = document.createElement('div');
+    card.className = 'data-card';
+    card.innerHTML = `
+      <div class="data-card-header">
+        ${metric.label}
+        <span class="data-card-badge">${ddTypeLabel(type)}</span>
+      </div>
+      <div class="data-card-body">
+        ${isNumber
+          ? `<div class="dd-number-display">${(Math.floor(Math.random() * 90000) + 10000).toLocaleString()}</div>
+             <div class="dd-number-label">Placeholder — ${ddSel.yearStart}</div>`
+          : `<div class="chart-container h200"><canvas id="${canvasId}"></canvas></div>`
+        }
+      </div>
+    `;
+    grid.appendChild(card);
+
+    if (!isNumber) setTimeout(() => ddRenderChart(canvasId, type), 0);
+  });
+}
+
+function ddPopulateDistricts(country) {
+  const el = document.getElementById('dd-district-select');
+  el.innerHTML = '<option value="" disabled selected>Select District</option>';
+  el.disabled = true;
+  if (!country) return;
+  const found = geographyData.find(c => c.country === country);
+  if (!found) return;
+  found.districts.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.district;
+    opt.textContent = d.district;
+    el.appendChild(opt);
+  });
+  el.disabled = false;
+}
+
+function ddPopulateSchools(country, district) {
+  const el = document.getElementById('dd-school-select');
+  el.innerHTML = '<option value="" disabled selected>Select School</option>';
+  el.disabled = true;
+  if (!district) return;
+  const foundC = geographyData.find(c => c.country === country);
+  if (!foundC) return;
+  const foundD = foundC.districts.find(d => d.district === district);
+  if (!foundD) return;
+  foundD.schools.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    el.appendChild(opt);
+  });
+  el.disabled = false;
+}
+
+function ddUpdateYear() {
+  let s = parseInt(document.getElementById('dd-date-start').value);
+  let e = parseInt(document.getElementById('dd-date-end').value);
+  if (s > e) [s, e] = [e, s];
+  ddSel.yearStart = s;
+  ddSel.yearEnd   = e;
+  document.getElementById('dd-date-display').textContent = s === e ? `${s}` : `${s} — ${e}`;
+  ddRender();
+}
+
+let ddInitialised = false;
+
+function ddInit() {
+  if (ddInitialised) return;
+  ddInitialised = true;
+
+  // Populate country dropdown from geographyData
+  const countrySel = document.getElementById('dd-country-select');
+  geographyData.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.country;
+    opt.textContent = c.country;
+    countrySel.appendChild(opt);
+  });
+
+  document.getElementById('dd-country-select').addEventListener('change', e => {
+    ddSel.country  = e.target.value;
+    ddSel.district = '';
+    ddSel.school   = '';
+    ddPopulateDistricts(ddSel.country);
+    ddPopulateSchools('', '');
+    ddRender();
+  });
+
+  document.getElementById('dd-district-select').addEventListener('change', e => {
+    ddSel.district = e.target.value;
+    ddSel.school   = '';
+    ddPopulateSchools(ddSel.country, ddSel.district);
+    ddRender();
+  });
+
+  document.getElementById('dd-school-select').addEventListener('change', e => {
+    ddSel.school = e.target.value;
+    ddRender();
+  });
+
+  document.getElementById('dd-date-start').addEventListener('input', ddUpdateYear);
+  document.getElementById('dd-date-end').addEventListener('input', ddUpdateYear);
+}
+
+// Toggle between Dashboard view and Dynamic Data view
+document.getElementById('dd-toggle-btn').addEventListener('click', () => {
+  const btn              = document.getElementById('dd-toggle-btn');
+  const existingFilterBar = document.querySelector('.app > .filter-bar');
+  const bodyLayout       = document.querySelector('.body-layout');
+  const ddView           = document.getElementById('dynamic-data-view');
+  const isActive         = btn.classList.contains('active');
+
+  if (isActive) {
+    // Back to Dashboard
+    btn.classList.remove('active');
+    btn.textContent = 'Dynamic Data';
+    existingFilterBar.style.display = '';
+    bodyLayout.style.display        = '';
+    ddView.style.display            = 'none';
+  } else {
+    // Switch to Dynamic Data
+    btn.classList.add('active');
+    btn.textContent = '← Dashboard';
+    existingFilterBar.style.display = 'none';
+    bodyLayout.style.display        = 'none';
+    ddView.style.display            = '';
+    ddInit(); // initialise once
+  }
+});
