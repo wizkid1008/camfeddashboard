@@ -88,6 +88,9 @@ body::before {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 6px 10px;
 }
 
 .camfed-logo-img {
