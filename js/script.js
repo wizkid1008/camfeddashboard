@@ -689,7 +689,7 @@ const checklistData = [
   {
     label: 'Children Supported in School with Education Bursaries',
     geography: { country: true, district: true, school: true },
-    displayType: { singleYear: 'vertical-bar', multiYear: 'double-line' }
+    displayType: { singleYear: 'number', multiYear: 'double-line' }
   },
   {
     label: 'Active Learner Guides',
