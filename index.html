@@ -33,12 +33,16 @@
     <!-- FILTER BAR -->
     <div class="filter-bar">
         <div class="filter-bar-item">
-            <label class="filter-bar-label">Indicator Type</label>
-            <select id="indicator-select" class="indicator-dropdown">
-                <option value="" disabled selected>Select Indicator Type</option>
-                <option value="level1">Level 1 — Girls' Education</option>
-                <option value="level2">Level 2 — Livelihoods & Leadership</option>
-                <option value="level3">Level 3 — Education Systems</option>
+            <label class="filter-bar-label">Level</label>
+            <select id="level-select" class="indicator-dropdown">
+                <option value="" disabled selected>Select Level</option>
+            </select>
+        </div>
+
+        <div class="filter-bar-item">
+            <label class="filter-bar-label">Sub Level</label>
+            <select id="sublevel-select" class="indicator-dropdown" disabled>
+                <option value="" disabled selected>Select Sub Level</option>
             </select>
         </div>
 
@@ -67,8 +71,20 @@
         <!-- MAIN CONTENT -->
         <div class="main-content">
 
+            <!-- ══ SUBLEVEL STATISTICS (auto-populated on SubLevel selection) ══ -->
+            <div id="sublevel-stats-section" style="display:none">
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <span id="sublevel-stats-title"></span>
+                    </div>
+                    <div class="data-card-body">
+                        <ul id="sublevel-stats-list" class="sublevel-stats-list"></ul>
+                    </div>
+                </div>
+            </div>
+
             <!-- ══ LEVEL 1 ══ -->
-            <div class="tab-panel active" id="panel-level1">
+            <div class="tab-panel" id="panel-level1">
 
                 <div class="headline-banner">
                     <h2 id="l1-headline">Select a country to view Level 1 data — Girls' Education &amp; Bursary Support</h2>
