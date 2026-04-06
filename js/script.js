@@ -363,29 +363,35 @@ function renderSubLevelStats(panelId, subLevelValue) {
 }
 
 // ─── UPDATE STATS ──────────────────────────────────────────────
+// Helper: set element text only if element exists
+function setTxt(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
 function updateStats() {
   const c = sel.country;
 
   // L1 stats
-  document.getElementById('s-bursary').textContent = fmt(cv(D.kpi11.annual.total));
-  document.getElementById('s-cama-school').textContent = fmt(cv(D.kpi12.annual.total));
-  document.getElementById('s-sls').textContent = fmt(cv(D.kpi13.annual.total));
-  document.getElementById('s-lg').textContent = fmt(cv(D.kpi19.total));
-  document.getElementById('s-alltime').textContent = fmt(cv(D.kpi11.cumAll.total));
+  setTxt('s-bursary', fmt(cv(D.kpi11.annual.total)));
+  setTxt('s-cama-school', fmt(cv(D.kpi12.annual.total)));
+  setTxt('s-sls', fmt(cv(D.kpi13.annual.total)));
+  setTxt('s-lg', fmt(cv(D.kpi19.total)));
+  setTxt('s-alltime', fmt(cv(D.kpi11.cumAll.total)));
 
   // Headline
   const cLabel = c==='All'?'All Countries':c;
-  document.getElementById('l1-headline').textContent = `${cLabel} — Level 1: Girls' Education, Bursary Support & Learner Guides`;
+  setTxt('l1-headline', `${cLabel} — Level 1: Girls' Education, Bursary Support & Learner Guides`);
 
   // L2 stats
-  document.getElementById('s2-cama').textContent = fmt(cv(D.kpi21.cum));
-  document.getElementById('s2-jobs').textContent = fmt(cv(D.kpi29.annual));
-  document.getElementById('s2-ent').textContent = fmt(cv(D.kpi26.annual));
+  setTxt('s2-cama', fmt(cv(D.kpi21.cum)));
+  setTxt('s2-jobs', fmt(cv(D.kpi29.annual)));
+  setTxt('s2-ent', fmt(cv(D.kpi26.annual)));
 
   // L3 stats
-  document.getElementById('s3-schools').textContent = fmt(cv(D.kpi31.total_all));
-  document.getElementById('s3-districts').textContent = fmt(cv(D.kpi34.districts));
-  document.getElementById('s3-children').textContent = fmt(cv(D.kpi35.total));
+  setTxt('s3-schools', fmt(cv(D.kpi31.total_all)));
+  setTxt('s3-districts', fmt(cv(D.kpi34.districts)));
+  setTxt('s3-children', fmt(cv(D.kpi35.total)));
 }
 
 // ─── BUILD LEVEL 1 ─────────────────────────────────────────────
