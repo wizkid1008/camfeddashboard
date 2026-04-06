@@ -1,3 +1,120 @@
+// ─── HIERARCHY DATA ────────────────────────────────────────────
+// Source of truth for Level, SubLevel, and Statistics
+const hierarchyData = [
+  {
+    level: "LEVEL 1: Girl's Education",
+    subLevel: "Education Reach",
+    statistics: [
+      "# Girls supported in Schol with Education Bursaries",
+      "# Girls Supported in School by CAMA & Community Champions",
+      "# Total Girls Supported",
+      "# Total Boys Supported"
+    ]
+  },
+  {
+    level: "LEVEL 1: Girl's Education",
+    subLevel: "Education Outcomes",
+    statistics: [
+      "Dropout Rate for Girls with Education Bursaries due to EMP",
+      "Girls with Education Bursaries that Progress to Next Grade",
+      "Exam Passrates for Girls with Busaries",
+      "School Completion Rates for girls with busaries"
+    ]
+  },
+  {
+    level: "LEVEL 1: Girl's Education",
+    subLevel: "Learner Guide Programme",
+    statistics: [
+      "Active Learner Guides",
+      "Girls Reporting Increased Agency",
+      "Learner Guides Reporting Increased Agency",
+      "Average number of children my better world annually",
+      "Active Learner Guides by Training",
+      "Children Receieving Social and Learning Support Including My Better World Sessions"
+    ]
+  },
+  {
+    level: "LEVEL 2: Livelihoods & Leadership",
+    subLevel: "Leadership and Tertiary",
+    statistics: [
+      "Active Transition Guides",
+      "Numbers of CAMA Members",
+      "Young Women Supported by Transition Guide",
+      "Young Women Supported by CAMFED Tertiary Education",
+      "CAMA Members in Leadership Roles"
+    ]
+  },
+  {
+    level: "LEVEL 2: Livelihoods & Leadership",
+    subLevel: "Livelihoods Reach",
+    statistics: [
+      "Active Enerperis Guides (Business & Agriculture Guides)",
+      "Business Supported by Enterprise Guides",
+      "Business Grants Distributed",
+      "CAMFED KIVA and RIF Loans Distributed"
+    ]
+  },
+  {
+    level: "LEVEL 2: Livelihoods & Leadership",
+    subLevel: "Jobs & Income",
+    statistics: [
+      "Women Progresing Towards a secure livelihood",
+      "Females Entrepreeurs with increased incomes after participating in CAMFED's ENteprise Programs",
+      "Jobs Created through Enterprise Programme including Self Employment",
+      "New Business",
+      "Business Survival Rate"
+    ]
+  },
+  {
+    level: "LEVEL 2: Livelihoods & Leadership",
+    subLevel: "Agriculture & Food",
+    statistics: [
+      "Percentage of Femal Entrepenuers Reporting and Increased Household Consumption fo Food Since Participating in CAMFED's Enteprise Program",
+      "Percentage of FEmals Agripernuers Reporting Increased Yields Since Participating",
+      "Average Number of Climate-Smart Techniques Used by Those Receiieng Support from an Agriculture Guide"
+    ]
+  },
+  {
+    level: "LEVEL 2: Livelihoods & Leadership",
+    subLevel: "Life Choices",
+    statistics: [
+      "Average of Young Women Married by Age 18 Across All Countries",
+      "Average of Young Women Giving Birth by Age 18",
+      "Percentrage of Young Women in CAMA who Were Married by 18",
+      "Percentage of Young Women CAMA Who have Given Birth by 18"
+    ]
+  },
+  {
+    level: "LEVEL 3: Education Systems",
+    subLevel: "Education Systems 1",
+    statistics: [
+      "% of Resources for Learner Guide Programme Contributed by the Government",
+      "National Level Dropout Rate for Girls due to Early Mariage of Pregnancy",
+      "Community Champion Teacher Mentors",
+      "Number of Districts with Learns Guides",
+      "Number of Schools with Learner Guides"
+    ]
+  },
+  {
+    level: "LEVEL 3: Education Systems",
+    subLevel: "Education Systems 2",
+    statistics: [
+      "Number of Memerando fo Understanding between Government and CAMFED",
+      "Children Benefiting from Improved Learning Environment",
+      "Number of Active Community Champions for Girl's Education",
+      "National Level Dropout Rate for Girls due to Early Mariage of Pregnancy",
+      "Number of Memoranda of Understanding between Government Departmetns and CAMFED"
+    ]
+  }
+];
+
+// Maps hierarchyData level strings to existing panel IDs (level1/level2/level3)
+const levelToPanelId = {
+  "LEVEL 1: Girl's Education": 'level1',
+  "LEVEL 2: Livelihoods & Leadership": 'level2',
+  "LEVEL 3: Education Systems": 'level3'
+};
+
 // ─── COLOUR PALETTE ────────────────────────────────────────────
 const C = ['Ghana','Malawi','Tanzania','Zambia','Zimbabwe'];
 const CC = {
@@ -41,7 +158,7 @@ const D = {
 };
 
 // ─── STATE ─────────────────────────────────────────────────────
-let sel = { country: 'All', dateStart: 2020, dateEnd: 2030 };
+let sel = { country: 'All', dateStart: 2020, dateEnd: 2030, level: '', subLevel: '' };
 const charts = {};
 
 // ─── HELPERS ───────────────────────────────────────────────────
@@ -191,6 +308,60 @@ function buildCountryDropdown() {
   select.value = 'All';
 }
 
+// ─── POPULATE LEVEL DROPDOWN ──────────────────────────────────
+function buildLevelDropdown() {
+  const select = document.getElementById('level-select');
+  // Derive unique levels in order from hierarchyData
+  const seen = new Set();
+  hierarchyData.forEach(item => {
+    if (!seen.has(item.level)) {
+      seen.add(item.level);
+      const opt = document.createElement('option');
+      opt.value = levelToPanelId[item.level]; // "level1" / "level2" / "level3"
+      opt.textContent = item.level;
+      select.appendChild(opt);
+    }
+  });
+}
+
+// ─── POPULATE SUBLEVEL DROPDOWN ───────────────────────────────
+// Called when a Level is selected; filters sublevels from hierarchyData
+function buildSubLevelDropdown(panelId) {
+  const select = document.getElementById('sublevel-select');
+  select.innerHTML = '<option value="" disabled selected>Select Sub Level</option>';
+  hierarchyData
+    .filter(item => levelToPanelId[item.level] === panelId)
+    .forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.subLevel;
+      opt.textContent = item.subLevel;
+      select.appendChild(opt);
+    });
+  select.disabled = false;
+  select.value = '';
+}
+
+// ─── RENDER SUBLEVEL STATISTICS ───────────────────────────────
+// Auto-populates all stats for the selected Level + SubLevel combination
+function renderSubLevelStats(panelId, subLevelValue) {
+  const section = document.getElementById('sublevel-stats-section');
+  if (!subLevelValue) { section.style.display = 'none'; return; }
+
+  const entry = hierarchyData.find(
+    item => levelToPanelId[item.level] === panelId && item.subLevel === subLevelValue
+  );
+  if (!entry) { section.style.display = 'none'; return; }
+
+  // Remove blanks and deduplicate before rendering
+  const stats = [...new Set(entry.statistics.filter(s => s && s.trim()))];
+
+  document.getElementById('sublevel-stats-title').textContent =
+    `${entry.level} — ${entry.subLevel}`;
+  document.getElementById('sublevel-stats-list').innerHTML =
+    stats.map(s => `<li class="sublevel-stat-item">${s}</li>`).join('');
+  section.style.display = 'block';
+}
+
 // ─── UPDATE STATS ──────────────────────────────────────────────
 function updateStats() {
   const c = sel.country;
@@ -331,27 +502,41 @@ function buildL3() {
 // ─── REBUILD ACTIVE TAB ────────────────────────────────────────
 function rebuildActive() {
   updateStats();
-  const indicator = document.getElementById('indicator-select').value;
-  if (indicator === 'level1') buildL1();
-  else if (indicator === 'level2') buildL2();
-  else if (indicator === 'level3') buildL3();
+  const level = document.getElementById('level-select').value;
+  if (level === 'level1') buildL1();
+  else if (level === 'level2') buildL2();
+  else if (level === 'level3') buildL3();
 }
 
-// ─── INDICATOR DROPDOWN ────────────────────────────────────────
-document.getElementById('indicator-select').addEventListener('change', e=>{
+// ─── LEVEL DROPDOWN ────────────────────────────────────────────
+document.getElementById('level-select').addEventListener('change', e=>{
   const value = e.target.value;
   if (!value) return;
 
-  // Hide all tab panels
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  sel.level = value;
+  sel.subLevel = '';
 
-  // Show selected panel
+  // Switch visible panel
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-' + value)?.classList.add('active');
 
-  // Build the appropriate chart
+  // Reset and populate sublevel dropdown for the selected level
+  buildSubLevelDropdown(value);
+
+  // Clear any previously rendered statistics
+  document.getElementById('sublevel-stats-section').style.display = 'none';
+
+  // Build charts for the selected level
   if (value === 'level1') buildL1();
   else if (value === 'level2') buildL2();
   else if (value === 'level3') buildL3();
+});
+
+// ─── SUBLEVEL DROPDOWN ─────────────────────────────────────────
+document.getElementById('sublevel-select').addEventListener('change', e=>{
+  sel.subLevel = e.target.value;
+  // Auto-populate all statistics for this Level + SubLevel
+  renderSubLevelStats(sel.level, sel.subLevel);
 });
 
 // Country filter - dropdown
@@ -391,20 +576,8 @@ document.getElementById('date-range-end').addEventListener('input', e=>{
 });
 
 // ─── INIT ──────────────────────────────────────────────────────
-console.log('Initializing...');
-console.log('Countries array C:', C);
-console.log('Country select element:', document.getElementById('country-select'));
-
 buildCountryDropdown();
+buildLevelDropdown();
 
-console.log('After buildCountryDropdown, options:', document.getElementById('country-select').options.length);
-for (let i = 0; i < document.getElementById('country-select').options.length; i++) {
-  console.log('Option', i, ':', document.getElementById('country-select').options[i].text, '=', document.getElementById('country-select').options[i].value);
-}
-
-// Set default indicator to Level 1
-document.getElementById('indicator-select').value = 'level1';
-document.getElementById('panel-level1').classList.add('active');
-
+// No default level pre-selected; panels hidden until user picks a Level
 updateDateDisplay();
-rebuildActive();
