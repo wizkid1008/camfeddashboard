@@ -1,109 +1,113 @@
 // ─── HIERARCHY DATA ────────────────────────────────────────────
-// Source of truth for Level, SubLevel, and Statistics
+// Each statistic: { label, kpi?, pct?, kpiSum?, kpiRatio? }
+// kpi      = dot-path into D (e.g. "kpi11.annual.total")
+// pct      = true → format as percentage
+// kpiSum   = array of dot-paths whose values are summed
+// kpiRatio = { n: numeratorPath, d: denominatorPath } → displayed as %
 const hierarchyData = [
   {
     level: "LEVEL 1: Girl's Education",
     subLevel: "Education Reach",
     statistics: [
-      "# Girls supported in Schol with Education Bursaries",
-      "# Girls Supported in School by CAMA & Community Champions",
-      "# Total Girls Supported",
-      "# Total Boys Supported"
+      { label: "# Girls supported in Schol with Education Bursaries",           kpi: "kpi11.annual.total" },
+      { label: "# Girls Supported in School by CAMA & Community Champions",     kpi: "kpi12.annual.total" },
+      { label: "# Total Girls Supported",                                        kpi: "kpi13.annual.girls" },
+      { label: "# Total Boys Supported",                                         kpi: "kpi13.annual.boys" }
     ]
   },
   {
     level: "LEVEL 1: Girl's Education",
     subLevel: "Education Outcomes",
     statistics: [
-      "Dropout Rate for Girls with Education Bursaries due to EMP",
-      "Girls with Education Bursaries that Progress to Next Grade",
-      "Exam Passrates for Girls with Busaries",
-      "School Completion Rates for girls with busaries"
+      { label: "Dropout Rate for Girls with Education Bursaries due to EMP",    kpi: "kpi15.pct", pct: true },
+      { label: "Girls with Education Bursaries that Progress to Next Grade" },
+      { label: "Exam Passrates for Girls with Busaries" },
+      { label: "School Completion Rates for girls with busaries" }
     ]
   },
   {
     level: "LEVEL 1: Girl's Education",
     subLevel: "Learner Guide Programme",
     statistics: [
-      "Active Learner Guides",
-      "Girls Reporting Increased Agency",
-      "Learner Guides Reporting Increased Agency",
-      "Average number of children my better world annually",
-      "Active Learner Guides by Training",
-      "Children Receieving Social and Learning Support Including My Better World Sessions"
+      { label: "Active Learner Guides",                                                                          kpi: "kpi19.total" },
+      { label: "Girls Reporting Increased Agency" },
+      { label: "Learner Guides Reporting Increased Agency" },
+      { label: "Average number of children my better world annually" },
+      { label: "Active Learner Guides by Training",                                                              kpi: "kpi19.camfed" },
+      { label: "Children Receieving Social and Learning Support Including My Better World Sessions",             kpi: "kpi13.annual.total" }
     ]
   },
   {
     level: "LEVEL 2: Livelihoods & Leadership",
     subLevel: "Leadership and Tertiary",
     statistics: [
-      "Active Transition Guides",
-      "Numbers of CAMA Members",
-      "Young Women Supported by Transition Guide",
-      "Young Women Supported by CAMFED Tertiary Education",
-      "CAMA Members in Leadership Roles"
+      { label: "Active Transition Guides",                                kpi: "kpi22.transition" },
+      { label: "Numbers of CAMA Members",                                 kpi: "kpi21.cum" },
+      { label: "Young Women Supported by Transition Guide",               kpi: "kpi213.num" },
+      { label: "Young Women Supported by CAMFED Tertiary Education" },
+      { label: "CAMA Members in Leadership Roles" }
     ]
   },
   {
     level: "LEVEL 2: Livelihoods & Leadership",
     subLevel: "Livelihoods Reach",
     statistics: [
-      "Active Enerperis Guides (Business & Agriculture Guides)",
-      "Business Supported by Enterprise Guides",
-      "Business Grants Distributed",
-      "CAMFED KIVA and RIF Loans Distributed"
+      { label: "Active Enerperis Guides (Business & Agriculture Guides)", kpiSum: ["kpi22.business", "kpi22.agriculture"] },
+      { label: "Business Supported by Enterprise Guides",                 kpi: "kpi27.biz" },
+      { label: "Business Grants Distributed" },
+      { label: "CAMFED KIVA and RIF Loans Distributed" }
     ]
   },
   {
     level: "LEVEL 2: Livelihoods & Leadership",
     subLevel: "Jobs & Income",
     statistics: [
-      "Women Progresing Towards a secure livelihood",
-      "Females Entrepreeurs with increased incomes after participating in CAMFED's ENteprise Programs",
-      "Jobs Created through Enterprise Programme including Self Employment",
-      "New Business",
-      "Business Survival Rate"
+      { label: "Women Progresing Towards a secure livelihood" },
+      { label: "Females Entrepreeurs with increased incomes after participating in CAMFED's ENteprise Programs", kpi: "kpi210.pct", pct: true },
+      { label: "Jobs Created through Enterprise Programme including Self Employment",                            kpi: "kpi29.annual" },
+      { label: "New Business" },
+      { label: "Business Survival Rate",                                                                         kpi: "kpi212.yr1", pct: true }
     ]
   },
   {
     level: "LEVEL 2: Livelihoods & Leadership",
     subLevel: "Agriculture & Food",
     statistics: [
-      "Percentage of Femal Entrepenuers Reporting and Increased Household Consumption fo Food Since Participating in CAMFED's Enteprise Program",
-      "Percentage of FEmals Agripernuers Reporting Increased Yields Since Participating",
-      "Average Number of Climate-Smart Techniques Used by Those Receiieng Support from an Agriculture Guide"
+      { label: "Percentage of Femal Entrepenuers Reporting and Increased Household Consumption fo Food Since Participating in CAMFED's Enteprise Program" },
+      { label: "Percentage of FEmals Agripernuers Reporting Increased Yields Since Participating" },
+      { label: "Average Number of Climate-Smart Techniques Used by Those Receiieng Support from an Agriculture Guide" }
     ]
   },
   {
     level: "LEVEL 2: Livelihoods & Leadership",
     subLevel: "Life Choices",
     statistics: [
-      "Average of Young Women Married by Age 18 Across All Countries",
-      "Average of Young Women Giving Birth by Age 18",
-      "Percentrage of Young Women in CAMA who Were Married by 18",
-      "Percentage of Young Women CAMA Who have Given Birth by 18"
+      { label: "Average of Young Women Married by Age 18 Across All Countries" },
+      { label: "Average of Young Women Giving Birth by Age 18" },
+      { label: "Percentrage of Young Women in CAMA who Were Married by 18" },
+      { label: "Percentage of Young Women CAMA Who have Given Birth by 18" }
     ]
   },
   {
     level: "LEVEL 3: Education Systems",
     subLevel: "Education Systems 1",
     statistics: [
-      "% of Resources for Learner Guide Programme Contributed by the Government",
-      "National Level Dropout Rate for Girls due to Early Mariage of Pregnancy",
-      "Community Champion Teacher Mentors",
-      "Number of Districts with Learns Guides",
-      "Number of Schools with Learner Guides"
+      { label: "% of Resources for Learner Guide Programme Contributed by the Government", kpiRatio: { n: "kpi19.govt", d: "kpi19.total" } },
+      { label: "National Level Dropout Rate for Girls due to Early Mariage of Pregnancy",  kpi: "kpi15.pct", pct: true },
+      { label: "Community Champion Teacher Mentors" },
+      { label: "Number of Districts with Learns Guides",                                   kpi: "kpi34.districts" },
+      { label: "Number of Schools with Learner Guides",                                    kpi: "kpi31.total_all" }
     ]
   },
   {
     level: "LEVEL 3: Education Systems",
     subLevel: "Education Systems 2",
     statistics: [
-      "Number of Memerando fo Understanding between Government and CAMFED",
-      "Children Benefiting from Improved Learning Environment",
-      "Number of Active Community Champions for Girl's Education",
-      "National Level Dropout Rate for Girls due to Early Mariage of Pregnancy",
-      "Number of Memoranda of Understanding between Government Departmetns and CAMFED"
+      { label: "Number of Memerando fo Understanding between Government and CAMFED" },
+      { label: "Children Benefiting from Improved Learning Environment",                    kpi: "kpi35.total" },
+      { label: "Number of Active Community Champions for Girl's Education" },
+      { label: "National Level Dropout Rate for Girls due to Early Mariage of Pregnancy",  kpi: "kpi15.pct", pct: true },
+      { label: "Number of Memoranda of Understanding between Government Departmetns and CAMFED" }
     ]
   }
 ];
@@ -341,6 +345,39 @@ function buildSubLevelDropdown(panelId) {
   select.value = '';
 }
 
+// ─── RESOLVE KPI VALUE ────────────────────────────────────────
+// Resolves a statistic object's data reference against the current country.
+// Handles: single kpi path, kpiSum (array of paths added together),
+// and kpiRatio (numerator/denominator shown as a percentage).
+function resolveKpiValue(stat) {
+  // Walk a dot-notation path into D and return the country value
+  function getPath(path) {
+    const parts = path.split('.');
+    let v = D;
+    for (const p of parts) { if (v == null) return null; v = v[p]; }
+    if (v == null || typeof v !== 'object') return null;
+    if (sel.country === 'All') {
+      if (v.Total != null) return v.Total;
+      // No Total field — average across all countries (e.g. kpi15.pct)
+      const vals = C.map(c => v[c]).filter(n => n != null);
+      return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+    }
+    return v[sel.country] ?? null;
+  }
+
+  if (stat.kpiSum) {
+    const nums = stat.kpiSum.map(getPath).filter(n => n != null);
+    return nums.length ? fmt(nums.reduce((a, b) => a + b, 0)) : null;
+  }
+  if (stat.kpiRatio) {
+    const n = getPath(stat.kpiRatio.n), d = getPath(stat.kpiRatio.d);
+    return (n != null && d) ? (n / d * 100).toFixed(1) + '%' : null;
+  }
+  if (!stat.kpi) return null;
+  const n = getPath(stat.kpi);
+  return n != null ? (stat.pct ? n.toFixed(2) + '%' : fmt(n)) : null;
+}
+
 // ─── RENDER SUBLEVEL STATISTICS ───────────────────────────────
 // Auto-populates all stats for the selected Level + SubLevel combination
 function renderSubLevelStats(panelId, subLevelValue) {
@@ -352,13 +389,20 @@ function renderSubLevelStats(panelId, subLevelValue) {
   );
   if (!entry) { section.style.display = 'none'; return; }
 
-  // Remove blanks and deduplicate before rendering
-  const stats = [...new Set(entry.statistics.filter(s => s && s.trim()))];
+  // Deduplicate by label and remove blanks
+  const stats = [...new Map(entry.statistics.map(s => [s.label, s])).values()]
+    .filter(s => s.label && s.label.trim());
 
   document.getElementById('sublevel-stats-title').textContent =
     `${entry.level} — ${entry.subLevel}`;
   document.getElementById('sublevel-stats-list').innerHTML =
-    stats.map(s => `<li class="sublevel-stat-item">${s}</li>`).join('');
+    stats.map(s => {
+      const val = resolveKpiValue(s);
+      return `<li class="sublevel-stat-item">
+        <span class="sublevel-stat-label">${s.label}</span>
+        <span class="sublevel-stat-value${val ? '' : ' sublevel-stat-na'}">${val ?? '—'}</span>
+      </li>`;
+    }).join('');
   section.style.display = 'block';
 }
 
@@ -512,6 +556,8 @@ function rebuildActive() {
   if (level === 'level1') buildL1();
   else if (level === 'level2') buildL2();
   else if (level === 'level3') buildL3();
+  // Re-render sublevel stats so values reflect the current country selection
+  if (sel.subLevel) renderSubLevelStats(sel.level, sel.subLevel);
 }
 
 // ─── LEVEL DROPDOWN ────────────────────────────────────────────
