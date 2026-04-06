@@ -714,7 +714,7 @@ const checklistData = [
   {
     label: 'Active Guides by Type',
     geography: { country: true, district: true, school: true },
-    displayType: { singleYear: 'pie', multiYear: 'pie' }
+    displayType: { singleYear: 'pie', multiYear: 'multi-line' }
   },
   {
     label: 'Number of Post School Clients',
