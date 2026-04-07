@@ -205,6 +205,25 @@ function cvAvg(obj) {
   return vals.length ? vals.reduce((x, y) => x + y, 0) / vals.length : null;
 }
 
+// ── DD query helpers ────────────────────────────────────────────
+// Sum DD.data values for a metric across given countries in a year range.
+function ddQ(metric, countries, yearStart, yearEnd) {
+  if (!window.DD) return 0;
+  const cts = countries && countries.length ? countries : DD.countries;
+  return DD.data
+    .filter(r => r.metric === metric && cts.includes(r.country)
+              && r.year >= yearStart && r.year <= yearEnd)
+    .reduce((s, r) => s + r.value, 0);
+}
+// Active countries, current date range
+function ddQA(metric) { return ddQ(metric, activeCt(), sel.dateStart, sel.dateEnd); }
+// Single country, current date range
+function ddQC(metric, country) { return ddQ(metric, [country], sel.dateStart, sel.dateEnd); }
+// Apply a D-object sub-ratio to a DD total (preserves breakdown proportions)
+function ddSplit(ddTotal, numerator, denominator) {
+  return denominator > 0 ? Math.round(ddTotal * numerator / denominator) : 0;
+}
+
 function destroyChart(id) {
   if(charts[id]){
     charts[id].destroy();
@@ -488,23 +507,27 @@ function setTxt(id, val) {
 }
 
 function updateStats() {
-  // L1 stats
-  setTxt('s-bursary', fmt(cv(D.kpi11.annual.total)));
-  setTxt('s-cama-school', fmt(cv(D.kpi12.annual.total)));
-  setTxt('s-sls', fmt(cv(D.kpi13.annual.total)));
-  setTxt('s-lg', fmt(cv(D.kpi19.total)));
-  setTxt('s-alltime', fmt(cv(D.kpi11.cumAll.total)));
+  const s = sel.dateStart, e = sel.dateEnd;
+  const a = activeCt();
+
+  // L1 stats — bursary & guides from DD (date-range aware); SLS/community from D
+  setTxt('s-bursary',     fmt(ddQA('Children Supported in School with Education Bursaries')));
+  setTxt('s-cama-school', fmt(cv(D.kpi12.annual.total)));   // no DD equivalent
+  setTxt('s-sls',         fmt(cv(D.kpi13.annual.total)));   // no DD equivalent
+  setTxt('s-lg',          fmt(ddQA('Active Learner Guides')));
+  // All-time cumulative = sum from 2020 up to the selected end year
+  setTxt('s-alltime', fmt(ddQ('Children Supported in School with Education Bursaries', a, 2020, e)));
   setTxt('l1-headline', `${activeLabel()} — Level 1: Girls' Education, Bursary Support & Learner Guides`);
 
   // L2 stats
-  setTxt('s2-cama', fmt(cv(D.kpi21.cum)));
-  setTxt('s2-jobs', fmt(cv(D.kpi29.annual)));
-  setTxt('s2-ent', fmt(cv(D.kpi26.annual)));
+  setTxt('s2-cama',  fmt(ddQA('CAMA Members')));
+  setTxt('s2-jobs',  fmt(ddQA('Number of Post School Clients')));
+  setTxt('s2-ent',   fmt(ddQA('Active Guides by Type')));
 
   // L3 stats
-  setTxt('s3-schools', fmt(cv(D.kpi31.total_all)));
-  setTxt('s3-districts', fmt(cv(D.kpi34.districts)));
-  setTxt('s3-children', fmt(cv(D.kpi35.total)));
+  setTxt('s3-schools',   fmt(ddQA('Active Partner Schools')));
+  setTxt('s3-districts', fmt(cv(D.kpi34.districts)));   // static district count
+  setTxt('s3-children',  fmt(ddQA('Grants Disbursed')));
 }
 
 // ─── BUILD LEVEL 1 ─────────────────────────────────────────────
@@ -512,49 +535,61 @@ function buildL1() {
   const a = activeCt();
   const single = a.length === 1;
   const c = single ? a[0] : null;
+  const BUR = 'Children Supported in School with Education Bursaries';
+  const LG  = 'Active Learner Guides';
 
-  // Bursary chart: single country → period breakdown; multi → bar per country
+  // Bursary chart: single → period breakdown using DD; multi → per-country totals
   if (single) {
-    const periods = ['Annual','Newly Supp.','Cum. 20–30','Cum. All-time'];
-    const vals = [D.kpi11.annual.total[c]||0, D.kpi11.newly.total[c]||0, D.kpi11.cum2030.total[c]||0, D.kpi11.cumAll.total[c]||0];
-    bar('l1-bursary-chart', periods, [{data:vals, backgroundColor:['#c8882a','#5e2580','#2e7d32','#7b3fa0']}]);
+    const annual  = ddQC(BUR, c);
+    const newly   = ddQ(BUR, [c], sel.dateStart, sel.dateStart); // first year only
+    const cum2030 = ddQ(BUR, [c], 2020, 2030);
+    const cumAll  = ddQ(BUR, [c], 2020, sel.dateEnd);
+    bar('l1-bursary-chart', ['Annual','Newly Supp.','Cum. 20–30','Cum. All-time'],
+      [{data:[annual, newly, cum2030, cumAll], backgroundColor:['#c8882a','#5e2580','#2e7d32','#7b3fa0']}]);
   } else {
-    bar('l1-bursary-chart', a, [{data:a.map(n=>D.kpi11.annual.total[n]||0), backgroundColor:BARS}]);
+    bar('l1-bursary-chart', a, [{data:a.map(n=>ddQC(BUR,n)), backgroundColor:BARS}]);
   }
 
-  // LG chart: single → CAMFED/Govt split; multi → stacked by country
+  // LG chart: split using D ratios applied to DD total
   if (single) {
-    bar('l1-lg-chart', ['CAMFED Trained','Govt Trained'], [
-      {data:[D.kpi19.camfed[c]||0, D.kpi19.govt[c]||0], backgroundColor:['#5e2580','#c8882a']}
-    ]);
+    const lgTotal = ddQC(LG, c);
+    const dTotal  = (D.kpi19.camfed[c]||0) + (D.kpi19.govt[c]||0) || 1;
+    bar('l1-lg-chart', ['CAMFED Trained','Govt Trained'], [{
+      data:[ddSplit(lgTotal, D.kpi19.camfed[c]||0, dTotal),
+            ddSplit(lgTotal, D.kpi19.govt[c]||0,   dTotal)],
+      backgroundColor:['#5e2580','#c8882a']
+    }]);
   } else {
     bar('l1-lg-chart', a, [
-      {label:'CAMFED', data:a.map(n=>D.kpi19.camfed[n]||0), backgroundColor:'#5e2580'},
-      {label:'Govt',   data:a.map(n=>D.kpi19.govt[n]||0),   backgroundColor:'#c8882a'}
+      {label:'CAMFED', data:a.map(n=>{ const t=ddQC(LG,n), d=(D.kpi19.camfed[n]||0)+(D.kpi19.govt[n]||0)||1; return ddSplit(t,D.kpi19.camfed[n]||0,d); }), backgroundColor:'#5e2580'},
+      {label:'Govt',   data:a.map(n=>{ const t=ddQC(LG,n), d=(D.kpi19.camfed[n]||0)+(D.kpi19.govt[n]||0)||1; return ddSplit(t,D.kpi19.govt[n]||0,d);   }), backgroundColor:'#c8882a'}
     ], {stacked:true, legend:true});
   }
 
-  // Primary vs secondary — always compare across active countries
+  // Primary vs secondary — scale DD total using D ratios
   bar('l1-levels-chart', a, [
-    {label:'Primary',   data:a.map(n=>D.kpi11.annual.primary[n]||0),   backgroundColor:'#5e2580'},
-    {label:'Secondary', data:a.map(n=>D.kpi11.annual.secondary[n]||0), backgroundColor:'#c8882a'}
+    {label:'Primary',   data:a.map(n=>{ const t=ddQC(BUR,n), d=D.kpi11.annual.total[n]||1; return ddSplit(t,D.kpi11.annual.primary[n]||0,d); }),   backgroundColor:'#5e2580'},
+    {label:'Secondary', data:a.map(n=>{ const t=ddQC(BUR,n), d=D.kpi11.annual.total[n]||1; return ddSplit(t,D.kpi11.annual.secondary[n]||0,d); }), backgroundColor:'#c8882a'}
   ], {stacked:false, legend:true});
 
-  // Periods bar — sum across active countries
-  const periodSources = [D.kpi11.annual.total, D.kpi11.newly.total, D.kpi11.cum2030.total, D.kpi11.cumAll.total];
-  const allPeriods = ['Annual','Newly Supp.','Cum. 20–30','Cum. All-time'];
-  const allVals = periodSources.map(src => a.reduce((s, n) => s + (src[n] || 0), 0));
-  bar('l1-periods-chart', allPeriods, [{data:allVals, backgroundColor:['#5e2580','#7b3fa0','#c8882a','#4a1a6b']}]);
+  // Periods bar — aggregate across active countries from DD
+  bar('l1-periods-chart', ['Annual','Newly Supp.','Cum. 20–30','Cum. All-time'], [{
+    data:[
+      ddQ(BUR, a, sel.dateStart, sel.dateEnd),
+      ddQ(BUR, a, sel.dateStart, sel.dateStart),
+      ddQ(BUR, a, 2020, 2030),
+      ddQ(BUR, a, 2020, sel.dateEnd)
+    ],
+    backgroundColor:['#5e2580','#7b3fa0','#c8882a','#4a1a6b']
+  }]);
 
-  // Dropout rate — show each active country
+  // Dropout rate — no DD equivalent; keep D values
   const items = a.map(n=>({label:n, val:D.kpi15.pct[n], display:D.kpi15.pct[n].toFixed(2)+'%'}));
   progList('l1-dropout', items, 5, l=>CC[l]||'#5e2580');
 
-  // SLS: single → Girls/Boys for that country; multi → stacked by country
+  // SLS — no DD equivalent; keep D values
   if (single) {
-    bar('l1-sls-chart', ['Girls','Boys'], [
-      {data:[D.kpi13.annual.girls[c]||0, D.kpi13.annual.boys[c]||0], backgroundColor:['#c8882a','#5e2580']}
-    ]);
+    bar('l1-sls-chart', ['Girls','Boys'], [{data:[D.kpi13.annual.girls[c]||0, D.kpi13.annual.boys[c]||0], backgroundColor:['#c8882a','#5e2580']}]);
   } else {
     bar('l1-sls-chart', a, [
       {label:'Girls', data:a.map(n=>D.kpi13.annual.girls[n]||0), backgroundColor:'#c8882a'},
@@ -562,7 +597,7 @@ function buildL1() {
     ], {stacked:true, legend:true});
   }
 
-  // P9 dropout by form — average across active countries
+  // Form dropout — no DD equivalent; keep D values
   const formItems = ['Form 1','Form 2','Form 3','Form 4'].map((f,i)=>{
     const key = ['form1','form2','form3','form4'][i];
     const vals = a.map(n=>D.p9[key][n]||0);
@@ -575,17 +610,27 @@ function buildL1() {
 // ─── BUILD LEVEL 2 ─────────────────────────────────────────────
 function buildL2() {
   const a = activeCt();
-  bar('l2-cama-chart', a, [{data:a.map(n=>D.kpi21.cum[n]||0), backgroundColor:BARS}]);
+
+  // CAMA members — DD
+  bar('l2-cama-chart', a, [{data:a.map(n=>ddQC('CAMA Members',n)), backgroundColor:BARS}]);
+
+  // Guide types — DD total split by D ratios
   bar('l2-guides-chart', a, [
-    {label:'Transition',  data:a.map(n=>D.kpi22.transition[n]||0),  backgroundColor:'#4a1a6b'},
-    {label:'Agriculture', data:a.map(n=>D.kpi22.agriculture[n]||0), backgroundColor:'#5e2580'},
-    {label:'Business',    data:a.map(n=>D.kpi22.business[n]||0),    backgroundColor:'#c8882a'}
+    {label:'Transition',  data:a.map(n=>{ const t=ddQC('Active Guides by Type',n), d=(D.kpi22.transition[n]||0)+(D.kpi22.agriculture[n]||0)+(D.kpi22.business[n]||0)||1; return ddSplit(t,D.kpi22.transition[n]||0,d);  }), backgroundColor:'#4a1a6b'},
+    {label:'Agriculture', data:a.map(n=>{ const t=ddQC('Active Guides by Type',n), d=(D.kpi22.transition[n]||0)+(D.kpi22.agriculture[n]||0)+(D.kpi22.business[n]||0)||1; return ddSplit(t,D.kpi22.agriculture[n]||0,d); }), backgroundColor:'#5e2580'},
+    {label:'Business',    data:a.map(n=>{ const t=ddQC('Active Guides by Type',n), d=(D.kpi22.transition[n]||0)+(D.kpi22.agriculture[n]||0)+(D.kpi22.business[n]||0)||1; return ddSplit(t,D.kpi22.business[n]||0,d);   }), backgroundColor:'#c8882a'}
   ], {legend:true});
+
+  // Business/loans — DD total split by D ratios
   bar('l2-biz-chart', a, [
-    {label:'Ag. Guides',  data:a.map(n=>D.kpi27.ag[n]||0),  backgroundColor:'#5e2580'},
-    {label:'Biz. Guides', data:a.map(n=>D.kpi27.biz[n]||0), backgroundColor:'#c8882a'}
+    {label:'Ag. Guides',  data:a.map(n=>{ const t=ddQC('Loans Disbursed',n), d=(D.kpi27.ag[n]||0)+(D.kpi27.biz[n]||0)||1; return ddSplit(t,D.kpi27.ag[n]||0,d);  }), backgroundColor:'#5e2580'},
+    {label:'Biz. Guides', data:a.map(n=>{ const t=ddQC('Loans Disbursed',n), d=(D.kpi27.ag[n]||0)+(D.kpi27.biz[n]||0)||1; return ddSplit(t,D.kpi27.biz[n]||0,d); }), backgroundColor:'#c8882a'}
   ], {legend:true});
-  bar('l2-jobs-chart', a, [{data:a.map(n=>D.kpi29.annual[n]||0), backgroundColor:BARS}]);
+
+  // Post-school clients — DD
+  bar('l2-jobs-chart', a, [{data:a.map(n=>ddQC('Number of Post School Clients',n)), backgroundColor:BARS}]);
+
+  // % metrics — no DD equivalent; keep D values
   const inc = a.map(n=>({label:n, val:D.kpi210.pct[n], display:D.kpi210.pct[n]+'%'}));
   progList('l2-income', inc, 100, l=>CC[l]||'#5e2580');
   const pro = a.map(n=>({label:n, val:D.kpi211.profit[n], display:D.kpi211.profit[n]+'%'}));
@@ -597,15 +642,23 @@ function buildL2() {
 // ─── BUILD LEVEL 3 ─────────────────────────────────────────────
 function buildL3() {
   const a = activeCt();
+
+  // Partner schools — DD total split by D primary/secondary ratios
   bar('l3-schools-chart', a, [
-    {label:'Primary',   data:a.map(n=>D.kpi31.primary[n]||0),   backgroundColor:'#5e2580'},
-    {label:'Secondary', data:a.map(n=>D.kpi31.secondary[n]||0), backgroundColor:'#c8882a'}
+    {label:'Primary',   data:a.map(n=>{ const t=ddQC('Active Partner Schools',n), d=D.kpi31.total_all[n]||1; return ddSplit(t,D.kpi31.primary[n]||0,d);   }), backgroundColor:'#5e2580'},
+    {label:'Secondary', data:a.map(n=>{ const t=ddQC('Active Partner Schools',n), d=D.kpi31.total_all[n]||1; return ddSplit(t,D.kpi31.secondary[n]||0,d); }), backgroundColor:'#c8882a'}
   ], {stacked:true, legend:true});
+
+  // Grants — DD total split by D primary/secondary ratios
   bar('l3-children-chart', a, [
-    {label:'Primary',   data:a.map(n=>D.kpi35.primary[n]||0),   backgroundColor:'#5e2580'},
-    {label:'Secondary', data:a.map(n=>D.kpi35.secondary[n]||0), backgroundColor:'#c8882a'}
+    {label:'Primary',   data:a.map(n=>{ const t=ddQC('Grants Disbursed',n), d=D.kpi35.total[n]||1; return ddSplit(t,D.kpi35.primary[n]||0,d);   }), backgroundColor:'#5e2580'},
+    {label:'Secondary', data:a.map(n=>{ const t=ddQC('Grants Disbursed',n), d=D.kpi35.total[n]||1; return ddSplit(t,D.kpi35.secondary[n]||0,d); }), backgroundColor:'#c8882a'}
   ], {stacked:true, legend:true});
+
+  // Districts — static from D (count of programme districts)
   bar('l3-districts-chart', a, [{data:a.map(n=>D.kpi34.districts[n]||0), backgroundColor:BARS}]);
+
+  // P1 girls/boys — no DD gender breakdown; keep D values
   bar('l3-p1-chart', a, [
     {label:'Girls', data:a.map(n=>D.p1.girls[n]||0), backgroundColor:'#c8882a'},
     {label:'Boys',  data:a.map(n=>D.p1.boys[n]||0),  backgroundColor:'#5e2580'}
@@ -1373,16 +1426,21 @@ function slInit() {
 
   slRebuildDistricts();
 
-  // ── Year sliders (update state only) ──
-  function slUpdateYear() {
-    let s = parseInt(document.getElementById('sl-year-start').value);
-    let e = parseInt(document.getElementById('sl-year-end').value);
-    if (s > e) e = s;
+  // ── Year sliders (update state only; clamp DOM so sliders never cross) ──
+  document.getElementById('sl-year-start').addEventListener('input', ev => {
+    const endEl = document.getElementById('sl-year-end');
+    if (parseInt(ev.target.value) > parseInt(endEl.value)) ev.target.value = endEl.value;
+    const s = parseInt(ev.target.value), e = parseInt(endEl.value);
     slSel.yearStart = s; slSel.yearEnd = e;
     document.getElementById('sl-year-display').textContent = s === e ? `${s}` : `${s} — ${e}`;
-  }
-  document.getElementById('sl-year-start').addEventListener('input', slUpdateYear);
-  document.getElementById('sl-year-end').addEventListener('input', slUpdateYear);
+  });
+  document.getElementById('sl-year-end').addEventListener('input', ev => {
+    const startEl = document.getElementById('sl-year-start');
+    if (parseInt(ev.target.value) < parseInt(startEl.value)) ev.target.value = startEl.value;
+    const s = parseInt(startEl.value), e = parseInt(ev.target.value);
+    slSel.yearStart = s; slSel.yearEnd = e;
+    document.getElementById('sl-year-display').textContent = s === e ? `${s}` : `${s} — ${e}`;
+  });
 
   // ── KPI dropdown ──
   slBuildKpiList();
