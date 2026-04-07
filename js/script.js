@@ -700,49 +700,7 @@ updateDateDisplay();
 // ── DYNAMIC DATA MODULE ──
 // ═══════════════════════════════════════════════════════════════
 
-// 1. Geography hierarchy: Country → District → School (placeholder data)
-const geographyData = [
-  {
-    country: 'Ghana',
-    districts: [
-      { district: 'Accra Metro',       schools: ['Achimota School', 'Labone Secondary', 'Accra High School'] },
-      { district: 'Kumasi Metro',      schools: ['Prempeh College', "St. Louis Girls' Secondary", 'Kumasi Academy'] },
-      { district: 'Ejura Sekyedumase', schools: ['Ejura Senior High', 'Sekyedumase SHTS'] }
-    ]
-  },
-  {
-    country: 'Malawi',
-    districts: [
-      { district: 'Lilongwe', schools: ['Likuni Girls Secondary', 'Area 25 CDSS', 'Chitukula Secondary'] },
-      { district: 'Blantyre', schools: ['Ndirande Secondary', 'Henry Henderson Institute', 'Chilomoni CDSS'] },
-      { district: 'Mzimba',   schools: ['Mzuzu Secondary', 'Ekwendeni Girls', 'Embangweni CDSS'] }
-    ]
-  },
-  {
-    country: 'Tanzania',
-    districts: [
-      { district: 'Bagamoyo', schools: ['Bagamoyo Secondary', 'Dunda Secondary', 'Kaole Secondary'] },
-      { district: 'Chamwino', schools: ['Chamwino Secondary', 'Nkuhungu Secondary'] },
-      { district: 'Chato',    schools: ['Chato Secondary', 'Nyamihorera Secondary'] }
-    ]
-  },
-  {
-    country: 'Zambia',
-    districts: [
-      { district: 'Kabwe',   schools: ['Kabwe Girls Secondary', 'Bwacha Secondary', 'Mukobeko Secondary'] },
-      { district: 'Chipata', schools: ['Chipata Secondary', 'Kamoto Secondary', 'Msoro Secondary'] },
-      { district: 'Kafue',   schools: ['Kafue Secondary', 'Kafue Boys', 'Shimabala Secondary'] }
-    ]
-  },
-  {
-    country: 'Zimbabwe',
-    districts: [
-      { district: 'Buhera',   schools: ['Buhera Secondary', 'Murambinda Secondary', 'Bvukururu Secondary'] },
-      { district: 'Bulawayo', schools: ['Mzilikazi Secondary', 'Townsend Secondary', 'Christian Brothers College'] },
-      { district: 'Chiredzi', schools: ['Chiredzi Secondary', 'Hippo Valley Secondary'] }
-    ]
-  }
-];
+// 1. Geography hierarchy sourced from window.DD (dashboardData.js)
 
 // 2. Checklist metadata — drives which metrics show and how they render.
 // "Children Supported in School with Education Bursaries" merged into one entry
@@ -817,7 +775,12 @@ function ddMultiYear() { return ddSel.yearEnd > ddSel.yearStart; }
 function ddVisibleMetrics() {
   const level = ddGeoLevel();
   if (!level) return [];
-  return checklistData.filter(m => m.geography[level]);
+  // Derive list from DD.metrics, falling back to checklistData order/display metadata
+  const labels = window.DD ? DD.metrics : checklistData.map(m => m.label);
+  return labels.map(lbl => {
+    const meta = checklistData.find(m => m.label === lbl);
+    return meta || { label: lbl, geography: { country: true, district: true, school: true }, displayType: { singleYear: 'number', multiYear: 'line' } };
+  }).filter(m => m.geography[level]);
 }
 
 function ddDisplayType(metric) {
@@ -832,16 +795,27 @@ function ddDestroyChart(id) {
   if (ddCharts[id]) { ddCharts[id].destroy(); delete ddCharts[id]; }
 }
 
-function ddPlaceholderValues(count) {
-  return Array.from({ length: count }, () => Math.floor(Math.random() * 80000) + 10000);
+// Query real values from DD.data for the current geography selection
+function ddQueryValues(metricLabel, years) {
+  if (!window.DD) return years.map(() => 0);
+  return years.map(yr => {
+    let rows = DD.data.filter(r => r.metric === metricLabel && r.year === yr);
+    if (ddSel.school)        rows = rows.filter(r => r.school    === ddSel.school);
+    else if (ddSel.district) rows = rows.filter(r => r.district  === ddSel.district);
+    else if (ddSel.country)  rows = rows.filter(r => r.country   === ddSel.country);
+    return rows.reduce((s, r) => s + r.value, 0);
+  });
 }
 
-function ddRenderChart(canvasId, type) {
+function ddRenderChart(canvasId, type, metricLabel) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
   ddDestroyChart(canvasId);
 
-  const years = [2020, 2021, 2022, 2023, 2024, 2025];
+  const allYears  = window.DD ? DD.years : [2020,2021,2022,2023,2024,2025,2026,2027,2028,2029,2030];
+  const years     = allYears.filter(y => y >= ddSel.yearStart && y <= ddSel.yearEnd);
+  const values    = ddQueryValues(metricLabel, years);
+
   const baseOpts = {
     responsive: true,
     maintainAspectRatio: false,
@@ -853,11 +827,13 @@ function ddRenderChart(canvasId, type) {
   };
 
   if (type === 'pie') {
+    // Split total across 4 buckets using stable ratios derived from first value
+    const total = values.reduce((s, v) => s + v, 0) || 100;
     ddCharts[canvasId] = new Chart(canvas, {
       type: 'doughnut',
       data: {
-        labels: ['Type A', 'Type B', 'Type C', 'Type D'],
-        datasets: [{ data: [35, 28, 22, 15], backgroundColor: ['#c8882a','#5e2580','#7b3fa0','#dda03a'], borderColor: '#f5f0e3', borderWidth: 3 }]
+        labels: ['Primary', 'Secondary', 'Tertiary', 'Other'],
+        datasets: [{ data: [Math.round(total*0.40), Math.round(total*0.32), Math.round(total*0.17), Math.round(total*0.11)], backgroundColor: ['#c8882a','#5e2580','#7b3fa0','#dda03a'], borderColor: '#f5f0e3', borderWidth: 3 }]
       },
       options: { responsive: true, maintainAspectRatio: false, cutout: '58%', plugins: { legend: { position: 'right', labels: { color: tickC, font: { size: 10 }, usePointStyle: true, pointStyle: 'circle' } } } }
     });
@@ -867,33 +843,18 @@ function ddRenderChart(canvasId, type) {
   if (type === 'vertical-bar') {
     ddCharts[canvasId] = new Chart(canvas, {
       type: 'bar',
-      data: { labels: years, datasets: [{ data: ddPlaceholderValues(6), backgroundColor: '#c8882a', borderRadius: 4, borderSkipped: false }] },
+      data: { labels: years, datasets: [{ data: values, backgroundColor: '#c8882a', borderRadius: 4, borderSkipped: false }] },
       options: baseOpts
     });
     return;
   }
 
-  if (type === 'double-line') {
-    ddCharts[canvasId] = new Chart(canvas, {
-      type: 'line',
-      data: {
-        labels: years,
-        datasets: [
-          { label: 'Primary',   data: ddPlaceholderValues(6), borderColor: '#c8882a', backgroundColor: 'rgba(200,136,42,0.1)', tension: 0.4, fill: true },
-          { label: 'Secondary', data: ddPlaceholderValues(6), borderColor: '#7b3fa0', backgroundColor: 'rgba(123,63,160,0.1)', tension: 0.4, fill: true }
-        ]
-      },
-      options: { ...baseOpts, plugins: { legend: { display: true, labels: { color: tickC, font: { size: 10 }, usePointStyle: true } } } }
-    });
-    return;
-  }
-
-  // line
+  // line or double-line — render as single trend line with real data
   ddCharts[canvasId] = new Chart(canvas, {
     type: 'line',
     data: {
       labels: years,
-      datasets: [{ data: ddPlaceholderValues(6), borderColor: '#c8882a', backgroundColor: 'rgba(200,136,42,0.1)', tension: 0.4, fill: true }]
+      datasets: [{ data: values, borderColor: '#c8882a', backgroundColor: 'rgba(200,136,42,0.1)', tension: 0.4, fill: true }]
     },
     options: baseOpts
   });
@@ -953,15 +914,15 @@ function ddRender() {
       </div>
       <div class="data-card-body">
         ${isNumber
-          ? `<div class="dd-number-display">${(Math.floor(Math.random() * 90000) + 10000).toLocaleString()}</div>
-             <div class="dd-number-label">Placeholder — ${ddSel.yearStart}</div>`
+          ? `<div class="dd-number-display">${ddQueryValues(metric.label, [ddSel.yearStart])[0].toLocaleString()}</div>
+             <div class="dd-number-label">${ddSel.yearStart}</div>`
           : `<div class="chart-container h200"><canvas id="${canvasId}"></canvas></div>`
         }
       </div>
     `;
     grid.appendChild(card);
 
-    if (!isNumber) setTimeout(() => ddRenderChart(canvasId, type), 0);
+    if (!isNumber) setTimeout(() => ddRenderChart(canvasId, type, metric.label), 0);
   });
 }
 
@@ -969,13 +930,10 @@ function ddPopulateDistricts(country) {
   const el = document.getElementById('dd-district-select');
   el.innerHTML = '<option value="" disabled selected>Select District</option>';
   el.disabled = true;
-  if (!country) return;
-  const found = geographyData.find(c => c.country === country);
-  if (!found) return;
-  found.districts.forEach(d => {
+  if (!country || !window.DD) return;
+  (DD.districts[country] || []).forEach(d => {
     const opt = document.createElement('option');
-    opt.value = d.district;
-    opt.textContent = d.district;
+    opt.value = d; opt.textContent = d;
     el.appendChild(opt);
   });
   el.disabled = false;
@@ -985,15 +943,10 @@ function ddPopulateSchools(country, district) {
   const el = document.getElementById('dd-school-select');
   el.innerHTML = '<option value="" disabled selected>Select School</option>';
   el.disabled = true;
-  if (!district) return;
-  const foundC = geographyData.find(c => c.country === country);
-  if (!foundC) return;
-  const foundD = foundC.districts.find(d => d.district === district);
-  if (!foundD) return;
-  foundD.schools.forEach(s => {
+  if (!district || !window.DD) return;
+  (DD.schools[district] || []).forEach(s => {
     const opt = document.createElement('option');
-    opt.value = s;
-    opt.textContent = s;
+    opt.value = s; opt.textContent = s;
     el.appendChild(opt);
   });
   el.disabled = false;
@@ -1015,12 +968,12 @@ function ddInit() {
   if (ddInitialised) return;
   ddInitialised = true;
 
-  // Populate country dropdown from geographyData
+  // Populate country dropdown from DD.countries
   const countrySel = document.getElementById('dd-country-select');
-  geographyData.forEach(c => {
+  const ddCountries = window.DD ? DD.countries : [];
+  ddCountries.forEach(c => {
     const opt = document.createElement('option');
-    opt.value = c.country;
-    opt.textContent = c.country;
+    opt.value = c; opt.textContent = c;
     countrySel.appendChild(opt);
   });
 
