@@ -11,7 +11,7 @@
 // Destructure what you need:
 //   const { countries, districts, schools, years, metrics, data } = DD;
 
-const DD = (() => {
+window.DD = (() => {
 
   // ── COUNTRIES ──────────────────────────────────────────────────
   const countries = ['Ghana', 'Malawi', 'Tanzania', 'Zambia', 'Zimbabwe'];

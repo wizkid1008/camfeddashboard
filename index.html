@@ -7,7 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23dda03a'>C</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
 
@@ -526,24 +526,34 @@
       <div class="body-layout">
         <div class="main-content">
 
-          <!-- Controls strip: KPIs + Gender + Chart Type -->
-          <div class="slicer-controls data-card">
-            <div class="slicer-control-group slicer-kpi-group">
-              <div class="filter-bar-label">KPIs <span class="sl-kpi-count" id="sl-kpi-count">(0 / 8 selected)</span></div>
-              <div class="slicer-kpi-list" id="sl-kpi-list"></div>
-            </div>
-            <div class="slicer-control-divider"></div>
-            <div class="slicer-control-group">
-              <div class="filter-bar-label">Gender</div>
-              <div class="sl-gender-group">
-                <label class="sl-gender-opt"><input type="radio" name="sl-gender" value="all" checked><span>All</span></label>
-                <label class="sl-gender-opt"><input type="radio" name="sl-gender" value="female"><span>Female</span></label>
-                <label class="sl-gender-opt"><input type="radio" name="sl-gender" value="male"><span>Male</span></label>
+          <!-- Controls bar: Data + Gender + Chart Type + Go -->
+          <div class="filter-bar sl-controls-bar">
+            <div class="filter-bar-item">
+              <label class="filter-bar-label">Data <span class="sl-kpi-count" id="sl-kpi-count"></span></label>
+              <div class="country-multi-wrap" id="sl-kpi-wrap">
+                <button type="button" class="country-multi-trigger" id="sl-kpi-trigger">
+                  <span id="sl-kpi-label">Select Data</span>
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#dda03a" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+                <div class="country-multi-dropdown" id="sl-kpi-dropdown" hidden style="min-width:280px;max-height:300px;overflow-y:auto"></div>
               </div>
             </div>
-            <div class="slicer-control-divider"></div>
-            <div class="slicer-control-group">
-              <div class="filter-bar-label">Chart Type</div>
+            <div class="filter-bar-item">
+              <label class="filter-bar-label">Gender</label>
+              <div class="country-multi-wrap" id="sl-gender-wrap">
+                <button type="button" class="country-multi-trigger" id="sl-gender-trigger">
+                  <span id="sl-gender-label">All</span>
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#dda03a" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+                <div class="country-multi-dropdown" id="sl-gender-dropdown" hidden>
+                  <label class="country-multi-opt"><input type="radio" name="sl-gender-r" value="all" checked><span>All</span></label>
+                  <label class="country-multi-opt"><input type="radio" name="sl-gender-r" value="female"><span>Female</span></label>
+                  <label class="country-multi-opt"><input type="radio" name="sl-gender-r" value="male"><span>Male</span></label>
+                </div>
+              </div>
+            </div>
+            <div class="filter-bar-item">
+              <label class="filter-bar-label">Chart Type</label>
               <select id="sl-chart-type" class="indicator-dropdown">
                 <option value="number">Number</option>
                 <option value="line">Line</option>
@@ -552,6 +562,9 @@
                 <option value="pie">Pie</option>
                 <option value="table">Table</option>
               </select>
+            </div>
+            <div class="filter-bar-item sl-go-item">
+              <button type="button" id="sl-go-btn" class="sl-go-btn">Go</button>
             </div>
           </div>
 
@@ -604,6 +617,6 @@
 </div><!-- /app -->
 
 <script src="data/dashboardData.js"></script>
-<script src="js/script.js?v=4"></script>
+<script src="js/script.js?v=5"></script>
 </body>
 </html>

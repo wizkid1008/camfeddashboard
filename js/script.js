@@ -1294,23 +1294,15 @@ function slRebuildSchools() {
   document.getElementById('sl-school-label').textContent = 'All Schools';
 }
 
-// ── KPI checklist (max 8 selected) ──
+// ── KPI dropdown (max 8 selected) ──
 
 function slBuildKpiList() {
-  const list = document.getElementById('sl-kpi-list');
-  if (!list) return;
+  const dropdown = document.getElementById('sl-kpi-dropdown');
+  if (!dropdown) return;
   const kpis = window.DD ? DD.metrics : checklistData.map(m => m.label);
-  list.innerHTML = kpis.map(kpi =>
-    `<label class="sl-kpi-item"><input type="checkbox" class="sl-kpi-cb" value="${kpi}"><span>${kpi}</span></label>`
+  dropdown.innerHTML = kpis.map(kpi =>
+    `<label class="country-multi-opt"><input type="checkbox" class="sl-kpi-cb" value="${kpi}"><span>${kpi}</span></label>`
   ).join('');
-  list.addEventListener('change', e => {
-    const all = [...list.querySelectorAll('.sl-kpi-cb:checked')];
-    if (all.length > MAX_KPIS) { e.target.checked = false; return; }
-    slSel.kpis = all.map(cb => cb.value);
-    const counter = document.getElementById('sl-kpi-count');
-    if (counter) counter.textContent = `(${slSel.kpis.length} / ${MAX_KPIS} selected)`;
-    slRender();
-  });
 }
 
 // ── Slicer init (runs once) ──
@@ -1323,7 +1315,8 @@ function slInit() {
 
   const allCountries = slCountries();
 
-  // Countries
+  // ── Geography dropdowns (update state + cascade; no auto-render) ──
+
   const countryDD = document.getElementById('sl-country-dropdown');
   countryDD.innerHTML = allCountries.map(c =>
     `<label class="country-multi-opt"><input type="checkbox" value="${c}" checked><span>${c}</span></label>`).join('');
@@ -1339,11 +1332,9 @@ function slInit() {
       !slSel.countries.length ? 'All Countries' :
       slSel.countries.length <= 2 ? slSel.countries.join(', ') : `${slSel.countries.length} Selected`;
     slRebuildDistricts();
-    slRender();
   });
   countryDD.addEventListener('click', e => e.stopPropagation());
 
-  // Districts (content rebuilt on country change; listener stays on parent)
   document.getElementById('sl-district-trigger').addEventListener('click', e => {
     e.stopPropagation();
     const dd = document.getElementById('sl-district-dropdown');
@@ -1359,11 +1350,9 @@ function slInit() {
       !slSel.districts.length ? 'All Districts' :
       slSel.districts.length <= 2 ? slSel.districts.join(', ') : `${slSel.districts.length} Selected`;
     slRebuildSchools();
-    slRender();
   });
   document.getElementById('sl-district-dropdown').addEventListener('click', e => e.stopPropagation());
 
-  // Schools
   document.getElementById('sl-school-trigger').addEventListener('click', e => {
     e.stopPropagation();
     const dd = document.getElementById('sl-school-dropdown');
@@ -1379,40 +1368,76 @@ function slInit() {
     document.getElementById('sl-school-label').textContent =
       !slSel.schools.length ? 'All Schools' :
       slSel.schools.length <= 2 ? slSel.schools.join(', ') : `${slSel.schools.length} Selected`;
-    slRender();
   });
   document.getElementById('sl-school-dropdown').addEventListener('click', e => e.stopPropagation());
 
-  // Initial populate
   slRebuildDistricts();
 
-  // Year sliders
+  // ── Year sliders (update state only) ──
   function slUpdateYear() {
     let s = parseInt(document.getElementById('sl-year-start').value);
     let e = parseInt(document.getElementById('sl-year-end').value);
     if (s > e) e = s;
     slSel.yearStart = s; slSel.yearEnd = e;
     document.getElementById('sl-year-display').textContent = s === e ? `${s}` : `${s} — ${e}`;
-    slRender();
   }
   document.getElementById('sl-year-start').addEventListener('input', slUpdateYear);
   document.getElementById('sl-year-end').addEventListener('input', slUpdateYear);
 
-  // Gender
-  document.querySelectorAll('input[name="sl-gender"]').forEach(r =>
-    r.addEventListener('change', e => { slSel.gender = e.target.value; slRender(); }));
+  // ── KPI dropdown ──
+  slBuildKpiList();
+  const kpiDD = document.getElementById('sl-kpi-dropdown');
+  document.getElementById('sl-kpi-trigger').addEventListener('click', e => {
+    e.stopPropagation();
+    kpiDD.hidden = !kpiDD.hidden;
+    e.currentTarget.classList.toggle('open', !kpiDD.hidden);
+  });
+  kpiDD.addEventListener('change', () => {
+    const all = [...kpiDD.querySelectorAll('.sl-kpi-cb:checked')];
+    // Enforce max — uncheck the just-changed box if over limit
+    if (all.length > MAX_KPIS) {
+      const last = kpiDD.querySelector('.sl-kpi-cb:checked:last-of-type') ||
+                   [...kpiDD.querySelectorAll('.sl-kpi-cb:checked')].pop();
+      if (last) last.checked = false;
+      return;
+    }
+    slSel.kpis = [...kpiDD.querySelectorAll('.sl-kpi-cb:checked')].map(cb => cb.value);
+    const count = slSel.kpis.length;
+    document.getElementById('sl-kpi-count').textContent = count ? `(${count} / ${MAX_KPIS})` : '';
+    document.getElementById('sl-kpi-label').textContent =
+      !count ? 'Select Data' :
+      count === 1 ? slSel.kpis[0].length > 28 ? slSel.kpis[0].slice(0, 26) + '…' : slSel.kpis[0] :
+      `${count} metrics selected`;
+  });
+  kpiDD.addEventListener('click', e => e.stopPropagation());
 
-  // Chart type
+  // ── Gender dropdown (radio inside dropdown) ──
+  const genderDD = document.getElementById('sl-gender-dropdown');
+  document.getElementById('sl-gender-trigger').addEventListener('click', e => {
+    e.stopPropagation();
+    genderDD.hidden = !genderDD.hidden;
+    e.currentTarget.classList.toggle('open', !genderDD.hidden);
+  });
+  genderDD.addEventListener('change', e => {
+    slSel.gender = e.target.value;
+    document.getElementById('sl-gender-label').textContent =
+      e.target.value === 'all' ? 'All' : e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1);
+    genderDD.hidden = true;
+    document.getElementById('sl-gender-trigger').classList.remove('open');
+  });
+  genderDD.addEventListener('click', e => e.stopPropagation());
+
+  // ── Chart type (state only) ──
   document.getElementById('sl-chart-type').addEventListener('change', e => {
-    slSel.chartType = e.target.value; slRender();
+    slSel.chartType = e.target.value;
   });
 
-  // KPI list
-  slBuildKpiList();
+  // ── Go button ──
+  document.getElementById('sl-go-btn').addEventListener('click', slRender);
 
-  // Close dropdowns on outside click
+  // ── Close all dropdowns on outside click ──
   document.addEventListener('click', e => {
-    ['sl-country-wrap', 'sl-district-wrap', 'sl-school-wrap'].forEach(wrapId => {
+    ['sl-country-wrap','sl-district-wrap','sl-school-wrap','sl-kpi-wrap','sl-gender-wrap'].forEach(wrapId => {
       const wrap = document.getElementById(wrapId);
       if (!wrap || wrap.contains(e.target)) return;
       const dd      = wrap.querySelector('.country-multi-dropdown');
