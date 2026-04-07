@@ -565,6 +565,9 @@ document.getElementById('level-select').addEventListener('change', e=>{
   const value = e.target.value;
   if (!value) return;
 
+  // Hide landing section once user selects a level
+  document.getElementById('landing-section').style.display = 'none';
+
   sel.level = value;
   sel.subLevel = '';
 
