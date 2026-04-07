@@ -7,7 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23dda03a'>C</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=5">
+    <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
 
@@ -431,8 +431,43 @@
       <!-- DD content area -->
       <div class="body-layout">
         <div class="main-content">
-          <div id="dd-choose-geo" class="headline-banner">
-            <h2>Choose Geography First — Select a Country to begin</h2>
+          <div id="dd-choose-geo" class="landing-section">
+            <div class="landing-title">How to Use Dynamic Data</div>
+            <p class="landing-intro">Drill into country, district, and school-level data for any metric across any year range.</p>
+            <div class="landing-steps">
+              <div class="landing-step">
+                <span class="landing-step-num">1</span>
+                <div class="landing-step-text">
+                  <strong>Select a Country</strong>
+                  <span>Choose from the Country dropdown in the filter bar above to load district data.</span>
+                </div>
+              </div>
+              <div class="landing-step">
+                <span class="landing-step-num">2</span>
+                <div class="landing-step-text">
+                  <strong>Narrow to a District</strong>
+                  <span>Once a country is selected the District dropdown activates — pick a district for district-level metrics.</span>
+                </div>
+              </div>
+              <div class="landing-step">
+                <span class="landing-step-num">3</span>
+                <div class="landing-step-text">
+                  <strong>Drill to a School</strong>
+                  <span>Optionally select a specific school for the most granular, school-level view.</span>
+                </div>
+              </div>
+              <div class="landing-step">
+                <span class="landing-step-num">4</span>
+                <div class="landing-step-text">
+                  <strong>Set the Year Range</strong>
+                  <span>Use the date sliders to view a single year snapshot or a multi-year trend across all metrics.</span>
+                </div>
+              </div>
+            </div>
+            <div class="landing-tip">
+              <span class="landing-tip-arrow">→</span>
+              <span>Charts automatically switch between <strong>single-year</strong> and <strong>multi-year</strong> views based on your date range selection.</span>
+            </div>
           </div>
           <div id="dd-content" style="display:none"></div>
         </div>
@@ -522,7 +557,44 @@
 
           <!-- Output area -->
           <div id="sl-output">
-            <div class="headline-banner"><h2>Select one or more KPIs above to see results</h2></div>
+            <div class="landing-section">
+              <div class="landing-title">How to Use the Slicer</div>
+              <p class="landing-intro">Build a custom cross-geography analysis — combine any metrics, geographies, gender filter, and chart type.</p>
+              <div class="landing-steps">
+                <div class="landing-step">
+                  <span class="landing-step-num">1</span>
+                  <div class="landing-step-text">
+                    <strong>Filter Geography</strong>
+                    <span>Use the Countries, Districts, and Schools dropdowns to narrow your scope. Leave all unchecked to include everything.</span>
+                  </div>
+                </div>
+                <div class="landing-step">
+                  <span class="landing-step-num">2</span>
+                  <div class="landing-step-text">
+                    <strong>Pick KPIs</strong>
+                    <span>Select up to 8 metrics from the checklist above to compare side by side.</span>
+                  </div>
+                </div>
+                <div class="landing-step">
+                  <span class="landing-step-num">3</span>
+                  <div class="landing-step-text">
+                    <strong>Filter by Gender</strong>
+                    <span>Choose All, Female, or Male to segment results — the data is split 52 % female / 48 % male.</span>
+                  </div>
+                </div>
+                <div class="landing-step">
+                  <span class="landing-step-num">4</span>
+                  <div class="landing-step-text">
+                    <strong>Choose a Chart Type</strong>
+                    <span>Select Number, Line, Bar, Pie, Multi-Line, or Table to control how the output is visualised.</span>
+                  </div>
+                </div>
+              </div>
+              <div class="landing-tip">
+                <span class="landing-tip-arrow">→</span>
+                <span>Set a <strong>year range</strong> first — the Slicer shows trends for every selected KPI across the years you choose.</span>
+              </div>
+            </div>
           </div>
 
         </div>
