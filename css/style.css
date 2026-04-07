@@ -1443,7 +1443,34 @@ body::before {
 
 .analysis-type-select option { background: var(--purple-deep); }
 
-/* ── SLICER CONTROLS STRIP ── */
+/* ── SLICER CONTROLS BAR ── */
+.sl-controls-bar {
+  margin-top: 0;
+  border-top: 1px solid rgba(200,136,42,0.15);
+}
+
+.sl-go-item {
+  align-self: flex-end;
+}
+
+.sl-go-btn {
+  background: var(--gold);
+  color: var(--purple-deep);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 28px;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.sl-go-btn:hover { background: var(--gold-light); }
+.sl-go-btn:active { transform: scale(0.97); }
+
+/* ── SLICER CONTROLS STRIP (legacy — kept for safety) ── */
 .slicer-controls {
   display: flex;
   align-items: flex-start;
