@@ -7,7 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23dda03a'>C</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=2">
+    <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body>
 
@@ -71,6 +71,46 @@
 
         <!-- MAIN CONTENT -->
         <div class="main-content">
+
+            <!-- ══ LANDING / ONBOARDING (visible before any Level is selected) ══ -->
+            <div id="landing-section" class="landing-section">
+                <div class="landing-title">How to Use This Dashboard</div>
+                <p class="landing-intro">Use the filters above to explore dashboard data by level, sublevel, year, and country.</p>
+                <div class="landing-steps">
+                    <div class="landing-step">
+                        <span class="landing-step-num">1</span>
+                        <div class="landing-step-text">
+                            <strong>Select a Data Level</strong>
+                            <span>Choose a programme level from the Level dropdown above.</span>
+                        </div>
+                    </div>
+                    <div class="landing-step">
+                        <span class="landing-step-num">2</span>
+                        <div class="landing-step-text">
+                            <strong>Select a SubLevel</strong>
+                            <span>Narrow down to a specific area within your selected level.</span>
+                        </div>
+                    </div>
+                    <div class="landing-step">
+                        <span class="landing-step-num">3</span>
+                        <div class="landing-step-text">
+                            <strong>Select the Year(s)</strong>
+                            <span>Use the date range slider. Move both ends to the same year for a single-year view.</span>
+                        </div>
+                    </div>
+                    <div class="landing-step">
+                        <span class="landing-step-num">4</span>
+                        <div class="landing-step-text">
+                            <strong>Select a Country</strong>
+                            <span>Filter by a specific country or view all countries together.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="landing-tip">
+                    <span class="landing-tip-arrow">→</span>
+                    <span>For <strong>school and district level data</strong>, click <span class="landing-tip-badge">Dynamic Data</span> in the upper right-hand corner.</span>
+                </div>
+            </div>
 
             <!-- ══ SUBLEVEL STATISTICS (auto-populated on SubLevel selection) ══ -->
             <div id="sublevel-stats-section" style="display:none">
