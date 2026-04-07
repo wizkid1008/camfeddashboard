@@ -1395,3 +1395,152 @@ body::before {
 @media (max-width: 480px) {
   .country-multi-trigger { font-size: 0.75rem; padding: 7px 8px; }
 }
+
+/* ── DATA ANALYSIS TYPE DROPDOWN (header) ── */
+.analysis-type-wrap {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.analysis-type-label {
+  font-family: 'Lato', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.analysis-type-select {
+  background-color: var(--purple-mid);
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  padding: 7px 28px 7px 12px;
+  color: white;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23dda03a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  letter-spacing: 0.03em;
+}
+
+.analysis-type-select:hover,
+.analysis-type-select:focus {
+  border-color: var(--gold-light);
+  background-color: var(--purple-light);
+  box-shadow: 0 0 0 3px rgba(200,160,60,0.2);
+}
+
+.analysis-type-select option { background: var(--purple-deep); }
+
+/* ── SLICER CONTROLS STRIP ── */
+.slicer-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding: 18px 22px;
+  flex-wrap: wrap;
+}
+
+.slicer-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.slicer-kpi-group {
+  flex: 3;
+  min-width: 280px;
+}
+
+.slicer-control-divider {
+  width: 1px;
+  background: var(--cream-border);
+  align-self: stretch;
+  margin: 0 22px;
+  flex-shrink: 0;
+}
+
+.slicer-kpi-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sl-kpi-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(74,26,107,0.06);
+  border: 1px solid var(--cream-border);
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.77rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.sl-kpi-item:hover { background: rgba(200,136,42,0.08); border-color: var(--gold); }
+
+.sl-kpi-item input[type="checkbox"] {
+  accent-color: var(--gold);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sl-kpi-count {
+  font-weight: 400;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.sl-gender-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sl-gender-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  cursor: pointer;
+}
+
+.sl-gender-opt input[type="radio"] {
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .analysis-type-select { font-size: 0.75rem; padding: 6px 24px 6px 10px; }
+  .slicer-controls { flex-direction: column; gap: 16px; }
+  .slicer-control-divider { width: 100%; height: 1px; margin: 4px 0; }
+  .slicer-kpi-group { min-width: auto; }
+}
+
+@media (max-width: 480px) {
+  .analysis-type-label { display: none; }
+  .analysis-type-select { font-size: 0.7rem; }
+}

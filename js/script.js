@@ -1049,28 +1049,424 @@ function ddInit() {
   document.getElementById('dd-date-end').addEventListener('input', ddUpdateYear);
 }
 
-// Toggle between Dashboard view and Dynamic Data view
-document.getElementById('dd-toggle-btn').addEventListener('click', () => {
-  const btn              = document.getElementById('dd-toggle-btn');
-  const existingFilterBar = document.querySelector('.app > .filter-bar');
-  const bodyLayout       = document.querySelector('.body-layout');
-  const ddView           = document.getElementById('dynamic-data-view');
-  const isActive         = btn.classList.contains('active');
+// ── MODE SWITCHER ──────────────────────────────────────────────
+function switchMode(mode) {
+  const mainFilter = document.querySelector('.app > .filter-bar');
+  const bodyLayout = document.querySelector('.body-layout');
+  const ddView     = document.getElementById('dynamic-data-view');
+  const slView     = document.getElementById('slicer-view');
 
-  if (isActive) {
-    // Back to Dashboard
-    btn.classList.remove('active');
-    btn.textContent = 'Dynamic Data';
-    existingFilterBar.style.display = '';
-    bodyLayout.style.display        = '';
-    ddView.style.display            = 'none';
-  } else {
-    // Switch to Dynamic Data
-    btn.classList.add('active');
-    btn.textContent = '← Dashboard';
-    existingFilterBar.style.display = 'none';
-    bodyLayout.style.display        = 'none';
-    ddView.style.display            = '';
-    ddInit(); // initialise once
+  mainFilter.style.display = 'none';
+  bodyLayout.style.display = 'none';
+  ddView.style.display     = 'none';
+  slView.style.display     = 'none';
+
+  if (mode === 'dashboard') {
+    mainFilter.style.display = '';
+    bodyLayout.style.display = '';
+  } else if (mode === 'dynamic') {
+    ddView.style.display = '';
+    ddInit();
+  } else if (mode === 'slicer') {
+    slView.style.display = '';
+    slInit();
   }
+}
+
+document.getElementById('analysis-type-select').addEventListener('change', e => {
+  switchMode(e.target.value);
 });
+
+// ═══════════════════════════════════════════════════════════════
+// ── SLICER MODULE ──────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+
+const MAX_KPIS = 8;
+
+const slSel = {
+  countries: [], // [] = all countries
+  districts: [], // [] = all districts within selected countries
+  schools:   [], // [] = all schools within selected districts
+  kpis:      [],
+  gender:    'all',
+  yearStart: 2020,
+  yearEnd:   2030,
+  chartType: 'number'
+};
+
+// ── Geography helpers (uses DD from data/dashboardData.js) ──
+
+function slCountries() {
+  return window.DD ? DD.countries : C;
+}
+
+function slDistricts(countries) {
+  if (!window.DD) return [];
+  const src = countries.length ? countries : DD.countries;
+  return src.flatMap(c => DD.districts[c] || []);
+}
+
+function slSchools(districts) {
+  if (!window.DD) return [];
+  const src = districts.length ? districts : Object.keys(DD.schools);
+  return src.flatMap(d => DD.schools[d] || []);
+}
+
+// Best dimension for multi-line / bar / pie based on current selection
+function slDimension() {
+  if (slSel.schools.length)   return 'school';
+  if (slSel.districts.length) return 'district';
+  return 'country';
+}
+
+function slEntities() {
+  const dim = slDimension();
+  if (dim === 'school')   return slSel.schools.length   ? slSel.schools.slice(0, 8)   : slSchools(slSel.districts.length ? slSel.districts : slDistricts(slSel.countries)).slice(0, 8);
+  if (dim === 'district') return slSel.districts.length ? slSel.districts.slice(0, 8) : slDistricts(slSel.countries).slice(0, 8);
+  return slSel.countries.length ? slSel.countries : slCountries();
+}
+
+function slGeoLabel() {
+  if (slSel.schools.length)   return slSel.schools.length   === 1 ? slSel.schools[0]   : `${slSel.schools.length} Schools`;
+  if (slSel.districts.length) return slSel.districts.length === 1 ? slSel.districts[0] : `${slSel.districts.length} Districts`;
+  if (slSel.countries.length) return slSel.countries.length === 1 ? slSel.countries[0] : `${slSel.countries.length} Countries`;
+  return 'All Countries';
+}
+
+// ── Data query ──
+
+function slQuery() {
+  if (!window.DD) return [];
+  let rows = DD.data;
+
+  const countries = slSel.countries.length ? slSel.countries : DD.countries;
+  rows = rows.filter(r => countries.includes(r.country));
+  if (slSel.districts.length) rows = rows.filter(r => slSel.districts.includes(r.district));
+  if (slSel.schools.length)   rows = rows.filter(r => slSel.schools.includes(r.school));
+  if (slSel.kpis.length)      rows = rows.filter(r => slSel.kpis.includes(r.metric));
+  rows = rows.filter(r => r.year >= slSel.yearStart && r.year <= slSel.yearEnd);
+
+  // Deterministic gender split (data has no gender field — apply fixed ratio)
+  if (slSel.gender === 'female') rows = rows.map(r => ({...r, value: Math.round(r.value * 0.52)}));
+  else if (slSel.gender === 'male') rows = rows.map(r => ({...r, value: Math.round(r.value * 0.48)}));
+
+  return rows;
+}
+
+// ── Chart registry ──
+
+const slCharts = {};
+
+function slDestroyCharts() {
+  Object.keys(slCharts).forEach(id => {
+    if (slCharts[id]) { slCharts[id].destroy(); delete slCharts[id]; }
+  });
+}
+
+// ── Render dispatcher ──
+
+function slRender() {
+  const output = document.getElementById('sl-output');
+  if (!output) return;
+  slDestroyCharts();
+
+  if (!slSel.kpis.length) {
+    output.innerHTML = '<div class="headline-banner"><h2>Select one or more KPIs above to see results</h2></div>';
+    return;
+  }
+
+  const rows  = slQuery();
+  const kpis  = slSel.kpis;
+  const type  = slSel.chartType;
+  const years = Array.from({ length: slSel.yearEnd - slSel.yearStart + 1 }, (_, i) => slSel.yearStart + i);
+
+  output.innerHTML = '';
+
+  if (type === 'number') { slRenderNumbers(output, rows, kpis, years); return; }
+  if (type === 'table')  { slRenderTable(output, rows, kpis); return; }
+  slRenderCharts(output, rows, kpis, type, years);
+}
+
+// Number stat cards — one per KPI
+function slRenderNumbers(output, rows, kpis, years) {
+  const colClass = kpis.length === 1 ? 'card-grid-1' : kpis.length <= 4 ? 'card-grid-2' : 'card-grid-3';
+  const grid = document.createElement('div');
+  grid.className = colClass;
+  kpis.forEach(kpi => {
+    const total = rows.filter(r => r.metric === kpi).reduce((s, r) => s + r.value, 0);
+    const card  = document.createElement('div');
+    card.className = 'data-card';
+    card.innerHTML = `
+      <div class="data-card-header">${kpi}<span class="data-card-badge">Total</span></div>
+      <div class="data-card-body">
+        <div class="dd-number-display">${fmt(total)}</div>
+        <div class="dd-number-label">${years[0]}${years.length > 1 ? ' — ' + years[years.length - 1] : ''} · ${slGeoLabel()}</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+  output.appendChild(grid);
+}
+
+// Chart cards — one per KPI
+function slRenderCharts(output, rows, kpis, type, years) {
+  const colClass = kpis.length === 1 ? 'card-grid-1' : 'card-grid-2';
+  const grid = document.createElement('div');
+  grid.className = colClass;
+  const typeLabel = { line: 'Line', multiline: 'Multi-Line', bar: 'Bar', pie: 'Pie' }[type] || type;
+  kpis.forEach((kpi, idx) => {
+    const canvasId = `sl-c-${idx}`;
+    const card = document.createElement('div');
+    card.className = 'data-card';
+    card.innerHTML = `
+      <div class="data-card-header">${kpi}<span class="data-card-badge">${typeLabel}</span></div>
+      <div class="data-card-body"><div class="chart-container h220"><canvas id="${canvasId}"></canvas></div></div>`;
+    grid.appendChild(card);
+    setTimeout(() => slRenderOneChart(canvasId, type, rows.filter(r => r.metric === kpi), years), 0);
+  });
+  output.appendChild(grid);
+}
+
+function slRenderOneChart(canvasId, type, rows, years) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  if (slCharts[canvasId]) { slCharts[canvasId].destroy(); }
+
+  const baseOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridC }, ticks: { color: tickC, font: { size: 10 } } },
+      y: { grid: { color: gridC }, ticks: { color: tickC, font: { size: 10 }, callback: v => fmtK(v) } }
+    }
+  };
+
+  if (type === 'line') {
+    const data = years.map(yr => rows.filter(r => r.year === yr).reduce((s, r) => s + r.value, 0));
+    slCharts[canvasId] = new Chart(canvas, {
+      type: 'line',
+      data: { labels: years, datasets: [{ data, borderColor: '#c8882a', backgroundColor: 'rgba(200,136,42,0.1)', tension: 0.4, fill: true, pointRadius: 3 }] },
+      options: baseOpts
+    });
+    return;
+  }
+
+  if (type === 'multiline') {
+    const entities = slEntities().slice(0, 7);
+    const dim = slDimension();
+    const datasets = entities.map((e, i) => ({
+      label: e,
+      data: years.map(yr => rows.filter(r => r[dim] === e && r.year === yr).reduce((s, r) => s + r.value, 0)),
+      borderColor: BARS[i % 5], backgroundColor: 'transparent', tension: 0.4, pointRadius: 3
+    }));
+    slCharts[canvasId] = new Chart(canvas, {
+      type: 'line',
+      data: { labels: years, datasets },
+      options: { ...baseOpts, plugins: { legend: { display: true, labels: { color: tickC, font: { size: 10 }, usePointStyle: true } } } }
+    });
+    return;
+  }
+
+  if (type === 'bar') {
+    const entities = slEntities().slice(0, 10);
+    const dim = slDimension();
+    const data = entities.map(e => rows.filter(r => r[dim] === e).reduce((s, r) => s + r.value, 0));
+    slCharts[canvasId] = new Chart(canvas, {
+      type: 'bar',
+      data: { labels: entities, datasets: [{ data, backgroundColor: BARS, borderRadius: 4, borderSkipped: false }] },
+      options: baseOpts
+    });
+    return;
+  }
+
+  if (type === 'pie') {
+    const entities = slEntities().slice(0, 6);
+    const dim = slDimension();
+    const data = entities.map(e => rows.filter(r => r[dim] === e).reduce((s, r) => s + r.value, 0));
+    slCharts[canvasId] = new Chart(canvas, {
+      type: 'doughnut',
+      data: { labels: entities, datasets: [{ data, backgroundColor: BARS, borderColor: '#f5f0e3', borderWidth: 3 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '55%',
+        plugins: { legend: { position: 'right', labels: { color: tickC, font: { size: 10 }, usePointStyle: true, pointStyle: 'circle' } } }
+      }
+    });
+  }
+}
+
+// Table output
+function slRenderTable(output, rows, kpis) {
+  const dim      = slDimension();
+  const entities = slEntities().slice(0, 12);
+  const html = `<div class="data-card"><div class="data-card-body" style="overflow-x:auto">
+    <table class="mini-table">
+      <thead><tr>
+        <th>${dim.charAt(0).toUpperCase() + dim.slice(1)}</th>
+        ${kpis.map(k => `<th class="r" style="max-width:140px;white-space:normal">${k}</th>`).join('')}
+      </tr></thead>
+      <tbody>
+        ${entities.map(e => `<tr>
+          <td>${e}</td>
+          ${kpis.map(k => {
+            const val = rows.filter(r => r[dim] === e && r.metric === k).reduce((s, r) => s + r.value, 0);
+            return `<td class="r">${fmt(val)}</td>`;
+          }).join('')}
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div></div>`;
+  output.innerHTML = html;
+}
+
+// ── Rebuild district / school dropdowns when parent selection changes ──
+
+function slRebuildDistricts() {
+  const srcCountries = slSel.countries.length ? slSel.countries : slCountries();
+  const dists = slDistricts(srcCountries);
+  slSel.districts = [];
+  slSel.schools   = [];
+  document.getElementById('sl-district-dropdown').innerHTML = dists.map(d =>
+    `<label class="country-multi-opt"><input type="checkbox" value="${d}" checked><span>${d}</span></label>`).join('');
+  document.getElementById('sl-district-label').textContent = 'All Districts';
+  slRebuildSchools();
+}
+
+function slRebuildSchools() {
+  const srcDists = slSel.districts.length
+    ? slSel.districts
+    : slDistricts(slSel.countries.length ? slSel.countries : slCountries());
+  const schools = slSchools(srcDists).slice(0, 60);
+  slSel.schools = [];
+  document.getElementById('sl-school-dropdown').innerHTML = schools.map(s =>
+    `<label class="country-multi-opt"><input type="checkbox" value="${s}" checked><span>${s}</span></label>`).join('');
+  document.getElementById('sl-school-label').textContent = 'All Schools';
+}
+
+// ── KPI checklist (max 8 selected) ──
+
+function slBuildKpiList() {
+  const list = document.getElementById('sl-kpi-list');
+  if (!list) return;
+  const kpis = window.DD ? DD.metrics : checklistData.map(m => m.label);
+  list.innerHTML = kpis.map(kpi =>
+    `<label class="sl-kpi-item"><input type="checkbox" class="sl-kpi-cb" value="${kpi}"><span>${kpi}</span></label>`
+  ).join('');
+  list.addEventListener('change', e => {
+    const all = [...list.querySelectorAll('.sl-kpi-cb:checked')];
+    if (all.length > MAX_KPIS) { e.target.checked = false; return; }
+    slSel.kpis = all.map(cb => cb.value);
+    const counter = document.getElementById('sl-kpi-count');
+    if (counter) counter.textContent = `(${slSel.kpis.length} / ${MAX_KPIS} selected)`;
+    slRender();
+  });
+}
+
+// ── Slicer init (runs once) ──
+
+let slInitialised = false;
+
+function slInit() {
+  if (slInitialised) return;
+  slInitialised = true;
+
+  const allCountries = slCountries();
+
+  // Countries
+  const countryDD = document.getElementById('sl-country-dropdown');
+  countryDD.innerHTML = allCountries.map(c =>
+    `<label class="country-multi-opt"><input type="checkbox" value="${c}" checked><span>${c}</span></label>`).join('');
+  document.getElementById('sl-country-trigger').addEventListener('click', e => {
+    e.stopPropagation();
+    countryDD.hidden = !countryDD.hidden;
+    e.currentTarget.classList.toggle('open', !countryDD.hidden);
+  });
+  countryDD.addEventListener('change', () => {
+    const checked = [...countryDD.querySelectorAll('input:checked')].map(cb => cb.value);
+    slSel.countries = checked.length === allCountries.length ? [] : checked;
+    document.getElementById('sl-country-label').textContent =
+      !slSel.countries.length ? 'All Countries' :
+      slSel.countries.length <= 2 ? slSel.countries.join(', ') : `${slSel.countries.length} Selected`;
+    slRebuildDistricts();
+    slRender();
+  });
+  countryDD.addEventListener('click', e => e.stopPropagation());
+
+  // Districts (content rebuilt on country change; listener stays on parent)
+  document.getElementById('sl-district-trigger').addEventListener('click', e => {
+    e.stopPropagation();
+    const dd = document.getElementById('sl-district-dropdown');
+    dd.hidden = !dd.hidden;
+    e.currentTarget.classList.toggle('open', !dd.hidden);
+  });
+  document.getElementById('sl-district-dropdown').addEventListener('change', () => {
+    const dd    = document.getElementById('sl-district-dropdown');
+    const dists = slDistricts(slSel.countries.length ? slSel.countries : allCountries);
+    const checked = [...dd.querySelectorAll('input:checked')].map(cb => cb.value);
+    slSel.districts = checked.length === dists.length ? [] : checked;
+    document.getElementById('sl-district-label').textContent =
+      !slSel.districts.length ? 'All Districts' :
+      slSel.districts.length <= 2 ? slSel.districts.join(', ') : `${slSel.districts.length} Selected`;
+    slRebuildSchools();
+    slRender();
+  });
+  document.getElementById('sl-district-dropdown').addEventListener('click', e => e.stopPropagation());
+
+  // Schools
+  document.getElementById('sl-school-trigger').addEventListener('click', e => {
+    e.stopPropagation();
+    const dd = document.getElementById('sl-school-dropdown');
+    dd.hidden = !dd.hidden;
+    e.currentTarget.classList.toggle('open', !dd.hidden);
+  });
+  document.getElementById('sl-school-dropdown').addEventListener('change', () => {
+    const dd      = document.getElementById('sl-school-dropdown');
+    const srcD    = slSel.districts.length ? slSel.districts : slDistricts(slSel.countries.length ? slSel.countries : allCountries);
+    const schools = slSchools(srcD).slice(0, 60);
+    const checked = [...dd.querySelectorAll('input:checked')].map(cb => cb.value);
+    slSel.schools = checked.length === schools.length ? [] : checked;
+    document.getElementById('sl-school-label').textContent =
+      !slSel.schools.length ? 'All Schools' :
+      slSel.schools.length <= 2 ? slSel.schools.join(', ') : `${slSel.schools.length} Selected`;
+    slRender();
+  });
+  document.getElementById('sl-school-dropdown').addEventListener('click', e => e.stopPropagation());
+
+  // Initial populate
+  slRebuildDistricts();
+
+  // Year sliders
+  function slUpdateYear() {
+    let s = parseInt(document.getElementById('sl-year-start').value);
+    let e = parseInt(document.getElementById('sl-year-end').value);
+    if (s > e) e = s;
+    slSel.yearStart = s; slSel.yearEnd = e;
+    document.getElementById('sl-year-display').textContent = s === e ? `${s}` : `${s} — ${e}`;
+    slRender();
+  }
+  document.getElementById('sl-year-start').addEventListener('input', slUpdateYear);
+  document.getElementById('sl-year-end').addEventListener('input', slUpdateYear);
+
+  // Gender
+  document.querySelectorAll('input[name="sl-gender"]').forEach(r =>
+    r.addEventListener('change', e => { slSel.gender = e.target.value; slRender(); }));
+
+  // Chart type
+  document.getElementById('sl-chart-type').addEventListener('change', e => {
+    slSel.chartType = e.target.value; slRender();
+  });
+
+  // KPI list
+  slBuildKpiList();
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', e => {
+    ['sl-country-wrap', 'sl-district-wrap', 'sl-school-wrap'].forEach(wrapId => {
+      const wrap = document.getElementById(wrapId);
+      if (!wrap || wrap.contains(e.target)) return;
+      const dd      = wrap.querySelector('.country-multi-dropdown');
+      const trigger = wrap.querySelector('.country-multi-trigger');
+      if (dd) dd.hidden = true;
+      if (trigger) trigger.classList.remove('open');
+    });
+  });
+}
+

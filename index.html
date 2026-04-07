@@ -7,7 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23dda03a'>C</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=4">
+    <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
 
@@ -28,7 +28,14 @@
             <img src="images/camfed-logo.png" alt="CAMFED Logo" class="camfed-logo-img">
         </div>
         <div class="header-title">CAMFED Dashboards</div>
-        <button id="dd-toggle-btn" class="dd-toggle-btn">Dynamic Data</button>
+        <div class="analysis-type-wrap">
+          <label class="analysis-type-label" for="analysis-type-select">Data Analysis Type</label>
+          <select id="analysis-type-select" class="analysis-type-select">
+            <option value="dashboard" selected>Data Dashboard</option>
+            <option value="dynamic">Dynamic Data</option>
+            <option value="slicer">Slicer</option>
+          </select>
+        </div>
     </div>
 
     <!-- FILTER BAR -->
@@ -432,8 +439,99 @@
       </div>
 
     </div><!-- /dynamic-data-view -->
+
+    <!-- SLICER VIEW -->
+    <div id="slicer-view" style="display:none">
+
+      <!-- Geography + year filter bar -->
+      <div class="filter-bar">
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">Countries</label>
+          <div class="country-multi-wrap" id="sl-country-wrap">
+            <button type="button" class="country-multi-trigger" id="sl-country-trigger">
+              <span id="sl-country-label">All Countries</span>
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#dda03a" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <div class="country-multi-dropdown" id="sl-country-dropdown" hidden></div>
+          </div>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">Districts</label>
+          <div class="country-multi-wrap" id="sl-district-wrap">
+            <button type="button" class="country-multi-trigger" id="sl-district-trigger">
+              <span id="sl-district-label">All Districts</span>
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#dda03a" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <div class="country-multi-dropdown" id="sl-district-dropdown" hidden style="max-height:240px;overflow-y:auto"></div>
+          </div>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">Schools</label>
+          <div class="country-multi-wrap" id="sl-school-wrap">
+            <button type="button" class="country-multi-trigger" id="sl-school-trigger">
+              <span id="sl-school-label">All Schools</span>
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#dda03a" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <div class="country-multi-dropdown" id="sl-school-dropdown" hidden style="max-height:240px;overflow-y:auto"></div>
+          </div>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">Year Range</label>
+          <div class="date-range-compact">
+            <div class="date-display" id="sl-year-display">2020 — 2030</div>
+            <div class="date-sliders-wrapper">
+              <input type="range" id="sl-year-start" class="date-slider" min="2020" max="2030" value="2020">
+              <input type="range" id="sl-year-end" class="date-slider" min="2020" max="2030" value="2030">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slicer body -->
+      <div class="body-layout">
+        <div class="main-content">
+
+          <!-- Controls strip: KPIs + Gender + Chart Type -->
+          <div class="slicer-controls data-card">
+            <div class="slicer-control-group slicer-kpi-group">
+              <div class="filter-bar-label">KPIs <span class="sl-kpi-count" id="sl-kpi-count">(0 / 8 selected)</span></div>
+              <div class="slicer-kpi-list" id="sl-kpi-list"></div>
+            </div>
+            <div class="slicer-control-divider"></div>
+            <div class="slicer-control-group">
+              <div class="filter-bar-label">Gender</div>
+              <div class="sl-gender-group">
+                <label class="sl-gender-opt"><input type="radio" name="sl-gender" value="all" checked><span>All</span></label>
+                <label class="sl-gender-opt"><input type="radio" name="sl-gender" value="female"><span>Female</span></label>
+                <label class="sl-gender-opt"><input type="radio" name="sl-gender" value="male"><span>Male</span></label>
+              </div>
+            </div>
+            <div class="slicer-control-divider"></div>
+            <div class="slicer-control-group">
+              <div class="filter-bar-label">Chart Type</div>
+              <select id="sl-chart-type" class="indicator-dropdown">
+                <option value="number">Number</option>
+                <option value="line">Line</option>
+                <option value="multiline">Multi-Line</option>
+                <option value="bar">Bar</option>
+                <option value="pie">Pie</option>
+                <option value="table">Table</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Output area -->
+          <div id="sl-output">
+            <div class="headline-banner"><h2>Select one or more KPIs above to see results</h2></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /slicer-view -->
 </div><!-- /app -->
 
+<script src="data/dashboardData.js"></script>
 <script src="js/script.js?v=3"></script>
 </body>
 </html>
