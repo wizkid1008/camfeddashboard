@@ -162,7 +162,7 @@ const D = {
 };
 
 // ─── STATE ─────────────────────────────────────────────────────
-let sel = { country: 'All', dateStart: 2020, dateEnd: 2030, level: '', subLevel: '' };
+let sel = { countries: ['All'], dateStart: 2020, dateEnd: 2030, level: '', subLevel: '' };
 const charts = {};
 
 // ─── HELPERS ───────────────────────────────────────────────────
@@ -176,8 +176,33 @@ function fmtK(v) {
   return v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'k':v;
 }
 
+// Active country list — always an array of real country names
+function activeCt() {
+  return sel.countries.includes('All') ? C : sel.countries;
+}
+
+// Human-readable label for the current selection
+function activeLabel() {
+  const a = activeCt();
+  if (a.length === C.length) return 'All Countries';
+  if (a.length === 1) return a[0];
+  if (a.length === 2) return a.join(', ');
+  return `${a.length} Countries Selected`;
+}
+
+// Sum a country-keyed object across active countries
+// Falls back to pre-computed Total when all countries are active
 function cv(obj) {
-  return sel.country==='All'?(obj.Total??null):(obj[sel.country]??null);
+  const a = activeCt();
+  if (a.length === C.length && obj.Total != null) return obj.Total;
+  return a.reduce((s, c) => s + (obj[c] || 0), 0);
+}
+
+// Average a country-keyed object across active countries (for % metrics)
+function cvAvg(obj) {
+  const a = activeCt();
+  const vals = a.map(c => obj[c]).filter(v => v != null);
+  return vals.length ? vals.reduce((x, y) => x + y, 0) / vals.length : null;
 }
 
 function destroyChart(id) {
@@ -289,27 +314,74 @@ function progList(id, items, max, colorFn) {
     </div>`).join('');
 }
 
-// ─── POPULATE COUNTRY DROPDOWN ────────────────────────────────
-function buildCountryDropdown() {
-  const select = document.getElementById('country-select');
-  if (!select) return;
+// ─── COUNTRY MULTI-SELECT ─────────────────────────────────────
+function buildCountryMultiSelect() {
+  const trigger  = document.getElementById('country-multi-trigger');
+  const dropdown = document.getElementById('country-multi-dropdown');
+  if (!trigger || !dropdown) return;
 
-  // Get countries from data (automatically includes any new ones)
-  const countries = ['All', ...C];
+  // Build checkbox options: "All Countries" first, then each country
+  const rows = [{ value: 'All', label: 'All Countries' }, ...C.map(c => ({ value: c, label: c }))];
+  dropdown.innerHTML = rows.map(r => `
+    <label class="country-multi-opt">
+      <input type="checkbox" value="${r.value}"${r.value === 'All' ? ' checked' : ''}>
+      <span>${r.label}</span>
+    </label>`).join('');
 
-  // Clear existing options first
-  select.innerHTML = '';
-
-  // Add each country as an option
-  countries.forEach(country => {
-    const option = document.createElement('option');
-    option.value = country;
-    option.textContent = country === 'All' ? 'All Countries' : country;
-    select.appendChild(option);
+  // Toggle dropdown open/closed
+  trigger.addEventListener('click', e => {
+    e.stopPropagation();
+    dropdown.hidden = !dropdown.hidden;
+    trigger.classList.toggle('open', !dropdown.hidden);
   });
 
-  // Set default selection
-  select.value = 'All';
+  // Close when clicking outside
+  document.addEventListener('click', e => {
+    if (!document.getElementById('country-multi-wrap').contains(e.target)) {
+      dropdown.hidden = true;
+      trigger.classList.remove('open');
+    }
+  });
+
+  // Handle checkbox changes
+  dropdown.addEventListener('change', e => {
+    const cb    = e.target;
+    const all   = dropdown.querySelector('input[value="All"]');
+    const indiv = [...dropdown.querySelectorAll('input:not([value="All"])')];
+
+    if (cb.value === 'All') {
+      // "All Countries" toggled — sync all individual boxes
+      indiv.forEach(x => x.checked = cb.checked);
+      sel.countries = cb.checked ? ['All'] : [];
+    } else {
+      // Individual country toggled — uncheck "All Countries"
+      all.checked = false;
+      const chosen = indiv.filter(x => x.checked).map(x => x.value);
+      // If every individual country is now checked, snap back to "All"
+      if (chosen.length === C.length) {
+        all.checked = true;
+        indiv.forEach(x => x.checked = true);
+        sel.countries = ['All'];
+      } else {
+        sel.countries = chosen;
+      }
+    }
+
+    // Guard: nothing selected — reset to All
+    if (!sel.countries.length) {
+      all.checked = true;
+      indiv.forEach(x => x.checked = true);
+      sel.countries = ['All'];
+    }
+
+    updateCountryLabel();
+    rebuildActive();
+  });
+}
+
+function updateCountryLabel() {
+  const el = document.getElementById('country-multi-label');
+  if (el) el.textContent = activeLabel();
 }
 
 // ─── POPULATE LEVEL DROPDOWN ──────────────────────────────────
@@ -356,13 +428,15 @@ function resolveKpiValue(stat) {
     let v = D;
     for (const p of parts) { if (v == null) return null; v = v[p]; }
     if (v == null || typeof v !== 'object') return null;
-    if (sel.country === 'All') {
-      if (v.Total != null) return v.Total;
-      // No Total field — average across all countries (e.g. kpi15.pct)
-      const vals = C.map(c => v[c]).filter(n => n != null);
-      return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
-    }
-    return v[sel.country] ?? null;
+    const a = activeCt();
+    // Use pre-computed Total only when all countries are selected
+    if (a.length === C.length && v.Total != null && !stat.pct) return v.Total;
+    // Percentage metrics → average; absolute metrics → sum
+    const vals = a.map(c => v[c]).filter(n => n != null);
+    if (!vals.length) return null;
+    return stat.pct
+      ? vals.reduce((x, y) => x + y, 0) / vals.length
+      : vals.reduce((x, y) => x + y, 0);
   }
 
   if (stat.kpiSum) {
@@ -414,18 +488,13 @@ function setTxt(id, val) {
 }
 
 function updateStats() {
-  const c = sel.country;
-
   // L1 stats
   setTxt('s-bursary', fmt(cv(D.kpi11.annual.total)));
   setTxt('s-cama-school', fmt(cv(D.kpi12.annual.total)));
   setTxt('s-sls', fmt(cv(D.kpi13.annual.total)));
   setTxt('s-lg', fmt(cv(D.kpi19.total)));
   setTxt('s-alltime', fmt(cv(D.kpi11.cumAll.total)));
-
-  // Headline
-  const cLabel = c==='All'?'All Countries':c;
-  setTxt('l1-headline', `${cLabel} — Level 1: Girls' Education, Bursary Support & Learner Guides`);
+  setTxt('l1-headline', `${activeLabel()} — Level 1: Girls' Education, Bursary Support & Learner Guides`);
 
   // L2 stats
   setTxt('s2-cama', fmt(cv(D.kpi21.cum)));
@@ -440,67 +509,64 @@ function updateStats() {
 
 // ─── BUILD LEVEL 1 ─────────────────────────────────────────────
 function buildL1() {
-  const c = sel.country;
+  const a = activeCt();
+  const single = a.length === 1;
+  const c = single ? a[0] : null;
 
-  // Bursary chart
-  if (c==='All') {
-    bar('l1-bursary-chart', C, [{data:C.map(n=>D.kpi11.annual.total[n]||0), backgroundColor:BARS}]);
-  } else {
+  // Bursary chart: single country → period breakdown; multi → bar per country
+  if (single) {
     const periods = ['Annual','Newly Supp.','Cum. 20–30','Cum. All-time'];
-    const vals = [
-      D.kpi11.annual.total[c]||0,
-      D.kpi11.newly.total[c]||0,
-      D.kpi11.cum2030.total[c]||0,
-      D.kpi11.cumAll.total[c]||0
-    ];
+    const vals = [D.kpi11.annual.total[c]||0, D.kpi11.newly.total[c]||0, D.kpi11.cum2030.total[c]||0, D.kpi11.cumAll.total[c]||0];
     bar('l1-bursary-chart', periods, [{data:vals, backgroundColor:['#c8882a','#5e2580','#2e7d32','#7b3fa0']}]);
+  } else {
+    bar('l1-bursary-chart', a, [{data:a.map(n=>D.kpi11.annual.total[n]||0), backgroundColor:BARS}]);
   }
 
-  // LG chart
-  if (c==='All') {
-    bar('l1-lg-chart', C, [
-      {label:'CAMFED', data:C.map(n=>D.kpi19.camfed[n]||0), backgroundColor:'#5e2580'},
-      {label:'Govt', data:C.map(n=>D.kpi19.govt[n]||0), backgroundColor:'#c8882a'}
-    ], {stacked:true, legend:true});
-  } else {
+  // LG chart: single → CAMFED/Govt split; multi → stacked by country
+  if (single) {
     bar('l1-lg-chart', ['CAMFED Trained','Govt Trained'], [
       {data:[D.kpi19.camfed[c]||0, D.kpi19.govt[c]||0], backgroundColor:['#5e2580','#c8882a']}
     ]);
+  } else {
+    bar('l1-lg-chart', a, [
+      {label:'CAMFED', data:a.map(n=>D.kpi19.camfed[n]||0), backgroundColor:'#5e2580'},
+      {label:'Govt',   data:a.map(n=>D.kpi19.govt[n]||0),   backgroundColor:'#c8882a'}
+    ], {stacked:true, legend:true});
   }
 
-  // Primary vs secondary
-  bar('l1-levels-chart', C, [
-    {label:'Primary', data:C.map(n=>D.kpi11.annual.primary[n]||0), backgroundColor:'#5e2580'},
-    {label:'Secondary', data:C.map(n=>D.kpi11.annual.secondary[n]||0), backgroundColor:'#c8882a'}
+  // Primary vs secondary — always compare across active countries
+  bar('l1-levels-chart', a, [
+    {label:'Primary',   data:a.map(n=>D.kpi11.annual.primary[n]||0),   backgroundColor:'#5e2580'},
+    {label:'Secondary', data:a.map(n=>D.kpi11.annual.secondary[n]||0), backgroundColor:'#c8882a'}
   ], {stacked:false, legend:true});
 
-  // Periods bar
+  // Periods bar — sum across active countries
+  const periodSources = [D.kpi11.annual.total, D.kpi11.newly.total, D.kpi11.cum2030.total, D.kpi11.cumAll.total];
   const allPeriods = ['Annual','Newly Supp.','Cum. 20–30','Cum. All-time'];
-  const allVals = c==='All'
-    ? allPeriods.map((_,i) => [D.kpi11.annual.total,D.kpi11.newly.total,D.kpi11.cum2030.total,D.kpi11.cumAll.total][i].Total||0)
-    : allPeriods.map((_,i) => [D.kpi11.annual.total,D.kpi11.newly.total,D.kpi11.cum2030.total,D.kpi11.cumAll.total][i][c]||0);
+  const allVals = periodSources.map(src => a.reduce((s, n) => s + (src[n] || 0), 0));
   bar('l1-periods-chart', allPeriods, [{data:allVals, backgroundColor:['#5e2580','#7b3fa0','#c8882a','#4a1a6b']}]);
 
-  // Dropout
-  const items = (c==='All'?C:[c]).map(n=>({label:n, val:D.kpi15.pct[n], display:D.kpi15.pct[n].toFixed(2)+'%'}));
+  // Dropout rate — show each active country
+  const items = a.map(n=>({label:n, val:D.kpi15.pct[n], display:D.kpi15.pct[n].toFixed(2)+'%'}));
   progList('l1-dropout', items, 5, l=>CC[l]||'#5e2580');
 
-  // SLS
-  if (c==='All') {
-    bar('l1-sls-chart', C, [
-      {label:'Girls', data:C.map(n=>D.kpi13.annual.girls[n]||0), backgroundColor:'#c8882a'},
-      {label:'Boys', data:C.map(n=>D.kpi13.annual.boys[n]||0), backgroundColor:'#5e2580'}
-    ], {stacked:true, legend:true});
-  } else {
+  // SLS: single → Girls/Boys for that country; multi → stacked by country
+  if (single) {
     bar('l1-sls-chart', ['Girls','Boys'], [
       {data:[D.kpi13.annual.girls[c]||0, D.kpi13.annual.boys[c]||0], backgroundColor:['#c8882a','#5e2580']}
     ]);
+  } else {
+    bar('l1-sls-chart', a, [
+      {label:'Girls', data:a.map(n=>D.kpi13.annual.girls[n]||0), backgroundColor:'#c8882a'},
+      {label:'Boys',  data:a.map(n=>D.kpi13.annual.boys[n]||0),  backgroundColor:'#5e2580'}
+    ], {stacked:true, legend:true});
   }
 
-  // P9 dropout by form
+  // P9 dropout by form — average across active countries
   const formItems = ['Form 1','Form 2','Form 3','Form 4'].map((f,i)=>{
-    const keys=['form1','form2','form3','form4'];
-    const val = c==='All' ? C.reduce((s,n)=>s+(D.p9[keys[i]][n]||0),0)/C.length : (D.p9[keys[i]][c]||0);
+    const key = ['form1','form2','form3','form4'][i];
+    const vals = a.map(n=>D.p9[key][n]||0);
+    const val = vals.reduce((s,v)=>s+v,0) / vals.length;
     return {label:f, val:parseFloat(val.toFixed(2)), display:val.toFixed(2)+'%'};
   });
   progList('l1-dropout-form', formItems, 25, ()=>'#7b3fa0');
@@ -508,44 +574,41 @@ function buildL1() {
 
 // ─── BUILD LEVEL 2 ─────────────────────────────────────────────
 function buildL2() {
-  const c = sel.country;
-  bar('l2-cama-chart', C, [{data:C.map(n=>D.kpi21.cum[n]||0), backgroundColor:BARS}]);
-  bar('l2-guides-chart', C, [
-    {label:'Transition', data:C.map(n=>D.kpi22.transition[n]||0), backgroundColor:'#4a1a6b'},
-    {label:'Agriculture', data:C.map(n=>D.kpi22.agriculture[n]||0), backgroundColor:'#5e2580'},
-    {label:'Business', data:C.map(n=>D.kpi22.business[n]||0), backgroundColor:'#c8882a'}
+  const a = activeCt();
+  bar('l2-cama-chart', a, [{data:a.map(n=>D.kpi21.cum[n]||0), backgroundColor:BARS}]);
+  bar('l2-guides-chart', a, [
+    {label:'Transition',  data:a.map(n=>D.kpi22.transition[n]||0),  backgroundColor:'#4a1a6b'},
+    {label:'Agriculture', data:a.map(n=>D.kpi22.agriculture[n]||0), backgroundColor:'#5e2580'},
+    {label:'Business',    data:a.map(n=>D.kpi22.business[n]||0),    backgroundColor:'#c8882a'}
   ], {legend:true});
-  bar('l2-biz-chart', C, [
-    {label:'Ag. Guides', data:C.map(n=>D.kpi27.ag[n]||0), backgroundColor:'#5e2580'},
-    {label:'Biz. Guides', data:C.map(n=>D.kpi27.biz[n]||0), backgroundColor:'#c8882a'}
+  bar('l2-biz-chart', a, [
+    {label:'Ag. Guides',  data:a.map(n=>D.kpi27.ag[n]||0),  backgroundColor:'#5e2580'},
+    {label:'Biz. Guides', data:a.map(n=>D.kpi27.biz[n]||0), backgroundColor:'#c8882a'}
   ], {legend:true});
-  bar('l2-jobs-chart', c==='All'?C:['Jobs Created'], [
-    {data:c==='All'?C.map(n=>D.kpi29.annual[n]||0):[D.kpi29.annual[c]||0], backgroundColor:c==='All'?BARS:'#c8882a'}
-  ]);
-  const inc = (c==='All'?C:[c]).map(n=>({label:n, val:D.kpi210.pct[n], display:D.kpi210.pct[n]+'%'}));
+  bar('l2-jobs-chart', a, [{data:a.map(n=>D.kpi29.annual[n]||0), backgroundColor:BARS}]);
+  const inc = a.map(n=>({label:n, val:D.kpi210.pct[n], display:D.kpi210.pct[n]+'%'}));
   progList('l2-income', inc, 100, l=>CC[l]||'#5e2580');
-  const pro = (c==='All'?C:[c]).map(n=>({label:n, val:D.kpi211.profit[n], display:D.kpi211.profit[n]+'%'}));
+  const pro = a.map(n=>({label:n, val:D.kpi211.profit[n], display:D.kpi211.profit[n]+'%'}));
   progList('l2-profit', pro, 100, l=>CC[l]||'#5e2580');
-  const sur = (c==='All'?C:[c]).map(n=>({label:n, val:D.kpi212.yr1[n], display:D.kpi212.yr1[n]+'%'}));
+  const sur = a.map(n=>({label:n, val:D.kpi212.yr1[n], display:D.kpi212.yr1[n]+'%'}));
   progList('l2-survival', sur, 100, l=>CC[l]||'#5e2580');
 }
 
 // ─── BUILD LEVEL 3 ─────────────────────────────────────────────
 function buildL3() {
-  bar('l3-schools-chart', C, [
-    {label:'Primary', data:C.map(n=>D.kpi31.primary[n]||0), backgroundColor:'#5e2580'},
-    {label:'Secondary', data:C.map(n=>D.kpi31.secondary[n]||0), backgroundColor:'#c8882a'}
+  const a = activeCt();
+  bar('l3-schools-chart', a, [
+    {label:'Primary',   data:a.map(n=>D.kpi31.primary[n]||0),   backgroundColor:'#5e2580'},
+    {label:'Secondary', data:a.map(n=>D.kpi31.secondary[n]||0), backgroundColor:'#c8882a'}
   ], {stacked:true, legend:true});
-
-  bar('l3-children-chart', C, [
-    {label:'Primary', data:C.map(n=>D.kpi35.primary[n]||0), backgroundColor:'#5e2580'},
-    {label:'Secondary', data:C.map(n=>D.kpi35.secondary[n]||0), backgroundColor:'#c8882a'}
+  bar('l3-children-chart', a, [
+    {label:'Primary',   data:a.map(n=>D.kpi35.primary[n]||0),   backgroundColor:'#5e2580'},
+    {label:'Secondary', data:a.map(n=>D.kpi35.secondary[n]||0), backgroundColor:'#c8882a'}
   ], {stacked:true, legend:true});
-
-  bar('l3-districts-chart', C, [{data:C.map(n=>D.kpi34.districts[n]||0), backgroundColor:BARS}]);
-  bar('l3-p1-chart', C, [
-    {label:'Girls', data:C.map(n=>D.p1.girls[n]||0), backgroundColor:'#c8882a'},
-    {label:'Boys', data:C.map(n=>D.p1.boys[n]||0), backgroundColor:'#5e2580'}
+  bar('l3-districts-chart', a, [{data:a.map(n=>D.kpi34.districts[n]||0), backgroundColor:BARS}]);
+  bar('l3-p1-chart', a, [
+    {label:'Girls', data:a.map(n=>D.p1.girls[n]||0), backgroundColor:'#c8882a'},
+    {label:'Boys',  data:a.map(n=>D.p1.boys[n]||0),  backgroundColor:'#5e2580'}
   ], {stacked:true, legend:true});
 }
 
@@ -594,11 +657,7 @@ document.getElementById('sublevel-select').addEventListener('change', e=>{
   renderSubLevelStats(sel.level, sel.subLevel);
 });
 
-// Country filter - dropdown
-document.getElementById('country-select').addEventListener('change', e=>{
-  sel.country = e.target.value;
-  rebuildActive();
-});
+// Country multi-select is initialised below in INIT
 
 // Date range sliders
 function updateDateDisplay() {
@@ -631,7 +690,7 @@ document.getElementById('date-range-end').addEventListener('input', e=>{
 });
 
 // ─── INIT ──────────────────────────────────────────────────────
-buildCountryDropdown();
+buildCountryMultiSelect();
 buildLevelDropdown();
 
 // No default level pre-selected; panels hidden until user picks a Level
