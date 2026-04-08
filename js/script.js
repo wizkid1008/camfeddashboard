@@ -510,10 +510,10 @@ function updateStats() {
   const s = sel.dateStart, e = sel.dateEnd;
   const a = activeCt();
 
-  // L1 stats — bursary & guides from DD (date-range aware); SLS/community from D
+  // L1 stats — all from DD (date-range aware)
   setTxt('s-bursary',     fmt(ddQA('Children Supported in School with Education Bursaries')));
-  setTxt('s-cama-school', fmt(cv(D.kpi12.annual.total)));   // no DD equivalent
-  setTxt('s-sls',         fmt(cv(D.kpi13.annual.total)));   // no DD equivalent
+  setTxt('s-cama-school', fmt(ddQA('CAMA Members')));
+  setTxt('s-sls',         fmt(ddQA('Number of Clients by Form')));
   setTxt('s-lg',          fmt(ddQA('Active Learner Guides')));
   // All-time cumulative = sum from 2020 up to the selected end year
   setTxt('s-alltime', fmt(ddQ('Children Supported in School with Education Bursaries', a, 2020, e)));
@@ -1183,8 +1183,9 @@ function slRender() {
 
   const rows  = slQuery();
   const kpis  = slSel.kpis;
-  const type  = slSel.chartType;
   const years = Array.from({ length: slSel.yearEnd - slSel.yearStart + 1 }, (_, i) => slSel.yearStart + i);
+  // Single year → always show numbers regardless of chart type selection
+  const type  = (slSel.yearStart === slSel.yearEnd) ? 'number' : slSel.chartType;
 
   output.innerHTML = '';
 
