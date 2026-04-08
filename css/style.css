@@ -1687,6 +1687,22 @@ body::before {
   cursor: pointer;
 }
 
+/* Small pill shown under a chart card header to indicate current filter/view */
+.er-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #e0dcd4;
+  border: 1px solid #b8b0a0;
+  border-radius: 4px;
+  padding: 3px 9px;
+  font-size: 0.70rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+  cursor: default;
+}
+
 /* ── LEARNER GUIDE PROGRAMME — stat strip ── */
 .lg-stat-strip {
   display: grid;
