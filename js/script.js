@@ -9,10 +9,10 @@ const hierarchyData = [
     level: "LEVEL 1: Girl's Education",
     subLevel: "Education Reach",
     statistics: [
-      { label: "# Girls supported in Schol with Education Bursaries",           kpi: "kpi11.annual.total" },
-      { label: "# Girls Supported in School by CAMA & Community Champions",     kpi: "kpi12.annual.total" },
-      { label: "# Total Girls Supported",                                        kpi: "kpi13.annual.girls" },
-      { label: "# Total Boys Supported",                                         kpi: "kpi13.annual.boys" }
+      { label: "# Girls supported in School with Education Bursaries",        kpi: "kpi11.annual.total",  ddMetric: "Children Supported in School with Education Bursaries" },
+      { label: "# Girls Supported in School by CAMA & Community Champions",   kpi: "kpi12.annual.total",  ddMetric: "CAMA Members" },
+      { label: "# Total Girls Supported",                                      kpi: "kpi13.annual.girls" },
+      { label: "# Total Boys Supported",                                       kpi: "kpi13.annual.boys" }
     ]
   },
   {
@@ -29,12 +29,12 @@ const hierarchyData = [
     level: "LEVEL 1: Girl's Education",
     subLevel: "Learner Guide Programme",
     statistics: [
-      { label: "Active Learner Guides",                                                                          kpi: "kpi19.total" },
+      { label: "Active Learner Guides",                                                                          kpi: "kpi19.total",        ddMetric: "Active Learner Guides" },
       { label: "Girls Reporting Increased Agency" },
       { label: "Learner Guides Reporting Increased Agency" },
       { label: "Average number of children my better world annually" },
-      { label: "Active Learner Guides by Training",                                                              kpi: "kpi19.camfed" },
-      { label: "Children Receieving Social and Learning Support Including My Better World Sessions",             kpi: "kpi13.annual.total" }
+      { label: "Active Learner Guides by Training",                                                              kpi: "kpi19.camfed",       ddMetric: "Active Learner Guides" },
+      { label: "Children Receieving Social and Learning Support Including My Better World Sessions",             kpi: "kpi13.annual.total",  ddMetric: "Number of Clients by Form" }
     ]
   },
   {
@@ -441,6 +441,9 @@ function buildSubLevelDropdown(panelId) {
 // Handles: single kpi path, kpiSum (array of paths added together),
 // and kpiRatio (numerator/denominator shown as a percentage).
 function resolveKpiValue(stat) {
+  // If a DD metric is specified, use ddQA so value responds to year range
+  if (stat.ddMetric && window.DD) return fmt(ddQA(stat.ddMetric));
+
   // Walk a dot-notation path into D and return the country value
   function getPath(path) {
     const parts = path.split('.');
@@ -513,10 +516,13 @@ function updateStats() {
   // L1 stats — all from DD (date-range aware)
   setTxt('s-bursary',     fmt(ddQA('Children Supported in School with Education Bursaries')));
   setTxt('s-cama-school', fmt(ddQA('CAMA Members')));
-  setTxt('s-sls',         fmt(ddQA('Number of Clients by Form')));
+  const slsTotal = ddQA('Number of Clients by Form');
+  setTxt('s-sls',         fmt(slsTotal));
   setTxt('s-lg',          fmt(ddQA('Active Learner Guides')));
-  // All-time cumulative = sum from 2020 up to the selected end year
-  setTxt('s-alltime', fmt(ddQ('Children Supported in School with Education Bursaries', a, 2020, e)));
+  // Girls/boys split of SLS total using D-derived ratios
+  const girlsRatio = (D.kpi13.annual.girls.Total || 0) / (D.kpi13.annual.total.Total || 1);
+  setTxt('s-girls-total', fmt(Math.round(slsTotal * girlsRatio)));
+  setTxt('s-boys-total',  fmt(Math.round(slsTotal * (1 - girlsRatio))));
   setTxt('l1-headline', `${activeLabel()} — Level 1: Girls' Education, Bursary Support & Learner Guides`);
 
   // L2 stats
