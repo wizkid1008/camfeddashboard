@@ -1760,3 +1760,54 @@ body::before {
   accent-color: var(--purple-deep);
   cursor: pointer;
 }
+
+/* ── LEVEL 3 — CSS progress-bar rows ── */
+.l3-section-title {
+  font-size: 0.80rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  border-bottom: 1px solid var(--cream-border);
+  padding-bottom: 4px;
+  margin: 12px 0 8px;
+}
+
+.l3-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.l3-bar-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  min-width: 104px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.l3-bar-track {
+  flex: 1;
+  height: 44px;
+  background: rgba(74,26,107,0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.l3-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+  min-width: 50px;
+}
+
+.l3-bar-val {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}

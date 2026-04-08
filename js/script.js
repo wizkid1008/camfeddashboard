@@ -232,6 +232,27 @@ const L2AF = {
   climateSmart:    { Ghana:6.0, Malawi:null, Tanzania:null, Zambia:7.7, Zimbabwe:8.7 }
 };
 
+// ─── LEVEL 3 STATIC DATA ──────────────────────────────────────
+const L3_GREEN = '#4a7a35';
+
+const L3 = {
+  // MoU counts per country (Ed Systems 2)
+  mou:           { Ghana:11, Malawi:1, Tanzania:4, Zambia:1, Zimbabwe:38, Total:55 },
+  // Community Champions breakdown (Ed Systems 2)
+  champions:     { cdcs:2933, psgs:55527, sbcs:61506 },
+  // Community Champion Teacher Mentors (Ed Systems 1)
+  teacherMentors: 9190,
+  // Children Benefitting by Gender — Annual (Ed Systems 2, from D.kpi35 + gender split)
+  kpi35Annual:   { girls:2601173, boys:2489319 },
+  // Children Benefitting by Gender — Newly supported (Ed Systems 2)
+  kpi35Newly:    { girls:780352,  boys:745100, primary:994881, secondary:530571 },
+  // Government districts on top of D.kpi34 CAMFED districts (Ed Systems 1)
+  districtsGovt: { Ghana:0, Malawi:11, Tanzania:1, Zambia:0, Zimbabwe:0 },
+  // Schools with LG — CAMFED vs Government (Ed Systems 1)
+  schoolsCamfed: 4955,
+  schoolsGovt:   2582
+};
+
 // ─── STATE ─────────────────────────────────────────────────────
 let sel = { countries: ['All'], dateStart: 2020, dateEnd: 2030, level: '', subLevel: '' };
 const charts = {};
@@ -566,12 +587,12 @@ function erBar(id, labels, datasets, opts = {}) {
       plugins: {
         legend: { display: !!opts.legend, labels: { color: '#3a1a5a', font: { size: 10 }, usePointStyle: true, pointStyle: 'rect' } },
         datalabels: {
-          display: true,
-          color: '#3a1a5a',
+          display: opts.stackLabels ? ctx => ctx.dataset.data[ctx.dataIndex] > 0 : true,
+          color: opts.stackLabels ? '#ffffff' : '#3a1a5a',
           font: { size: 10, weight: '700', family: "'Lato', sans-serif" },
           formatter: opts.formatter ? opts.formatter : (opts.pctLabel ? v => v.toFixed(2) + '%' : v => fmtK(v)),
-          anchor: horiz ? 'end' : 'end',
-          align: horiz ? 'right' : 'top',
+          anchor: opts.stackLabels ? 'center' : (horiz ? 'end' : 'end'),
+          align: opts.stackLabels ? 'center' : (horiz ? 'right' : 'top'),
           offset: 2,
           clamp: true
         }
@@ -862,6 +883,169 @@ function renderLearnerGuideProgrammeCharts() {
 
   const l1Panel = document.getElementById('panel-level1');
   if (l1Panel) l1Panel.style.display = 'none';
+  section.style.display = 'block';
+}
+
+function renderEducationSystems1Charts() {
+  const section = document.getElementById('sublevel-stats-section');
+  const a = activeCt();
+
+  const camfedDist = a.map(c => D.kpi34.districts[c] || 0);
+  const govtDist   = a.map(c => L3.districtsGovt[c] || 0);
+  const distTotal  = camfedDist.reduce((s,v)=>s+v,0) + govtDist.reduce((s,v)=>s+v,0);
+  const schoolsTotal = L3.schoolsCamfed + L3.schoolsGovt;
+
+  section.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+      <div class="lg-stat-card">
+        <div class="lg-stat-title">% of resources for the Learner Guide Programme contributed by government</div>
+        <div class="lg-stat-value">25%</div>
+      </div>
+      <div class="lg-stat-card">
+        <div class="lg-stat-title">National Level Dropout Rate for Girls due to Early Marriage or Pregnancy</div>
+        <div class="lg-stat-na">Data Not Available</div>
+      </div>
+      <div class="lg-stat-card">
+        <div class="lg-stat-title">Community Champion Teacher Mentors</div>
+        <div class="lg-stat-value">${fmt(L3.teacherMentors)}</div>
+      </div>
+    </div>
+    <div class="er-grid">
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Number of Districts with Learner Guides</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(distTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l3es1-dist-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Number of Schools with Learner Guides</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(schoolsTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l3es1-schools-chart"></canvas></div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    erBar('l3es1-dist-chart', a, [
+      { label: 'CAMFED Partner', data: camfedDist, backgroundColor: L3_GREEN },
+      { label: 'Government',     data: govtDist,   backgroundColor: '#1a0a2e' }
+    ], { legend: true, stacked: true, stackLabels: true });
+
+    erBar('l3es1-schools-chart',
+      ['CAMFED Supported', 'Government Delivery'],
+      [{ data: [L3.schoolsCamfed, L3.schoolsGovt],
+         backgroundColor: [L3_GREEN, '#1a0a2e'] }]
+    );
+  }, 0);
+
+  const l3Panel = document.getElementById('panel-level3');
+  if (l3Panel) l3Panel.style.display = 'none';
+  section.style.display = 'block';
+}
+
+function renderEducationSystems2Charts() {
+  const section = document.getElementById('sublevel-stats-section');
+  const a = activeCt();
+  const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
+
+  const mouVals  = a.map(c => L3.mou[c] || 0);
+  const mouTotal = mouVals.reduce((s,v) => s+v, 0);
+
+  // Annual totals from D.kpi35 + L3 gender split
+  const aTotal = D.kpi35.total.Total;
+  const aGirls = L3.kpi35Annual.girls;
+  const aBoys  = L3.kpi35Annual.boys;
+  const aPrim  = D.kpi35.primary.Total;
+  const aSec   = D.kpi35.secondary.Total;
+
+  // Newly supported from L3
+  const nGirls = L3.kpi35Newly.girls;
+  const nBoys  = L3.kpi35Newly.boys;
+  const nPrim  = L3.kpi35Newly.primary;
+  const nSec   = L3.kpi35Newly.secondary;
+  const nTotal = nGirls + nBoys;
+
+  function barRow(label, val, maxVal, color) {
+    const pct = maxVal > 0 ? Math.max(8, Math.round(val / maxVal * 100)) : 50;
+    return `<div class="l3-bar-row">
+      <div class="l3-bar-label">${label}</div>
+      <div class="l3-bar-track">
+        <div class="l3-bar-fill" style="width:${pct}%;background:${color};">
+          <span class="l3-bar-val">${fmt(val)}</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function buildBars(gT, bT, pT, sT) {
+    const genderTotal = gT + bT, schoolTotal = pT + sT;
+    return `
+      <div class="l3-section-title">By Gender</div>
+      ${barRow('Girls total',     gT, genderTotal, L3_GREEN)}
+      ${barRow('Boys total',      bT, genderTotal, '#c8882a')}
+      <div class="l3-section-title">By School Level</div>
+      ${barRow('Primary total',   pT, schoolTotal, L3_GREEN)}
+      ${barRow('Secondary total', sT, schoolTotal, '#c8882a')}`;
+  }
+
+  section.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+      <div class="er-card" style="grid-column:1;grid-row:1;">
+        <div class="er-card-header">
+          <span class="er-card-title">Number of Memoranda of Understanding between Government Departments and CAMFED</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(mouTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l3es2-mou-chart"></canvas></div>
+      </div>
+      <div class="er-card" style="grid-column:2;grid-row:1/3;">
+        <div class="er-card-header">
+          <span class="er-card-title">Children Benefitting from Improved Learning Environment</span>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+            <label class="er-radio-opt"><input type="radio" name="l3es2-kids" value="annual" checked> Annual</label>
+            <label class="er-radio-opt"><input type="radio" name="l3es2-kids" value="newly"> Newly supported</label>
+            <span class="er-total-badge" id="l3es2-kids-total">Total &nbsp;${fmt(aTotal)}</span>
+          </div>
+        </div>
+        <div id="l3es2-kids-bars">${buildBars(aGirls, aBoys, aPrim, aSec)}</div>
+      </div>
+      <div class="er-card" style="grid-column:1;grid-row:2;">
+        <div class="er-card-header">
+          <span class="er-card-title">Number of Active Community Champions for Girls' Education</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l3es2-champ-chart"></canvas></div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    erBar('l3es2-mou-chart', a,
+      [{ data: mouVals, backgroundColor: colors }],
+      { horizontal: true });
+
+    erBar('l3es2-champ-chart', ['Members'], [
+      { label: 'CDCs', data: [L3.champions.cdcs], backgroundColor: '#1a0a2e' },
+      { label: 'PSGs', data: [L3.champions.psgs], backgroundColor: L3_GREEN },
+      { label: 'SBCs', data: [L3.champions.sbcs], backgroundColor: '#c8882a' }
+    ], { legend: true });
+
+    section.querySelectorAll('input[name="l3es2-kids"]').forEach(r => {
+      r.addEventListener('change', e => {
+        const ann = e.target.value === 'annual';
+        const [gT, bT, pT, sT] = ann
+          ? [aGirls, aBoys, aPrim, aSec]
+          : [nGirls, nBoys, nPrim, nSec];
+        const total = ann ? aTotal : nTotal;
+        const barsEl  = document.getElementById('l3es2-kids-bars');
+        const totalEl = document.getElementById('l3es2-kids-total');
+        if (barsEl)  barsEl.innerHTML  = buildBars(gT, bT, pT, sT);
+        if (totalEl) totalEl.textContent = `Total  ${fmt(total)}`;
+      });
+    });
+  }, 0);
+
+  const l3Panel = document.getElementById('panel-level3');
+  if (l3Panel) l3Panel.style.display = 'none';
   section.style.display = 'block';
 }
 
@@ -1217,6 +1401,18 @@ function renderSubLevelStats(panelId, subLevelValue) {
   // Level 2: Agriculture & Food gets a chart (left) + 2 tables (right) layout
   if (panelId === 'level2' && subLevelValue === 'Agriculture & Food') {
     renderAgricultureFoodCharts();
+    return;
+  }
+
+  // Level 3: Education Systems 1 — 3 stat cards + 2 charts
+  if (panelId === 'level3' && subLevelValue === 'Education Systems 1') {
+    renderEducationSystems1Charts();
+    return;
+  }
+
+  // Level 3: Education Systems 2 — MoU chart + Community Champions + Children Benefitting
+  if (panelId === 'level3' && subLevelValue === 'Education Systems 2') {
+    renderEducationSystems2Charts();
     return;
   }
 
