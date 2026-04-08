@@ -742,6 +742,93 @@ function renderEducationOutcomesCharts() {
   section.style.display = 'block';
 }
 
+function renderLearnerGuideProgrammeCharts() {
+  const section = document.getElementById('sublevel-stats-section');
+  const a = activeCt();
+
+  // ── LG Training chart data (CAMFED-only bars; total = sum of those bars) ──
+  const LG = 'Active Learner Guides';
+  const lgVals = a.map(c => {
+    const t = ddQC(LG, c);
+    const d = (D.kpi19.camfed[c] || 0) + (D.kpi19.govt[c] || 0) || 1;
+    return ddSplit(t, D.kpi19.camfed[c] || 0, d);
+  });
+  const lgCamfedTotal = lgVals.reduce((s, v) => s + v, 0);
+
+  // ── SLS Girls/Boys data ──
+  const girlsRatio = (D.kpi13.annual.girls.Total || 0) / (D.kpi13.annual.total.Total || 1);
+  const girlsVals = a.map(c => Math.round(ddQC('Number of Clients by Form', c) * girlsRatio));
+  const boysVals  = a.map(c => Math.round(ddQC('Number of Clients by Form', c) * (1 - girlsRatio)));
+  const slsTotal  = girlsVals.reduce((s, v) => s + v, 0) + boysVals.reduce((s, v) => s + v, 0);
+
+  section.innerHTML = `
+    <div class="lg-stat-strip">
+      <div class="lg-stat-card">
+        <div class="lg-stat-title">Active Learner Guides</div>
+        <div class="lg-stat-value">(Blank)</div>
+      </div>
+      <div class="lg-stat-card">
+        <div class="lg-stat-title">Girls Reporting Increased Agency</div>
+        <div class="lg-stat-na">Data Not Available</div>
+      </div>
+      <div class="lg-stat-card">
+        <div class="lg-stat-title">Learner Guides Reporting Increased Agency</div>
+        <div class="lg-stat-value">99.0%</div>
+      </div>
+      <div class="lg-stat-card">
+        <div class="lg-stat-title">Average number of children receiving My Better World annually.</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:6px;">
+          <span id="lg-mbw-val" class="lg-stat-value">111</span>
+          <div class="lg-radio-group" style="flex-direction:column;gap:5px;">
+            <label class="lg-radio-opt"><input type="radio" name="lg-mbw" value="111" checked> per LG</label>
+            <label class="lg-radio-opt"><input type="radio" name="lg-mbw" value="890"> per School</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="er-grid">
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Active Learner Guides by Training</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(lgCamfedTotal)}</span>
+        </div>
+        <div class="er-chart-wrap" style="height:300px;"><canvas id="lg-training-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Children Receiving Social and Learning Support Including My Better World Sessions</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(slsTotal)}</span>
+        </div>
+        <div class="er-chart-wrap" style="height:300px;"><canvas id="lg-sls-chart"></canvas></div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    // 1. CAMFED Trained — gold vertical bars
+    erBar('lg-training-chart', a,
+      [{ label: 'CAMFED Trained', data: lgVals, backgroundColor: '#c8882a' }],
+      { legend: true });
+
+    // 2. Girls (deep purple-black) / Boys (dark red) grouped bar
+    erBar('lg-sls-chart', a, [
+      { label: 'Girls', data: girlsVals, backgroundColor: '#1a0a2e' },
+      { label: 'Boys',  data: boysVals,  backgroundColor: '#8b2500' }
+    ], { legend: true });
+
+    // MBW radio toggle
+    section.querySelectorAll('input[name="lg-mbw"]').forEach(radio => {
+      radio.addEventListener('change', e => {
+        const el = document.getElementById('lg-mbw-val');
+        if (el) el.textContent = e.target.value;
+      });
+    });
+  }, 0);
+
+  const l1Panel = document.getElementById('panel-level1');
+  if (l1Panel) l1Panel.style.display = 'none';
+  section.style.display = 'block';
+}
+
 // ─── RENDER SUBLEVEL STATISTICS ───────────────────────────────
 // Auto-populates all stats for the selected Level + SubLevel combination
 function renderSubLevelStats(panelId, subLevelValue) {
@@ -762,6 +849,12 @@ function renderSubLevelStats(panelId, subLevelValue) {
   // Education Outcomes gets a 2×2 grid with a bar chart + three tables
   if (panelId === 'level1' && subLevelValue === 'Education Outcomes') {
     renderEducationOutcomesCharts();
+    return;
+  }
+
+  // Learner Guide Programme gets 4 stat cards + 2 charts
+  if (panelId === 'level1' && subLevelValue === 'Learner Guide Programme') {
+    renderLearnerGuideProgrammeCharts();
     return;
   }
 
