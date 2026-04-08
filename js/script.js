@@ -216,6 +216,12 @@ const L2LR = {
   rif:  { Ghana:0,   Malawi:82, Tanzania:510, Zambia:61, Zimbabwe:542, Total:1195 }
 };
 
+// ─── LEVEL 2 JOBS & INCOME STATIC DATA ────────────────────────
+const L2JI = {
+  // Women Progressing Towards Secure Livelihood (%) — integer % per country
+  womenProgress: { Ghana:87, Malawi:98, Tanzania:65, Zambia:85, Zimbabwe:81 }
+};
+
 // ─── STATE ─────────────────────────────────────────────────────
 let sel = { countries: ['All'], dateStart: 2020, dateEnd: 2030, level: '', subLevel: '' };
 const charts = {};
@@ -553,7 +559,7 @@ function erBar(id, labels, datasets, opts = {}) {
           display: true,
           color: '#3a1a5a',
           font: { size: 10, weight: '700', family: "'Lato', sans-serif" },
-          formatter: opts.pctLabel ? v => v.toFixed(2) + '%' : v => fmtK(v),
+          formatter: opts.formatter ? opts.formatter : (opts.pctLabel ? v => v.toFixed(2) + '%' : v => fmtK(v)),
           anchor: horiz ? 'end' : 'end',
           align: horiz ? 'right' : 'top',
           offset: 2,
@@ -567,7 +573,7 @@ function erBar(id, labels, datasets, opts = {}) {
           ticks: {
             color: '#4a3560', font: { size: 10 },
             // Value axis for horiz bars; category axis for vertical bars
-            callback: horiz ? v => fmtK(v) : function(v) { return this.getLabelForValue(v); }
+            callback: horiz ? (opts.pctLabel ? v => v + '%' : v => fmtK(v)) : function(v) { return this.getLabelForValue(v); }
           }
         },
         y: {
@@ -849,6 +855,79 @@ function renderLearnerGuideProgrammeCharts() {
   section.style.display = 'block';
 }
 
+function renderJobsIncomeCharts() {
+  const section = document.getElementById('sublevel-stats-section');
+  const a = activeCt();
+  const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
+  const intPct  = v => Math.round(v) + '%';
+
+  // Women progressing (horizontal %)
+  const wpVals = a.map(c => L2JI.womenProgress[c] || 0);
+
+  // Female entrepreneurs with increased incomes (vertical %)
+  const feVals = a.map(c => D.kpi210.pct[c] || 0);
+
+  // Jobs created (vertical counts)
+  const jobVals  = a.map(c => D.kpi29.annual[c] || 0);
+  const jobTotal = jobVals.reduce((s, v) => s + v, 0);
+
+  // New businesses (vertical counts)
+  const bizVals  = a.map(c => D.kpi26.annual[c] || 0);
+  const bizTotal = bizVals.reduce((s, v) => s + v, 0);
+
+  section.innerHTML = `
+    <div class="er-grid">
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Women Progressing Towards a Secure Livelihood (Employment, Enterprise, Continuing Education) Following Transitions Programme</span>
+        </div>
+        <div class="er-chart-wrap" style="height:240px;"><canvas id="l2ji-wp-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Female Entrepreneurs with Increased Incomes after Participating in CAMFED's Enterprise Programme</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l2ji-fe-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Jobs Created through Enterprise Programme Including Self-Employment</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(jobTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l2ji-jobs-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">New Businesses</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(bizTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l2ji-biz-chart"></canvas></div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    // 1. Women Progressing — horizontal %, integer labels
+    erBar('l2ji-wp-chart', a,
+      [{ data: wpVals, backgroundColor: colors }],
+      { horizontal: true, pctLabel: true, formatter: intPct });
+
+    // 2. Female Entrepreneurs — vertical %, integer labels
+    erBar('l2ji-fe-chart', a,
+      [{ data: feVals, backgroundColor: colors }],
+      { pctLabel: true, formatter: intPct });
+
+    // 3. Jobs Created — vertical counts, ER_COLORS
+    erBar('l2ji-jobs-chart', a, [{ data: jobVals, backgroundColor: colors }]);
+
+    // 4. New Businesses — vertical counts, ER_COLORS
+    erBar('l2ji-biz-chart', a, [{ data: bizVals, backgroundColor: colors }]);
+  }, 0);
+
+  const l2Panel = document.getElementById('panel-level2');
+  if (l2Panel) l2Panel.style.display = 'none';
+  section.style.display = 'block';
+}
+
 function renderLivelihoodsReachCharts() {
   const section = document.getElementById('sublevel-stats-section');
   const a = activeCt();
@@ -1048,6 +1127,12 @@ function renderSubLevelStats(panelId, subLevelValue) {
   // Level 2: Livelihoods Reach gets a 2×2 bar chart grid
   if (panelId === 'level2' && subLevelValue === 'Livelihoods Reach') {
     renderLivelihoodsReachCharts();
+    return;
+  }
+
+  // Level 2: Jobs & Income gets a 2×2 bar chart grid
+  if (panelId === 'level2' && subLevelValue === 'Jobs & Income') {
+    renderJobsIncomeCharts();
     return;
   }
 
