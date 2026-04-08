@@ -196,6 +196,14 @@ const EO = {
   }
 };
 
+// ─── LEVEL 2 STATIC DATA ───────────────────────────────────────
+const L2 = {
+  // Young Women Supported by Transition Guides
+  youngWomenTG: { Ghana:5966, Malawi:1837, Tanzania:16306, Zambia:3750, Zimbabwe:5390, Total:33249 },
+  // Young Women Supported by CAMFED in Tertiary Education
+  tertiary:     { Ghana:390,  Malawi:1718, Tanzania:1053,  Zambia:910,  Zimbabwe:719,  Total:4790 }
+};
+
 // ─── STATE ─────────────────────────────────────────────────────
 let sel = { countries: ['All'], dateStart: 2020, dateEnd: 2030, level: '', subLevel: '' };
 const charts = {};
@@ -829,14 +837,76 @@ function renderLearnerGuideProgrammeCharts() {
   section.style.display = 'block';
 }
 
+function renderLeadershipTertiaryCharts() {
+  const section = document.getElementById('sublevel-stats-section');
+  const a = activeCt();
+  const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
+
+  const tgVals   = a.map(c => D.kpi22.transition[c] || 0);
+  const tgTotal  = tgVals.reduce((s, v) => s + v, 0);
+
+  const camaVals  = a.map(c => D.kpi21.cum[c] || 0);
+  const camaTotal = camaVals.reduce((s, v) => s + v, 0);
+
+  const ywTGVals  = a.map(c => L2.youngWomenTG[c] || 0);
+  const ywTGTotal = ywTGVals.reduce((s, v) => s + v, 0);
+
+  const tertVals  = a.map(c => L2.tertiary[c] || 0);
+  const tertTotal = tertVals.reduce((s, v) => s + v, 0);
+
+  section.innerHTML = `
+    <div class="er-grid">
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Active Transition Guides</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(tgTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l2lt-tg-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Numbers of CAMA Members</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(camaTotal)}</span>
+        </div>
+        <span class="er-filter-badge">Total membership all-time &#x2304;</span>
+        <div class="er-chart-wrap"><canvas id="l2lt-cama-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Young Women Supported by Transition Guides</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(ywTGTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l2lt-ywtg-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Young Women Supported by CAMFED in Tertiary Education</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(tertTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l2lt-tert-chart"></canvas></div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    erBar('l2lt-tg-chart',   a, [{ data: tgVals,   backgroundColor: colors }]);
+    erBar('l2lt-cama-chart', a, [{ data: camaVals,  backgroundColor: colors }]);
+    erBar('l2lt-ywtg-chart', a, [{ data: ywTGVals,  backgroundColor: colors }]);
+    erBar('l2lt-tert-chart', a, [{ data: tertVals,  backgroundColor: colors }]);
+  }, 0);
+
+  const l2Panel = document.getElementById('panel-level2');
+  if (l2Panel) l2Panel.style.display = 'none';
+  section.style.display = 'block';
+}
+
 // ─── RENDER SUBLEVEL STATISTICS ───────────────────────────────
 // Auto-populates all stats for the selected Level + SubLevel combination
 function renderSubLevelStats(panelId, subLevelValue) {
   const section  = document.getElementById('sublevel-stats-section');
-  const l1Panel  = document.getElementById('panel-level1');
 
-  // Always restore Level 1 panel visibility first; Education Reach will hide it again
-  if (l1Panel) l1Panel.style.display = '';
+  // Restore the current level's tab panel; custom views will hide it again if needed
+  const activePanel = document.getElementById(`panel-${panelId}`);
+  if (activePanel) activePanel.style.display = '';
 
   if (!subLevelValue) { section.style.display = 'none'; return; }
 
@@ -858,7 +928,13 @@ function renderSubLevelStats(panelId, subLevelValue) {
     return;
   }
 
-  // Restore default card structure if Education Reach overwrote it
+  // Level 2: Leadership & Tertiary gets a 2×2 bar chart grid
+  if (panelId === 'level2' && subLevelValue === 'Leadership and Tertiary') {
+    renderLeadershipTertiaryCharts();
+    return;
+  }
+
+  // Restore default card structure if a custom view overwrote it
   if (!document.getElementById('sublevel-stats-title')) {
     section.innerHTML = `
       <div class="data-card">
