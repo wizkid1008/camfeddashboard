@@ -167,6 +167,35 @@ const D = {
   districts:{Ghana:['Accra Metro','Awutu Senya','Birim Central','Ejura Sekyedumase','Kpando'],Malawi:['Balaka','Blantyre','Chiradzulu','Chikwawa','Dedza'],Tanzania:['Bagamoyo','Chalinze','Chamwino','Chato','Gairo'],Zambia:['Chililabombwe','Chingola','Chipata','Kabwe','Kafue'],Zimbabwe:['Binga','Buhera','Bulawayo','Chiredzi','Chinhoyi']}
 };
 
+// ─── EDUCATION OUTCOMES STATIC DATA ───────────────────────────
+// Separate from D to keep it focused; all values are % points.
+const EO = {
+  // Exam pass rates — lower secondary (Form 1–3)
+  examLower: {
+    Ghana:    { benchmark: 65, clients: 78 },
+    Malawi:   { benchmark: 52, clients: 68 },
+    Tanzania: { benchmark: 59, clients: 74 },
+    Zambia:   { benchmark: 61, clients: 77 },
+    Zimbabwe: { benchmark: 58, clients: 73 }
+  },
+  // Exam pass rates — upper secondary (Form 4+)
+  examUpper: {
+    Ghana:    { benchmark: 55, clients: 72 },
+    Malawi:   { benchmark: 44, clients: 61 },
+    Tanzania: { benchmark: 50, clients: 67 },
+    Zambia:   { benchmark: 52, clients: 69 },
+    Zimbabwe: { benchmark: 48, clients: 65 }
+  },
+  // School completion rates
+  completion: {
+    Ghana:    { lower: 87, upper: 72 },
+    Malawi:   { lower: 64, upper: 41 },
+    Tanzania: { lower: 76, upper: 58 },
+    Zambia:   { lower: 81, upper: 65 },
+    Zimbabwe: { lower: 79, upper: 60 }
+  }
+};
+
 // ─── STATE ─────────────────────────────────────────────────────
 let sel = { countries: ['All'], dateStart: 2020, dateEnd: 2030, level: '', subLevel: '' };
 const charts = {};
@@ -504,7 +533,7 @@ function erBar(id, labels, datasets, opts = {}) {
           display: true,
           color: '#3a1a5a',
           font: { size: 10, weight: '700', family: "'Lato', sans-serif" },
-          formatter: v => fmtK(v),
+          formatter: opts.pctLabel ? v => v.toFixed(2) + '%' : v => fmtK(v),
           anchor: horiz ? 'end' : 'end',
           align: horiz ? 'right' : 'top',
           offset: 2,
@@ -515,12 +544,20 @@ function erBar(id, labels, datasets, opts = {}) {
         x: {
           stacked: !!opts.stacked,
           grid: { color: 'rgba(74,26,107,0.08)' },
-          ticks: { color: '#4a3560', font: { size: 10 }, callback: v => horiz ? fmtK(v) : v }
+          ticks: {
+            color: '#4a3560', font: { size: 10 },
+            // Value axis for horiz bars; category axis for vertical bars
+            callback: horiz ? v => fmtK(v) : function(v) { return this.getLabelForValue(v); }
+          }
         },
         y: {
           stacked: !!opts.stacked,
           grid: { color: horiz ? 'rgba(0,0,0,0)' : 'rgba(74,26,107,0.08)' },
-          ticks: { color: '#4a3560', font: { size: 10 }, callback: v => horiz ? v : fmtK(v) }
+          ticks: {
+            color: '#4a3560', font: { size: 10 },
+            // Category axis for horiz bars; value axis for vertical bars
+            callback: horiz ? function(v) { return this.getLabelForValue(v); } : (opts.pctLabel ? v => v + '%' : v => fmtK(v))
+          }
         }
       },
       layout: { padding: { top: horiz ? 4 : 24, right: horiz ? 48 : 8 } }
@@ -604,6 +641,194 @@ function renderEducationReachCharts() {
   section.style.display = 'block';
 }
 
+function renderEducationOutcomesCharts() {
+  const section = document.getElementById('sublevel-stats-section');
+  const a = activeCt();
+  const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
+
+  // Dropout % per active country
+  const dropVals = a.map(c => D.kpi15.pct[c] || 0);
+
+  // Progression to next grade table rows (D.p9 has form1–form4)
+  function progRows() {
+    return a.map(c => {
+      const f1 = D.p9.form1[c], f2 = D.p9.form2[c],
+            f3 = D.p9.form3[c], f4 = D.p9.form4[c];
+      const cell = v => v != null && v > 0 ? v.toFixed(1) + '%' : '—';
+      return `<tr><td>${c}</td><td>${cell(f1)}</td><td>${cell(f2)}</td><td>${cell(f3)}</td><td>${cell(f4)}</td></tr>`;
+    }).join('');
+  }
+
+  // Exam pass rates table rows for a given level
+  function examRows(level) {
+    const src = level === 'upper' ? EO.examUpper : EO.examLower;
+    return a.map(c => {
+      const d = src[c] || {};
+      return `<tr><td>${c}</td><td>${d.benchmark != null ? d.benchmark + '%' : '—'}</td><td>${d.clients != null ? d.clients + '%' : '—'}</td></tr>`;
+    }).join('');
+  }
+
+  // School completion table rows
+  function complRows() {
+    return a.map(c => {
+      const d = EO.completion[c] || {};
+      return `<tr><td>${c}</td><td>${d.lower != null ? d.lower + '%' : '—'}</td><td>${d.upper != null ? d.upper + '%' : '—'}</td></tr>`;
+    }).join('');
+  }
+
+  section.innerHTML = `
+    <div class="er-grid">
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Dropout Rate for Girls with Education Bursaries (EMP)</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="eo-dropout-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Progression to Next Grade</span>
+        </div>
+        <div class="er-table-wrap">
+          <table class="er-table">
+            <thead><tr><th>Country</th><th>Form 1</th><th>Form 2</th><th>Form 3</th><th>Form 4</th></tr></thead>
+            <tbody>${progRows()}</tbody>
+          </table>
+        </div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Exam Pass Rates</span>
+          <div class="er-radio-group">
+            <label class="er-radio-opt"><input type="radio" name="eo-exam-lvl" value="lower" checked> Lower Sec.</label>
+            <label class="er-radio-opt"><input type="radio" name="eo-exam-lvl" value="upper"> Upper Sec.</label>
+          </div>
+        </div>
+        <div class="er-table-wrap">
+          <table class="er-table">
+            <thead><tr><th>Country</th><th>Benchmark</th><th>Clients</th></tr></thead>
+            <tbody id="eo-exam-tbody">${examRows('lower')}</tbody>
+          </table>
+        </div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">School Completion Rate</span>
+        </div>
+        <div class="er-table-wrap">
+          <table class="er-table">
+            <thead><tr><th>Country</th><th>Lower Sec.</th><th>Upper Sec.</th></tr></thead>
+            <tbody>${complRows()}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    erBar('eo-dropout-chart', a,
+      [{ data: dropVals, backgroundColor: colors }],
+      { pctLabel: true });
+
+    // Radio toggle for exam pass rates
+    section.querySelectorAll('input[name="eo-exam-lvl"]').forEach(radio => {
+      radio.addEventListener('change', e => {
+        const tbody = document.getElementById('eo-exam-tbody');
+        if (tbody) tbody.innerHTML = examRows(e.target.value);
+      });
+    });
+  }, 0);
+
+  const l1Panel = document.getElementById('panel-level1');
+  if (l1Panel) l1Panel.style.display = 'none';
+  section.style.display = 'block';
+}
+
+function renderLearnerGuideProgrammeCharts() {
+  const section = document.getElementById('sublevel-stats-section');
+  const a = activeCt();
+
+  // ── LG Training chart data (CAMFED-only bars; total = sum of those bars) ──
+  const LG = 'Active Learner Guides';
+  const lgVals = a.map(c => {
+    const t = ddQC(LG, c);
+    const d = (D.kpi19.camfed[c] || 0) + (D.kpi19.govt[c] || 0) || 1;
+    return ddSplit(t, D.kpi19.camfed[c] || 0, d);
+  });
+  const lgCamfedTotal = lgVals.reduce((s, v) => s + v, 0);
+
+  // ── SLS Girls/Boys data ──
+  const girlsRatio = (D.kpi13.annual.girls.Total || 0) / (D.kpi13.annual.total.Total || 1);
+  const girlsVals = a.map(c => Math.round(ddQC('Number of Clients by Form', c) * girlsRatio));
+  const boysVals  = a.map(c => Math.round(ddQC('Number of Clients by Form', c) * (1 - girlsRatio)));
+  const slsTotal  = girlsVals.reduce((s, v) => s + v, 0) + boysVals.reduce((s, v) => s + v, 0);
+
+  section.innerHTML = `
+    <div class="lg-stat-strip">
+      <div class="lg-stat-card">
+        <div class="lg-stat-title">Active Learner Guides</div>
+        <div class="lg-stat-value">(Blank)</div>
+      </div>
+      <div class="lg-stat-card">
+        <div class="lg-stat-title">Girls Reporting Increased Agency</div>
+        <div class="lg-stat-na">Data Not Available</div>
+      </div>
+      <div class="lg-stat-card">
+        <div class="lg-stat-title">Learner Guides Reporting Increased Agency</div>
+        <div class="lg-stat-value">99.0%</div>
+      </div>
+      <div class="lg-stat-card">
+        <div class="lg-stat-title">Average number of children receiving My Better World annually.</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:6px;">
+          <span id="lg-mbw-val" class="lg-stat-value">111</span>
+          <div class="lg-radio-group" style="flex-direction:column;gap:5px;">
+            <label class="lg-radio-opt"><input type="radio" name="lg-mbw" value="111" checked> per LG</label>
+            <label class="lg-radio-opt"><input type="radio" name="lg-mbw" value="890"> per School</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="er-grid">
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Active Learner Guides by Training</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(lgCamfedTotal)}</span>
+        </div>
+        <div class="er-chart-wrap" style="height:300px;"><canvas id="lg-training-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Children Receiving Social and Learning Support Including My Better World Sessions</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(slsTotal)}</span>
+        </div>
+        <div class="er-chart-wrap" style="height:300px;"><canvas id="lg-sls-chart"></canvas></div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    // 1. CAMFED Trained — gold vertical bars
+    erBar('lg-training-chart', a,
+      [{ label: 'CAMFED Trained', data: lgVals, backgroundColor: '#c8882a' }],
+      { legend: true });
+
+    // 2. Girls (deep purple-black) / Boys (dark red) grouped bar
+    erBar('lg-sls-chart', a, [
+      { label: 'Girls', data: girlsVals, backgroundColor: '#1a0a2e' },
+      { label: 'Boys',  data: boysVals,  backgroundColor: '#8b2500' }
+    ], { legend: true });
+
+    // MBW radio toggle
+    section.querySelectorAll('input[name="lg-mbw"]').forEach(radio => {
+      radio.addEventListener('change', e => {
+        const el = document.getElementById('lg-mbw-val');
+        if (el) el.textContent = e.target.value;
+      });
+    });
+  }, 0);
+
+  const l1Panel = document.getElementById('panel-level1');
+  if (l1Panel) l1Panel.style.display = 'none';
+  section.style.display = 'block';
+}
+
 // ─── RENDER SUBLEVEL STATISTICS ───────────────────────────────
 // Auto-populates all stats for the selected Level + SubLevel combination
 function renderSubLevelStats(panelId, subLevelValue) {
@@ -618,6 +843,18 @@ function renderSubLevelStats(panelId, subLevelValue) {
   // Education Reach gets its own chart-based view (hides the normal Level 1 charts)
   if (panelId === 'level1' && subLevelValue === 'Education Reach') {
     renderEducationReachCharts();
+    return;
+  }
+
+  // Education Outcomes gets a 2×2 grid with a bar chart + three tables
+  if (panelId === 'level1' && subLevelValue === 'Education Outcomes') {
+    renderEducationOutcomesCharts();
+    return;
+  }
+
+  // Learner Guide Programme gets 4 stat cards + 2 charts
+  if (panelId === 'level1' && subLevelValue === 'Learner Guide Programme') {
+    renderLearnerGuideProgrammeCharts();
     return;
   }
 
