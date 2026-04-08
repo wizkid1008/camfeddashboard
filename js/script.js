@@ -597,17 +597,26 @@ function renderEducationReachCharts() {
     erBar('er-boys-chart', a, [{ data: boVals, backgroundColor: colors }], { horizontal: true });
   }, 0);
 
+  // Hide the normal Level 1 charts — only the 4 ER charts should show
+  const l1Panel = document.getElementById('panel-level1');
+  if (l1Panel) l1Panel.style.display = 'none';
+
   section.style.display = 'block';
 }
 
 // ─── RENDER SUBLEVEL STATISTICS ───────────────────────────────
 // Auto-populates all stats for the selected Level + SubLevel combination
 function renderSubLevelStats(panelId, subLevelValue) {
-  const section = document.getElementById('sublevel-stats-section');
+  const section  = document.getElementById('sublevel-stats-section');
+  const l1Panel  = document.getElementById('panel-level1');
+
+  // Always restore Level 1 panel visibility first; Education Reach will hide it again
+  if (l1Panel) l1Panel.style.display = '';
+
   if (!subLevelValue) { section.style.display = 'none'; return; }
 
-  // Education Reach gets its own chart-based view
-  if (panelId === 'panel-level1' && subLevelValue === 'Education Reach') {
+  // Education Reach gets its own chart-based view (hides the normal Level 1 charts)
+  if (panelId === 'level1' && subLevelValue === 'Education Reach') {
     renderEducationReachCharts();
     return;
   }
@@ -834,8 +843,8 @@ document.getElementById('level-select').addEventListener('change', e=>{
   sel.level = value;
   sel.subLevel = '';
 
-  // Switch visible panel
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  // Switch visible panel (clear any inline display set by Education Reach)
+  document.querySelectorAll('.tab-panel').forEach(p=>{ p.classList.remove('active'); p.style.display = ''; });
   document.getElementById('panel-' + value)?.classList.add('active');
 
   // Reset and populate sublevel dropdown for the selected level
