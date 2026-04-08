@@ -222,6 +222,16 @@ const L2JI = {
   womenProgress: { Ghana:87, Malawi:98, Tanzania:65, Zambia:85, Zimbabwe:81 }
 };
 
+// ─── LEVEL 2 AGRICULTURE & FOOD STATIC DATA ───────────────────
+const L2AF = {
+  // % Female Entrepreneurs — Increased Household Food Consumption
+  foodConsumption: { Ghana:86, Malawi:71, Tanzania:52, Zambia:89, Zimbabwe:81 },
+  // % Female Agripreneurs — Increased Yields (null = Not Available)
+  agriYields:      { Ghana:80, Malawi:null, Tanzania:75, Zambia:82, Zimbabwe:78 },
+  // Avg Climate-Smart Techniques used (null = Not Available)
+  climateSmart:    { Ghana:6.0, Malawi:null, Tanzania:null, Zambia:7.7, Zimbabwe:8.7 }
+};
+
 // ─── STATE ─────────────────────────────────────────────────────
 let sel = { countries: ['All'], dateStart: 2020, dateEnd: 2030, level: '', subLevel: '' };
 const charts = {};
@@ -855,6 +865,74 @@ function renderLearnerGuideProgrammeCharts() {
   section.style.display = 'block';
 }
 
+function renderAgricultureFoodCharts() {
+  const section = document.getElementById('sublevel-stats-section');
+  const a = activeCt();
+  const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
+  const intPct  = v => Math.round(v) + '%';
+
+  // Left chart data
+  const fcVals = a.map(c => L2AF.foodConsumption[c] || 0);
+
+  // Right table rows — Agri Yields
+  function agriRows() {
+    return a.map(c => {
+      const v = L2AF.agriYields[c];
+      return `<tr><td>${c}</td><td>${v != null ? v + '%' : '<em>Not Available</em>'}</td></tr>`;
+    }).join('');
+  }
+
+  // Right table rows — Climate Smart
+  function csRows() {
+    return a.map(c => {
+      const v = L2AF.climateSmart[c];
+      return `<tr><td>${c}</td><td>${v != null ? v.toFixed(1) : '<em>Not Available</em>'}</td></tr>`;
+    }).join('');
+  }
+
+  section.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+      <div class="er-card" style="grid-row:span 2;">
+        <div class="er-card-header">
+          <span class="er-card-title">Percentage of Female Entrepreneurs Reporting an Increased Household Consumption of Food Since Participating in CAMFED's Enterprise Programme</span>
+        </div>
+        <div class="er-chart-wrap" style="height:400px;"><canvas id="l2af-food-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Percentage of Female Agripreneurs Reporting Increased Yields Since Participating in The Agriculture Guide Programme</span>
+        </div>
+        <div class="er-table-wrap">
+          <table class="er-table">
+            <thead><tr><th>Country</th><th>Value</th></tr></thead>
+            <tbody>${agriRows()}</tbody>
+          </table>
+        </div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Average Number of Climate-Smart Techniques Used by Those Receiving Support from an Agriculture Guide</span>
+        </div>
+        <div class="er-table-wrap">
+          <table class="er-table">
+            <thead><tr><th>Country</th><th>Indicator</th></tr></thead>
+            <tbody>${csRows()}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    erBar('l2af-food-chart', a,
+      [{ data: fcVals, backgroundColor: colors }],
+      { pctLabel: true, formatter: intPct });
+  }, 0);
+
+  const l2Panel = document.getElementById('panel-level2');
+  if (l2Panel) l2Panel.style.display = 'none';
+  section.style.display = 'block';
+}
+
 function renderJobsIncomeCharts() {
   const section = document.getElementById('sublevel-stats-section');
   const a = activeCt();
@@ -1133,6 +1211,12 @@ function renderSubLevelStats(panelId, subLevelValue) {
   // Level 2: Jobs & Income gets a 2×2 bar chart grid
   if (panelId === 'level2' && subLevelValue === 'Jobs & Income') {
     renderJobsIncomeCharts();
+    return;
+  }
+
+  // Level 2: Agriculture & Food gets a chart (left) + 2 tables (right) layout
+  if (panelId === 'level2' && subLevelValue === 'Agriculture & Food') {
+    renderAgricultureFoodCharts();
     return;
   }
 
