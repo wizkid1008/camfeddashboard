@@ -1631,3 +1631,116 @@ body::before {
   .analysis-type-label { display: none; }
   .analysis-type-select { font-size: 0.7rem; }
 }
+
+/* ── EDUCATION OUTCOMES — table + radio styles ── */
+.er-table-wrap {
+  overflow-x: auto;
+  margin-top: 10px;
+  flex: 1;
+}
+
+.er-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.er-table th {
+  background: var(--purple-deep);
+  color: var(--white);
+  font-weight: 700;
+  padding: 6px 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.er-table td {
+  padding: 5px 10px;
+  color: var(--text-dark);
+  border-bottom: 1px solid var(--cream-border);
+  white-space: nowrap;
+}
+
+.er-table tr:last-child td { border-bottom: none; }
+
+.er-table tr:nth-child(even) td { background: rgba(74,26,107,0.05); }
+
+.er-radio-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.er-radio-opt {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.70rem;
+  font-weight: 600;
+  color: var(--purple-deep);
+  cursor: pointer;
+}
+
+.er-radio-opt input[type="radio"] {
+  accent-color: var(--purple-deep);
+  cursor: pointer;
+}
+
+/* ── LEARNER GUIDE PROGRAMME — stat strip ── */
+.lg-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.lg-stat-card {
+  background: var(--cream);
+  border-radius: 8px;
+  border-top: 3px solid var(--gold);
+  padding: 12px 14px;
+}
+
+.lg-stat-title {
+  font-size: 0.70rem;
+  font-weight: 700;
+  color: var(--purple-deep);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.lg-stat-value {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--purple-deep);
+  line-height: 1;
+}
+
+.lg-stat-na {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.lg-radio-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.lg-radio-opt {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--purple-deep);
+  cursor: pointer;
+}
+
+.lg-radio-opt input[type="radio"] {
+  accent-color: var(--purple-deep);
+  cursor: pointer;
+}
