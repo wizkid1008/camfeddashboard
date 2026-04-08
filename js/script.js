@@ -515,12 +515,20 @@ function erBar(id, labels, datasets, opts = {}) {
         x: {
           stacked: !!opts.stacked,
           grid: { color: 'rgba(74,26,107,0.08)' },
-          ticks: { color: '#4a3560', font: { size: 10 }, callback: v => horiz ? fmtK(v) : v }
+          ticks: {
+            color: '#4a3560', font: { size: 10 },
+            // Value axis for horiz bars; category axis for vertical bars
+            callback: horiz ? v => fmtK(v) : function(v) { return this.getLabelForValue(v); }
+          }
         },
         y: {
           stacked: !!opts.stacked,
           grid: { color: horiz ? 'rgba(0,0,0,0)' : 'rgba(74,26,107,0.08)' },
-          ticks: { color: '#4a3560', font: { size: 10 }, callback: v => horiz ? v : fmtK(v) }
+          ticks: {
+            color: '#4a3560', font: { size: 10 },
+            // Category axis for horiz bars; value axis for vertical bars
+            callback: horiz ? function(v) { return this.getLabelForValue(v); } : v => fmtK(v)
+          }
         }
       },
       layout: { padding: { top: horiz ? 4 : 24, right: horiz ? 48 : 8 } }
