@@ -204,6 +204,18 @@ const L2 = {
   tertiary:     { Ghana:390,  Malawi:1718, Tanzania:1053,  Zambia:910,  Zimbabwe:719,  Total:4790 }
 };
 
+// ─── LEVEL 2 LIVELIHOODS REACH STATIC DATA ────────────────────
+const L2LR = {
+  // Business Grants — Number of Grants
+  grantsNum: { Ghana:2427, Malawi:3299, Tanzania:2895, Zambia:2844, Zimbabwe:4330, Total:15795 },
+  // Business Grants — Value of Grants (USD)
+  grantsVal: { Ghana:1213500, Malawi:1649500, Tanzania:1447500, Zambia:1422000, Zimbabwe:2165000, Total:7897500 },
+  // CAMFED Kiva Loans
+  kiva: { Ghana:693, Malawi:30, Tanzania:12, Zambia:11, Zimbabwe:17, Total:763 },
+  // CAMFED RIF Loans  (763 + 1195 = 1,958 total)
+  rif:  { Ghana:0,   Malawi:82, Tanzania:510, Zambia:61, Zimbabwe:542, Total:1195 }
+};
+
 // ─── STATE ─────────────────────────────────────────────────────
 let sel = { countries: ['All'], dateStart: 2020, dateEnd: 2030, level: '', subLevel: '' };
 const charts = {};
@@ -837,6 +849,105 @@ function renderLearnerGuideProgrammeCharts() {
   section.style.display = 'block';
 }
 
+function renderLivelihoodsReachCharts() {
+  const section = document.getElementById('sublevel-stats-section');
+  const a = activeCt();
+  const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
+
+  // Enterprise Guides (Agriculture + Business)
+  const agVals  = a.map(c => D.kpi22.agriculture[c] || 0);
+  const bizVals = a.map(c => D.kpi22.business[c] || 0);
+  const egTotal = agVals.reduce((s, v) => s + v, 0) + bizVals.reduce((s, v) => s + v, 0);
+
+  // Businesses Supported (Agriculture-guided + Business-guided)
+  const bsAgVals  = a.map(c => D.kpi27.ag[c] || 0);
+  const bsBizVals = a.map(c => D.kpi27.biz[c] || 0);
+  const bsTotal   = bsAgVals.reduce((s, v) => s + v, 0) + bsBizVals.reduce((s, v) => s + v, 0);
+
+  // Business Grants
+  const grantsNumVals = a.map(c => L2LR.grantsNum[c] || 0);
+  const grantsValVals = a.map(c => L2LR.grantsVal[c] || 0);
+  const grantsTotal   = grantsNumVals.reduce((s, v) => s + v, 0);
+
+  // Kiva & RIF Loans
+  const kivaVals  = a.map(c => L2LR.kiva[c] || 0);
+  const rifVals   = a.map(c => L2LR.rif[c] || 0);
+  const loansTotal = kivaVals.reduce((s, v) => s + v, 0) + rifVals.reduce((s, v) => s + v, 0);
+
+  section.innerHTML = `
+    <div class="er-grid">
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Active Enterprise Guides (Business &amp; Agriculture Guides)</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(egTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l2lr-eg-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Businesses Supported by Enterprise Guides</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(bsTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l2lr-bs-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Business Grants Distributed</span>
+          <span class="er-total-badge">Total &nbsp;<span id="l2lr-grants-total">${fmt(grantsTotal)}</span></span>
+        </div>
+        <div style="margin:4px 0 6px;display:flex;gap:14px;flex-wrap:wrap;">
+          <label class="er-radio-opt"><input type="radio" name="l2lr-grants" value="num" checked> Number of Grants</label>
+          <label class="er-radio-opt"><input type="radio" name="l2lr-grants" value="val"> Value of Grants (USD)</label>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l2lr-grants-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">CAMFED Kiva &amp; RIF Loans Distributed</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(loansTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="l2lr-loans-chart"></canvas></div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    // 1. Enterprise Guides: Agriculture (dark) / Business (steel blue) grouped
+    erBar('l2lr-eg-chart', a, [
+      { label: 'Agriculture Guides', data: agVals,  backgroundColor: '#1a0a2e' },
+      { label: 'Business Guides',    data: bizVals, backgroundColor: '#4a7fb5' }
+    ], { legend: true });
+
+    // 2. Businesses Supported: same colour pairing
+    erBar('l2lr-bs-chart', a, [
+      { label: 'Agriculture Guides', data: bsAgVals,  backgroundColor: '#1a0a2e' },
+      { label: 'Business Guides',    data: bsBizVals, backgroundColor: '#4a7fb5' }
+    ], { legend: true });
+
+    // 3. Business Grants: per-country colours, radio switches dataset
+    function drawGrants(mode) {
+      const vals  = mode === 'val' ? grantsValVals : grantsNumVals;
+      const total = vals.reduce((s, v) => s + v, 0);
+      const el = document.getElementById('l2lr-grants-total');
+      if (el) el.textContent = fmt(total);
+      erBar('l2lr-grants-chart', a, [{ data: vals, backgroundColor: colors }]);
+    }
+    drawGrants('num');
+    section.querySelectorAll('input[name="l2lr-grants"]').forEach(r =>
+      r.addEventListener('change', e => drawGrants(e.target.value))
+    );
+
+    // 4. Kiva (steel blue) / RIF (dark) grouped
+    erBar('l2lr-loans-chart', a, [
+      { label: 'CAMFED Kiva Loans', data: kivaVals, backgroundColor: '#4a7fb5' },
+      { label: 'CAMFED RIF Loans',  data: rifVals,  backgroundColor: '#1a0a2e' }
+    ], { legend: true });
+  }, 0);
+
+  const l2Panel = document.getElementById('panel-level2');
+  if (l2Panel) l2Panel.style.display = 'none';
+  section.style.display = 'block';
+}
+
 function renderLeadershipTertiaryCharts() {
   const section = document.getElementById('sublevel-stats-section');
   const a = activeCt();
@@ -931,6 +1042,12 @@ function renderSubLevelStats(panelId, subLevelValue) {
   // Level 2: Leadership & Tertiary gets a 2×2 bar chart grid
   if (panelId === 'level2' && subLevelValue === 'Leadership and Tertiary') {
     renderLeadershipTertiaryCharts();
+    return;
+  }
+
+  // Level 2: Livelihoods Reach gets a 2×2 bar chart grid
+  if (panelId === 'level2' && subLevelValue === 'Livelihoods Reach') {
+    renderLivelihoodsReachCharts();
     return;
   }
 
