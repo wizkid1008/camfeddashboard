@@ -119,6 +119,12 @@ const levelToPanelId = {
   "LEVEL 3: Education Systems": 'level3'
 };
 
+// Register datalabels plugin; disable globally so existing charts are unaffected
+if (typeof ChartDataLabels !== 'undefined') {
+  Chart.register(ChartDataLabels);
+  Chart.defaults.plugins.datalabels.display = false;
+}
+
 // ─── COLOUR PALETTE ────────────────────────────────────────────
 const C = ['Ghana','Malawi','Tanzania','Zambia','Zimbabwe'];
 const CC = {
@@ -474,11 +480,146 @@ function resolveKpiValue(stat) {
   return n != null ? (stat.pct ? n.toFixed(2) + '%' : fmt(n)) : null;
 }
 
+// ─── EDUCATION REACH CHART VIEW ───────────────────────────────
+const ER_COLORS = ['#c0392b','#1a0a2e','#b8860b','#6a0dad','#4a7fb5'];
+
+function erBar(id, labels, datasets, opts = {}) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  const horiz = !!opts.horizontal;
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: datasets.map(d => ({ ...d, borderRadius: 3, borderSkipped: false }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: horiz ? 'y' : 'x',
+      plugins: {
+        legend: { display: !!opts.legend, labels: { color: '#3a1a5a', font: { size: 10 }, usePointStyle: true, pointStyle: 'rect' } },
+        datalabels: {
+          display: true,
+          color: '#3a1a5a',
+          font: { size: 10, weight: '700', family: "'Lato', sans-serif" },
+          formatter: v => fmtK(v),
+          anchor: horiz ? 'end' : 'end',
+          align: horiz ? 'right' : 'top',
+          offset: 2,
+          clamp: true
+        }
+      },
+      scales: {
+        x: {
+          stacked: !!opts.stacked,
+          grid: { color: 'rgba(74,26,107,0.08)' },
+          ticks: { color: '#4a3560', font: { size: 10 }, callback: v => horiz ? fmtK(v) : v }
+        },
+        y: {
+          stacked: !!opts.stacked,
+          grid: { color: horiz ? 'rgba(0,0,0,0)' : 'rgba(74,26,107,0.08)' },
+          ticks: { color: '#4a3560', font: { size: 10 }, callback: v => horiz ? v : fmtK(v) }
+        }
+      },
+      layout: { padding: { top: horiz ? 4 : 24, right: horiz ? 48 : 8 } }
+    }
+  });
+}
+
+function renderEducationReachCharts() {
+  const section = document.getElementById('sublevel-stats-section');
+  const a = activeCt();
+  const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
+
+  // Data
+  const BUR = 'Children Supported in School with Education Bursaries';
+  const bVals   = a.map(c => ddQC(BUR, c));
+  const bTotal  = bVals.reduce((s, v) => s + v, 0);
+
+  const camaVals = a.map(c => ddQC('CAMA Members', c));
+  const commVals = a.map(c => ddQC('Active Guides by Type', c));
+  const ccTotal  = camaVals.reduce((s, v) => s + v, 0) + commVals.reduce((s, v) => s + v, 0);
+
+  const girlsRatio = (D.kpi13.annual.girls.Total || 0) / (D.kpi13.annual.total.Total || 1);
+  const gVals  = a.map(c => Math.round(ddQC('Number of Clients by Form', c) * girlsRatio));
+  const gTotal = gVals.reduce((s, v) => s + v, 0);
+  const boVals  = a.map(c => Math.round(ddQC('Number of Clients by Form', c) * (1 - girlsRatio)));
+  const boTotal = boVals.reduce((s, v) => s + v, 0);
+
+  section.innerHTML = `
+    <div class="er-grid">
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Girls Supported in School with Education Bursaries</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(bTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="er-bursary-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Girls Supported in School by CAMA &amp; Community Champions</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(ccTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="er-cama-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Total Girls Supported</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(gTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="er-girls-chart"></canvas></div>
+      </div>
+      <div class="er-card">
+        <div class="er-card-header">
+          <span class="er-card-title">Total Boys Supported</span>
+          <span class="er-total-badge">Total &nbsp;${fmt(boTotal)}</span>
+        </div>
+        <div class="er-chart-wrap"><canvas id="er-boys-chart"></canvas></div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    // 1. Bursary — vertical bar, one colour per country
+    erBar('er-bursary-chart', a, [{ data: bVals, backgroundColor: colors }]);
+
+    // 2. CAMA & Community — grouped bar
+    erBar('er-cama-chart', a, [
+      { label: 'CAMA',      data: camaVals, backgroundColor: '#1a0a2e' },
+      { label: 'Community', data: commVals, backgroundColor: '#c8882a' }
+    ], { legend: true });
+
+    // 3. Total Girls — horizontal bar, one colour per country
+    erBar('er-girls-chart', a, [{ data: gVals, backgroundColor: colors }], { horizontal: true });
+
+    // 4. Total Boys — horizontal bar, one colour per country
+    erBar('er-boys-chart', a, [{ data: boVals, backgroundColor: colors }], { horizontal: true });
+  }, 0);
+
+  section.style.display = 'block';
+}
+
 // ─── RENDER SUBLEVEL STATISTICS ───────────────────────────────
 // Auto-populates all stats for the selected Level + SubLevel combination
 function renderSubLevelStats(panelId, subLevelValue) {
   const section = document.getElementById('sublevel-stats-section');
   if (!subLevelValue) { section.style.display = 'none'; return; }
+
+  // Education Reach gets its own chart-based view
+  if (panelId === 'panel-level1' && subLevelValue === 'Education Reach') {
+    renderEducationReachCharts();
+    return;
+  }
+
+  // Restore default card structure if Education Reach overwrote it
+  if (!document.getElementById('sublevel-stats-title')) {
+    section.innerHTML = `
+      <div class="data-card">
+        <div class="data-card-header"><span id="sublevel-stats-title"></span></div>
+        <div class="data-card-body"><ul id="sublevel-stats-list" class="sublevel-stats-list"></ul></div>
+      </div>`;
+  }
 
   const entry = hierarchyData.find(
     item => levelToPanelId[item.level] === panelId && item.subLevel === subLevelValue
