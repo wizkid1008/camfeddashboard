@@ -1,125 +1,83 @@
 // data/dashboardData.js
 //
-// Static, deterministic data file for the CAMFED dashboard.
-// No Math.random() — all values come from fixed formulas so the output is
-// identical on every page load.
+// Fetches dashboard data directly from Supabase via the REST API (no backend).
+// Calls the public.get_dashboard_data() RPC function and sets window.DD in the
+// shape the rest of the app expects:
+//   { countries, districts, schools, years, metrics, data }
 //
-// Usage (plain <script> tag, before script.js):
-//   <script src="data/dashboardData.js"></script>
-//
-// Exposes a single global:  window.DD
-// Destructure what you need:
-//   const { countries, districts, schools, years, metrics, data } = DD;
+// Dispatches 'dd:ready' on document when complete (success or failure).
 
-window.DD = (() => {
+window.DD = null;
 
-  // ── COUNTRIES ──────────────────────────────────────────────────
-  const countries = ['Ghana', 'Malawi', 'Tanzania', 'Zambia', 'Zimbabwe'];
+(async () => {
+  const SUPABASE_URL = 'https://qlvayqyihfixikfqfelu.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_MFmdnO0fxCH-TASV_o77FQ_XeO8SoAk';
 
-  // ── DISTRICTS (6 per country) ──────────────────────────────────
-  const districts = {
-    Ghana:    ['Accra Metro', 'Kumasi Metro', 'Ejura Sekyedumase', 'Awutu Senya', 'Birim Central', 'Kpando'],
-    Malawi:   ['Lilongwe', 'Blantyre', 'Mzimba', 'Balaka', 'Chiradzulu', 'Chikwawa'],
-    Tanzania: ['Bagamoyo', 'Chamwino', 'Chato', 'Chalinze', 'Gairo', 'Kilosa'],
-    Zambia:   ['Kabwe', 'Chipata', 'Kafue', 'Chililabombwe', 'Chingola', 'Lusaka'],
-    Zimbabwe: ['Buhera', 'Bulawayo', 'Chiredzi', 'Binga', 'Chinhoyi', 'Masvingo']
-  };
+  const bar = document.createElement('div');
+  bar.id = 'dd-load-bar';
+  Object.assign(bar.style, {
+    position: 'fixed', top: '0', left: '0', height: '3px', width: '40%',
+    background: '#5e2580', zIndex: '99999',
+    transition: 'width 0.4s ease',
+  });
+  document.body.appendChild(bar);
+  requestAnimationFrame(() => { bar.style.width = '80%'; });
 
-  // ── SCHOOLS (5 per district) ───────────────────────────────────
-  // Named deterministically from the district name + a fixed suffix list.
-  const schools = {};
-  const _suffixes = [
-    'Primary School',
-    'Secondary School',
-    "Girls' Secondary",
-    'Community Day SS',
-    'Academy'
-  ];
-  for (const country of countries) {
-    for (const district of districts[country]) {
-      schools[district] = _suffixes.map(s => `${district} ${s}`);
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_dashboard_data`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: '{}',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `HTTP ${res.status}`);
     }
-  }
 
-  // ── YEARS ──────────────────────────────────────────────────────
-  const years = [2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    const payload = await res.json();
+    const rows = payload.data || [];
 
-  // ── METRICS (exact labels required by the dashboard) ───────────
-  const metrics = [
-    'Children Supported in School with Education Bursaries',
-    'Active Learner Guides',
-    'Number of Clients by Form',
-    'Active Partner Schools',
-    'Women Supported in Tertiary Education',
-    'Active Guides by Type',
-    'Number of Post School Clients',
-    'Grants Disbursed',
-    'Loans Disbursed',
-    'CAMA Members'
-  ];
+    // Build DD metadata from the flat rows array
+    const countriesSet = new Set();
+    const districts    = {};
+    const schools      = {};
+    const yearsSet     = new Set();
+    const metricsSet   = new Set();
 
-  // ── METRIC CONFIG ──────────────────────────────────────────────
-  // base  = school-level value in 2020
-  // growth = annual multiplicative growth factor
-  // Financial metrics (Grants / Loans) use much larger base values.
-  const _metricCfg = {
-    'Children Supported in School with Education Bursaries': { base: 380,   growth: 1.040 },
-    'Active Learner Guides':                                 { base: 22,    growth: 1.030 },
-    'Number of Clients by Form':                             { base: 155,   growth: 1.050 },
-    'Active Partner Schools':                                { base: 9,     growth: 1.020 },
-    'Women Supported in Tertiary Education':                 { base: 30,    growth: 1.060 },
-    'Active Guides by Type':                                 { base: 16,    growth: 1.030 },
-    'Number of Post School Clients':                         { base: 85,    growth: 1.040 },
-    'Grants Disbursed':                                      { base: 68000, growth: 1.070 },
-    'Loans Disbursed':                                       { base: 92000, growth: 1.065 },
-    'CAMA Members':                                          { base: 190,   growth: 1.050 }
-  };
+    for (const r of rows) {
+      if (!r.country) continue;
+      countriesSet.add(r.country);
+      yearsSet.add(r.year);
+      metricsSet.add(r.metric);
 
-  // Per-country scale keeps countries meaningfully different in magnitude.
-  const _countryScale = {
-    Ghana: 1.00, Malawi: 0.82, Tanzania: 1.18, Zambia: 0.94, Zimbabwe: 1.06
-  };
+      if (!districts[r.country]) districts[r.country] = [];
+      if (!districts[r.country].includes(r.district)) districts[r.country].push(r.district);
 
-  // ── DETERMINISTIC HASH ─────────────────────────────────────────
-  // djb2 variant — returns a stable non-negative integer for any string.
-  function _hash(str) {
-    let h = 5381;
-    for (let i = 0; i < str.length; i++) {
-      h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff;
-    }
-    return h;
-  }
-
-  // Per-school/metric variance multiplier in the range [0.82, 1.18].
-  // Same inputs always produce the same multiplier — no randomness.
-  function _variance(country, district, school, metric) {
-    const h = _hash(`${country}|${district}|${school}|${metric}`);
-    return 0.82 + (h % 360) / 1000;
-  }
-
-  // ── BUILD FLAT DATA RECORDS ────────────────────────────────────
-  // Total records: 5 countries × 6 districts × 5 schools × 10 metrics × 11 years = 16,500
-  const data = [];
-
-  for (const country of countries) {
-    const cScale = _countryScale[country];
-
-    for (const district of districts[country]) {
-      for (const school of schools[district]) {
-        for (const metric of metrics) {
-          const { base, growth } = _metricCfg[metric];
-          const v = _variance(country, district, school, metric);
-
-          for (const year of years) {
-            const yearOffset = year - 2020;
-            const value = Math.round(base * Math.pow(growth, yearOffset) * cScale * v);
-            data.push({ country, district, school, metric, year, value });
-          }
-        }
+      if (r.district) {
+        if (!schools[r.district]) schools[r.district] = [];
+        if (r.school && !schools[r.district].includes(r.school)) schools[r.district].push(r.school);
       }
     }
+
+    window.DD = {
+      countries: [...countriesSet].sort(),
+      districts,
+      schools,
+      years:   [...yearsSet].sort((a, b) => a - b),
+      metrics: [...metricsSet],
+      data:    rows,
+    };
+  } catch (err) {
+    console.error('[CAMFED] Failed to load data from Supabase:', err.message);
+    console.warn('[CAMFED] Dynamic Data and Slicer views will be unavailable.');
   }
 
-  return { countries, districts, schools, years, metrics, data };
-
+  bar.style.width = '100%';
+  bar.style.transition = 'width 0.2s ease';
+  setTimeout(() => bar.remove(), 300);
+  document.dispatchEvent(new CustomEvent('dd:ready'));
 })();

@@ -1970,6 +1970,10 @@ let ddInitialised = false;
 
 function ddInit() {
   if (ddInitialised) return;
+  if (!window.DD) {
+    document.addEventListener('dd:ready', ddInit, { once: true });
+    return;
+  }
   ddInitialised = true;
 
   // Populate country dropdown from DD.countries
@@ -2316,6 +2320,10 @@ let slInitialised = false;
 
 function slInit() {
   if (slInitialised) return;
+  if (!window.DD) {
+    document.addEventListener('dd:ready', slInit, { once: true });
+    return;
+  }
   slInitialised = true;
 
   const allCountries = slCountries();
