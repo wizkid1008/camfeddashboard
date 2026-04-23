@@ -1,7 +1,8 @@
 // data/dashboardData.js
 //
-// Fetches dashboard data from the CAMFED backend API and sets window.DD
-// in the same shape the rest of the app expects:
+// Fetches dashboard data directly from Supabase via the REST API (no backend).
+// Calls the public.get_dashboard_data() RPC function and sets window.DD in the
+// shape the rest of the app expects:
 //   { countries, districts, schools, years, metrics, data }
 //
 // Dispatches 'dd:ready' on document when complete (success or failure).
@@ -9,10 +10,9 @@
 window.DD = null;
 
 (async () => {
-  // Relative URL works because the dashboard is served by the same Express server as the API
-  const API_BASE = '';
+  const SUPABASE_URL = 'https://qlvayqyihfixikfqfelu.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_MFmdnO0fxCH-TASV_o77FQ_XeO8SoAk';
 
-  // Show a non-blocking loading bar at the top of the page
   const bar = document.createElement('div');
   bar.id = 'dd-load-bar';
   Object.assign(bar.style, {
@@ -21,23 +21,63 @@ window.DD = null;
     transition: 'width 0.4s ease',
   });
   document.body.appendChild(bar);
-
-  // Animate bar to ~80% while waiting
   requestAnimationFrame(() => { bar.style.width = '80%'; });
 
   try {
-    const res = await fetch(`${API_BASE}/api/data`);
-    if (!res.ok) throw new Error(`API responded with HTTP ${res.status}`);
-    window.DD = await res.json();
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_dashboard_data`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: '{}',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `HTTP ${res.status}`);
+    }
+
+    const payload = await res.json();
+    const rows = payload.data || [];
+
+    // Build DD metadata from the flat rows array
+    const countriesSet = new Set();
+    const districts    = {};
+    const schools      = {};
+    const yearsSet     = new Set();
+    const metricsSet   = new Set();
+
+    for (const r of rows) {
+      if (!r.country) continue;
+      countriesSet.add(r.country);
+      yearsSet.add(r.year);
+      metricsSet.add(r.metric);
+
+      if (!districts[r.country]) districts[r.country] = [];
+      if (!districts[r.country].includes(r.district)) districts[r.country].push(r.district);
+
+      if (r.district) {
+        if (!schools[r.district]) schools[r.district] = [];
+        if (r.school && !schools[r.district].includes(r.school)) schools[r.district].push(r.school);
+      }
+    }
+
+    window.DD = {
+      countries: [...countriesSet].sort(),
+      districts,
+      schools,
+      years:   [...yearsSet].sort((a, b) => a - b),
+      metrics: [...metricsSet],
+      data:    rows,
+    };
   } catch (err) {
-    console.error('[CAMFED] Failed to load data from API:', err.message);
+    console.error('[CAMFED] Failed to load data from Supabase:', err.message);
     console.warn('[CAMFED] Dynamic Data and Slicer views will be unavailable.');
   }
 
-  // Complete and remove bar
   bar.style.width = '100%';
   bar.style.transition = 'width 0.2s ease';
   setTimeout(() => bar.remove(), 300);
-
   document.dispatchEvent(new CustomEvent('dd:ready'));
 })();
