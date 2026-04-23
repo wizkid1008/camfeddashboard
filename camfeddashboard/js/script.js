@@ -2466,3 +2466,8 @@ function slInit() {
   });
 }
 
+// Re-render the active dashboard panel once Supabase data has loaded
+document.addEventListener('dd:ready', () => {
+  if (window.DD) rebuildActive();
+});
+
