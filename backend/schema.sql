@@ -44,8 +44,7 @@ SELECT country, district, school_name AS school, year,
        'Number of Clients by Form — Girls'::text AS metric,
        COUNT(*)::int AS value
 FROM rep_warehouse.view_children_supported
-WHERE school_name IS NOT NULL AND year IS NOT NULL
-  AND gender ILIKE '%female%' OR gender ILIKE '%girl%' OR gender = 'F'
+WHERE school_name IS NOT NULL AND year IS NOT NULL AND gender = 'Female'
 GROUP BY country, district, school_name, year
 
 UNION ALL
@@ -55,8 +54,7 @@ SELECT country, district, school_name AS school, year,
        'Number of Clients by Form — Boys'::text AS metric,
        COUNT(*)::int AS value
 FROM rep_warehouse.view_children_supported
-WHERE school_name IS NOT NULL AND year IS NOT NULL
-  AND gender ILIKE '%male%' OR gender ILIKE '%boy%' OR gender = 'M'
+WHERE school_name IS NOT NULL AND year IS NOT NULL AND gender = 'Male'
 GROUP BY country, district, school_name, year
 
 UNION ALL
