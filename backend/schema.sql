@@ -39,6 +39,28 @@ GROUP BY country, district, school_name, year
 
 UNION ALL
 
+-- 3a. Girls Supported (direct gender count)
+SELECT country, district, school_name AS school, year,
+       'Number of Clients by Form — Girls'::text AS metric,
+       COUNT(*)::int AS value
+FROM rep_warehouse.view_children_supported
+WHERE school_name IS NOT NULL AND year IS NOT NULL
+  AND gender ILIKE '%female%' OR gender ILIKE '%girl%' OR gender = 'F'
+GROUP BY country, district, school_name, year
+
+UNION ALL
+
+-- 3b. Boys Supported (direct gender count)
+SELECT country, district, school_name AS school, year,
+       'Number of Clients by Form — Boys'::text AS metric,
+       COUNT(*)::int AS value
+FROM rep_warehouse.view_children_supported
+WHERE school_name IS NOT NULL AND year IS NOT NULL
+  AND gender ILIKE '%male%' OR gender ILIKE '%boy%' OR gender = 'M'
+GROUP BY country, district, school_name, year
+
+UNION ALL
+
 -- 4. Active Partner Schools
 SELECT country, district, 'District Total' AS school, year,
        'Active Partner Schools'::text AS metric,

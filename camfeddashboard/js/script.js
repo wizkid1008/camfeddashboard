@@ -636,10 +636,9 @@ function renderEducationReachCharts() {
   const commVals = a.map(c => ddQC('Active Guides by Type', c));
   const ccTotal  = camaVals.reduce((s, v) => s + v, 0) + commVals.reduce((s, v) => s + v, 0);
 
-  const girlsRatio = (D.kpi13.annual.girls.Total || 0) / (D.kpi13.annual.total.Total || 1);
-  const gVals  = a.map(c => Math.round(ddQC('Number of Clients by Form', c) * girlsRatio));
-  const gTotal = gVals.reduce((s, v) => s + v, 0);
-  const boVals  = a.map(c => Math.round(ddQC('Number of Clients by Form', c) * (1 - girlsRatio)));
+  const gVals   = a.map(c => ddQC('Number of Clients by Form — Girls', c));
+  const gTotal  = gVals.reduce((s, v) => s + v, 0);
+  const boVals  = a.map(c => ddQC('Number of Clients by Form — Boys', c));
   const boTotal = boVals.reduce((s, v) => s + v, 0);
 
   section.innerHTML = `
@@ -812,10 +811,9 @@ function renderLearnerGuideProgrammeCharts() {
   });
   const lgCamfedTotal = lgVals.reduce((s, v) => s + v, 0);
 
-  // ── SLS Girls/Boys data ──
-  const girlsRatio = (D.kpi13.annual.girls.Total || 0) / (D.kpi13.annual.total.Total || 1);
-  const girlsVals = a.map(c => Math.round(ddQC('Number of Clients by Form', c) * girlsRatio));
-  const boysVals  = a.map(c => Math.round(ddQC('Number of Clients by Form', c) * (1 - girlsRatio)));
+  // ── SLS Girls/Boys data — direct from gender column ──
+  const girlsVals = a.map(c => ddQC('Number of Clients by Form — Girls', c));
+  const boysVals  = a.map(c => ddQC('Number of Clients by Form — Boys',  c));
   const slsTotal  = girlsVals.reduce((s, v) => s + v, 0) + boysVals.reduce((s, v) => s + v, 0);
 
   section.innerHTML = `
@@ -1468,10 +1466,8 @@ function updateStats() {
   const slsTotal = ddQA('Number of Clients by Form');
   setTxt('s-sls',         fmt(slsTotal));
   setTxt('s-lg',          fmt(ddQA('Active Learner Guides')));
-  // Girls/boys split of SLS total using D-derived ratios
-  const girlsRatio = (D.kpi13.annual.girls.Total || 0) / (D.kpi13.annual.total.Total || 1);
-  setTxt('s-girls-total', fmt(Math.round(slsTotal * girlsRatio)));
-  setTxt('s-boys-total',  fmt(Math.round(slsTotal * (1 - girlsRatio))));
+  setTxt('s-girls-total', fmt(ddQA('Number of Clients by Form — Girls')));
+  setTxt('s-boys-total',  fmt(ddQA('Number of Clients by Form — Boys')));
   setTxt('l1-headline', `${activeLabel()} — Level 1: Girls' Education, Bursary Support & Learner Guides`);
 
   // L2 stats
@@ -1545,13 +1541,13 @@ function buildL1() {
   const items = a.map(n=>({label:n, val:D.kpi15.pct[n], display:D.kpi15.pct[n].toFixed(2)+'%'}));
   progList('l1-dropout', items, 5, l=>CC[l]||'#5e2580');
 
-  // SLS — no DD equivalent; keep D values
+  // SLS — direct from gender column
   if (single) {
-    bar('l1-sls-chart', ['Girls','Boys'], [{data:[D.kpi13.annual.girls[c]||0, D.kpi13.annual.boys[c]||0], backgroundColor:['#c8882a','#5e2580']}]);
+    bar('l1-sls-chart', ['Girls','Boys'], [{data:[ddQC('Number of Clients by Form — Girls',c), ddQC('Number of Clients by Form — Boys',c)], backgroundColor:['#c8882a','#5e2580']}]);
   } else {
     bar('l1-sls-chart', a, [
-      {label:'Girls', data:a.map(n=>D.kpi13.annual.girls[n]||0), backgroundColor:'#c8882a'},
-      {label:'Boys',  data:a.map(n=>D.kpi13.annual.boys[n]||0),  backgroundColor:'#5e2580'}
+      {label:'Girls', data:a.map(n=>ddQC('Number of Clients by Form — Girls',n)), backgroundColor:'#c8882a'},
+      {label:'Boys',  data:a.map(n=>ddQC('Number of Clients by Form — Boys', n)), backgroundColor:'#5e2580'}
     ], {stacked:true, legend:true});
   }
 
