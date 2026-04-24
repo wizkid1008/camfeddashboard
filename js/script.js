@@ -890,7 +890,8 @@ function renderEducationSystems1Charts() {
   const section = document.getElementById('sublevel-stats-section');
   const a = activeCt();
 
-  const camfedDist = a.map(c => D.kpi34.districts[c] || 0);
+  // District counts — live from DD geography
+  const camfedDist = a.map(c => window.DD ? (DD.districts[c] || []).length : D.kpi34.districts[c] || 0);
   const govtDist   = a.map(c => L3.districtsGovt[c] || 0);
   const distTotal  = camfedDist.reduce((s,v)=>s+v,0) + govtDist.reduce((s,v)=>s+v,0);
   const schoolsTotal = L3.schoolsCamfed + L3.schoolsGovt;
@@ -1129,8 +1130,8 @@ function renderJobsIncomeCharts() {
   // Female entrepreneurs with increased incomes (vertical %)
   const feVals = a.map(c => D.kpi210.pct[c] || 0);
 
-  // Jobs created (vertical counts)
-  const jobVals  = a.map(c => D.kpi29.annual[c] || 0);
+  // Jobs created — live from post-school clients
+  const jobVals  = a.map(c => ddQC('Number of Post School Clients', c));
   const jobTotal = jobVals.reduce((s, v) => s + v, 0);
 
   // New businesses (vertical counts)
@@ -1195,24 +1196,24 @@ function renderLivelihoodsReachCharts() {
   const a = activeCt();
   const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
 
-  // Enterprise Guides (Agriculture + Business)
-  const agVals  = a.map(c => D.kpi22.agriculture[c] || 0);
-  const bizVals = a.map(c => D.kpi22.business[c] || 0);
+  // Enterprise Guides — live by type
+  const agVals  = a.map(c => ddQC('Active Guides — Agriculture', c));
+  const bizVals = a.map(c => ddQC('Active Guides — Business',    c));
   const egTotal = agVals.reduce((s, v) => s + v, 0) + bizVals.reduce((s, v) => s + v, 0);
 
-  // Businesses Supported (Agriculture-guided + Business-guided)
-  const bsAgVals  = a.map(c => D.kpi27.ag[c] || 0);
-  const bsBizVals = a.map(c => D.kpi27.biz[c] || 0);
+  // Businesses Supported — live loan counts by guide type
+  const bsAgVals  = a.map(c => ddQC('Loans Disbursed — Agriculture', c));
+  const bsBizVals = a.map(c => ddQC('Loans Disbursed — Business',    c));
   const bsTotal   = bsAgVals.reduce((s, v) => s + v, 0) + bsBizVals.reduce((s, v) => s + v, 0);
 
-  // Business Grants
-  const grantsNumVals = a.map(c => L2LR.grantsNum[c] || 0);
-  const grantsValVals = a.map(c => L2LR.grantsVal[c] || 0);
+  // Business Grants — live count and value
+  const grantsNumVals = a.map(c => ddQC('Grants Distributed — Count', c));
+  const grantsValVals = a.map(c => ddQC('Grants Disbursed',           c));
   const grantsTotal   = grantsNumVals.reduce((s, v) => s + v, 0);
 
-  // Kiva & RIF Loans
-  const kivaVals  = a.map(c => L2LR.kiva[c] || 0);
-  const rifVals   = a.map(c => L2LR.rif[c] || 0);
+  // Kiva & RIF Loans — live counts
+  const kivaVals  = a.map(c => ddQC('Loans Disbursed — Kiva', c));
+  const rifVals   = a.map(c => ddQC('Loans Disbursed — RIF',  c));
   const loansTotal = kivaVals.reduce((s, v) => s + v, 0) + rifVals.reduce((s, v) => s + v, 0);
 
   section.innerHTML = `
@@ -1294,16 +1295,19 @@ function renderLeadershipTertiaryCharts() {
   const a = activeCt();
   const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
 
-  const tgVals   = a.map(c => D.kpi22.transition[c] || 0);
+  // Transition Guides — live
+  const tgVals   = a.map(c => ddQC('Active Guides — Transition', c));
   const tgTotal  = tgVals.reduce((s, v) => s + v, 0);
 
-  const camaVals  = a.map(c => D.kpi21.cum[c] || 0);
+  // CAMA Members — cumulative all-time (sum all years, ignore date range filter)
+  const camaVals  = a.map(c => ddQ('CAMA Members', [c], 2000, 9999));
   const camaTotal = camaVals.reduce((s, v) => s + v, 0);
 
   const ywTGVals  = a.map(c => L2.youngWomenTG[c] || 0);
   const ywTGTotal = ywTGVals.reduce((s, v) => s + v, 0);
 
-  const tertVals  = a.map(c => L2.tertiary[c] || 0);
+  // Tertiary Education — live
+  const tertVals  = a.map(c => ddQC('Number of Women Supported by CAMFED in Tertiary Education', c));
   const tertTotal = tertVals.reduce((s, v) => s + v, 0);
 
   section.innerHTML = `
@@ -1477,7 +1481,10 @@ function updateStats() {
 
   // L3 stats
   setTxt('s3-schools',   fmt(ddQA('Active Partner Schools')));
-  setTxt('s3-districts', fmt(cv(D.kpi34.districts)));   // static district count
+  const districtCount = window.DD
+    ? activeCt().reduce((s, c) => s + (DD.districts[c] || []).length, 0)
+    : cv(D.kpi34.districts);
+  setTxt('s3-districts', fmt(districtCount));
   setTxt('s3-children',  fmt(ddQA('Grants Disbursed')));
 }
 
@@ -1565,17 +1572,17 @@ function buildL2() {
   // CAMA members — DD
   bar('l2-cama-chart', a, [{data:a.map(n=>ddQC('CAMA Members',n)), backgroundColor:BARS}]);
 
-  // Guide types — DD total split by D ratios
+  // Guide types — live by type
   bar('l2-guides-chart', a, [
-    {label:'Transition',  data:a.map(n=>{ const t=ddQC('Active Guides by Type',n), d=(D.kpi22.transition[n]||0)+(D.kpi22.agriculture[n]||0)+(D.kpi22.business[n]||0)||1; return ddSplit(t,D.kpi22.transition[n]||0,d);  }), backgroundColor:'#4a1a6b'},
-    {label:'Agriculture', data:a.map(n=>{ const t=ddQC('Active Guides by Type',n), d=(D.kpi22.transition[n]||0)+(D.kpi22.agriculture[n]||0)+(D.kpi22.business[n]||0)||1; return ddSplit(t,D.kpi22.agriculture[n]||0,d); }), backgroundColor:'#5e2580'},
-    {label:'Business',    data:a.map(n=>{ const t=ddQC('Active Guides by Type',n), d=(D.kpi22.transition[n]||0)+(D.kpi22.agriculture[n]||0)+(D.kpi22.business[n]||0)||1; return ddSplit(t,D.kpi22.business[n]||0,d);   }), backgroundColor:'#c8882a'}
+    {label:'Transition',  data:a.map(n=>ddQC('Active Guides — Transition',  n)), backgroundColor:'#4a1a6b'},
+    {label:'Agriculture', data:a.map(n=>ddQC('Active Guides — Agriculture', n)), backgroundColor:'#5e2580'},
+    {label:'Business',    data:a.map(n=>ddQC('Active Guides — Business',    n)), backgroundColor:'#c8882a'}
   ], {legend:true});
 
-  // Business/loans — DD total split by D ratios
+  // Businesses supported — live loan counts by guide type
   bar('l2-biz-chart', a, [
-    {label:'Ag. Guides',  data:a.map(n=>{ const t=ddQC('Loans Disbursed',n), d=(D.kpi27.ag[n]||0)+(D.kpi27.biz[n]||0)||1; return ddSplit(t,D.kpi27.ag[n]||0,d);  }), backgroundColor:'#5e2580'},
-    {label:'Biz. Guides', data:a.map(n=>{ const t=ddQC('Loans Disbursed',n), d=(D.kpi27.ag[n]||0)+(D.kpi27.biz[n]||0)||1; return ddSplit(t,D.kpi27.biz[n]||0,d); }), backgroundColor:'#c8882a'}
+    {label:'Ag. Guides',  data:a.map(n=>ddQC('Loans Disbursed — Agriculture', n)), backgroundColor:'#5e2580'},
+    {label:'Biz. Guides', data:a.map(n=>ddQC('Loans Disbursed — Business',    n)), backgroundColor:'#c8882a'}
   ], {legend:true});
 
   // Post-school clients — DD
@@ -1606,8 +1613,8 @@ function buildL3() {
     {label:'Secondary', data:a.map(n=>{ const t=ddQC('Grants Disbursed',n), d=D.kpi35.total[n]||1; return ddSplit(t,D.kpi35.secondary[n]||0,d); }), backgroundColor:'#c8882a'}
   ], {stacked:true, legend:true});
 
-  // Districts — static from D (count of programme districts)
-  bar('l3-districts-chart', a, [{data:a.map(n=>D.kpi34.districts[n]||0), backgroundColor:BARS}]);
+  // Districts — live count from DD geography
+  bar('l3-districts-chart', a, [{data:a.map(n=>window.DD?(DD.districts[n]||[]).length:D.kpi34.districts[n]||0), backgroundColor:BARS}]);
 
   // P1 girls/boys — no DD gender breakdown; keep D values
   bar('l3-p1-chart', a, [
