@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=19">
+    <link rel="stylesheet" href="css/style.css?v=21">
 </head>
 <body>
 
@@ -54,75 +54,58 @@
       </select>
     </div>
 
-    <!-- ── HERO + FILTERS ── -->
+    <!-- ── FILTER BAR ── -->
     <section class="hero-section" id="hero-section">
-      <div class="hero-text">
-        <div class="hero-breadcrumb">Dashboards / Impact Overview</div>
-        <h1 class="hero-title" id="hero-title">CAMFED Impact Dashboard</h1>
-        <p class="hero-desc" id="hero-desc">Select a level from the filters to explore programme data by country, year, and sublevel.</p>
-      </div>
-
+      <span class="hero-breadcrumb">Dashboards / Impact Overview</span>
       <div class="hero-filters">
-        <div class="hero-filter-row">
-          <div class="filter-bar-item">
-            <label class="filter-bar-label">
-              <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M3 3h14v2.5L11 11v6l-2-1.5V11L3 5.5V3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
-              Level
-            </label>
-            <select id="level-select" class="indicator-dropdown">
-              <option value="" disabled selected>Select Level</option>
-            </select>
-          </div>
-          <div class="filter-bar-item">
-            <label class="filter-bar-label">
-              <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M4 6h12M4 10h8M4 14h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-              Sub Level
-            </label>
-            <select id="sublevel-select" class="indicator-dropdown" disabled>
-              <option value="" disabled selected>Select Sub Level</option>
-            </select>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">Level</label>
+          <select id="level-select" class="indicator-dropdown">
+            <option value="" disabled selected>Select Level</option>
+          </select>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">Sub Level</label>
+          <select id="sublevel-select" class="indicator-dropdown" disabled>
+            <option value="" disabled selected>Select Sub Level</option>
+          </select>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">Country</label>
+          <div class="country-multi-wrap" id="country-multi-wrap">
+            <button type="button" class="country-multi-trigger" id="country-multi-trigger">
+              <span id="country-multi-label">All Countries</span>
+              <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <div class="country-multi-dropdown" id="country-multi-dropdown" hidden></div>
           </div>
         </div>
-        <div class="hero-filter-row">
-          <div class="filter-bar-item">
-            <label class="filter-bar-label">
-              <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M10 2c0 0-4 3.5-4 8s4 8 4 8M10 2c0 0 4 3.5 4 8s-4 8-4 8M2 10h16" stroke="currentColor" stroke-width="1.4"/></svg>
-              Country
-            </label>
-            <div class="country-multi-wrap" id="country-multi-wrap">
-              <button type="button" class="country-multi-trigger" id="country-multi-trigger">
-                <span id="country-multi-label">All Countries</span>
-                <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
-              </button>
-              <div class="country-multi-dropdown" id="country-multi-dropdown" hidden></div>
-            </div>
-          </div>
-          <div class="filter-bar-item">
-            <label class="filter-bar-label">
-              <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M2 8h16M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-              Date Range
-            </label>
-            <div class="date-range-compact">
-              <div class="date-display" id="date-display">2020 — 2030</div>
-              <div class="date-sliders-wrapper">
-                <input type="range" id="date-range-start" class="date-slider" min="2020" max="2030" value="2020">
-                <input type="range" id="date-range-end" class="date-slider" min="2020" max="2030" value="2030">
-              </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">Date Range</label>
+          <div class="date-range-compact">
+            <div class="date-display" id="date-display">2020 — 2030</div>
+            <div class="date-sliders-wrapper">
+              <input type="range" id="date-range-start" class="date-slider" min="2020" max="2030" value="2020">
+              <input type="range" id="date-range-end" class="date-slider" min="2020" max="2030" value="2030">
             </div>
           </div>
         </div>
-        <div class="hero-filter-row hero-filter-apply">
-          <button class="apply-filters-btn" onclick="if(window.rebuildActive)rebuildActive()">
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M3 3h14v2.5L11 11v6l-2-1.5V11L3 5.5V3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-            Apply Filters
-          </button>
-        </div>
+        <button class="apply-filters-btn" onclick="if(window.rebuildActive)rebuildActive()">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M3 3h14v2.5L11 11v6l-2-1.5V11L3 5.5V3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          Apply Filters
+        </button>
       </div>
     </section>
 
     <!-- ── BODY ── -->
     <div class="body-layout">
       <div class="main-content">
+
+        <!-- ══ CONTENT HEADER (shown when a level is active) ══ -->
+        <div id="content-header" class="content-header" style="display:none">
+          <h1 class="hero-title" id="hero-title">CAMFED Impact Dashboard</h1>
+          <p class="hero-desc" id="hero-desc">Select a level from the filters to explore programme data by country, year, and sublevel.</p>
+        </div>
 
         <!-- ══ LANDING ══ -->
         <div id="landing-section" class="landing-section">
