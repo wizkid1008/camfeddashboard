@@ -2062,18 +2062,18 @@ function ddInit() {
 
 // ── MODE SWITCHER ──────────────────────────────────────────────
 function switchMode(mode) {
-  const mainFilter = document.querySelector('.app > .filter-bar');
-  const bodyLayout = document.querySelector('.body-layout');
-  const ddView     = document.getElementById('dynamic-data-view');
-  const slView     = document.getElementById('slicer-view');
+  const heroSection = document.getElementById('hero-section');
+  const bodyLayout  = document.querySelector('.body-layout');
+  const ddView      = document.getElementById('dynamic-data-view');
+  const slView      = document.getElementById('slicer-view');
 
-  mainFilter.style.display = 'none';
+  if (heroSection) heroSection.style.display = 'none';
   bodyLayout.style.display = 'none';
   ddView.style.display     = 'none';
   slView.style.display     = 'none';
 
   if (mode === 'dashboard') {
-    mainFilter.style.display = '';
+    if (heroSection) heroSection.style.display = '';
     bodyLayout.style.display = '';
   } else if (mode === 'dynamic') {
     ddView.style.display = '';
