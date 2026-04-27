@@ -439,9 +439,9 @@ function buildCountryMultiSelect() {
   const dropdown = document.getElementById('country-multi-dropdown');
   if (!trigger || !dropdown) return;
 
-  // Build checkbox options: "All Countries" first, then each country from DB
-  const countries = window.DD ? DD.countries : [];
-  const rows = [{ value: 'All', label: 'All Countries' }, ...countries.map(c => ({ value: c, label: c }))];
+  // Build checkbox options: "All Countries" first, then each country
+  // C starts as the hardcoded fallback and is updated to DB values on dd:ready
+  const rows = [{ value: 'All', label: 'All Countries' }, ...C.map(c => ({ value: c, label: c }))];
   dropdown.innerHTML = rows.map(r => `
     <label class="country-multi-opt">
       <input type="checkbox" value="${r.value}"${r.value === 'All' ? ' checked' : ''}>
@@ -2090,7 +2090,7 @@ const slSel = {
 // ── Geography helpers (uses DD from data/dashboardData.js) ──
 
 function slCountries() {
-  return window.DD ? DD.countries : [];
+  return window.DD ? DD.countries : C;
 }
 
 function slDistricts(countries) {
