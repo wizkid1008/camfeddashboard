@@ -126,6 +126,8 @@ if (typeof ChartDataLabels !== 'undefined') {
 }
 
 // ─── COLOUR PALETTE ────────────────────────────────────────────
+// Starts with known countries as fallback; updated to live DB list on dd:ready
+let C = ['Ghana','Malawi','Tanzania','Zambia','Zimbabwe'];
 const CC = {
   Ghana:   '#c8882a',
   Malawi:  '#5e2580',
@@ -2499,6 +2501,7 @@ function slInit() {
 // Re-render the active dashboard panel once Supabase data has loaded
 document.addEventListener('dd:ready', () => {
   if (window.DD) {
+    C = DD.countries;           // keep C in sync with live DB country list
     buildCountryMultiSelect();
     rebuildActive();
   }
