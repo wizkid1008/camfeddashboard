@@ -2066,15 +2066,18 @@ function switchMode(mode) {
   const bodyLayout  = document.querySelector('.body-layout');
   const ddView      = document.getElementById('dynamic-data-view');
   const slView      = document.getElementById('slicer-view');
+  const footer      = document.querySelector('.dashboard-footer');
 
   if (heroSection) heroSection.style.display = 'none';
   bodyLayout.style.display = 'none';
   ddView.style.display     = 'none';
   slView.style.display     = 'none';
+  if (footer) footer.style.display = 'none';
 
   if (mode === 'dashboard') {
     if (heroSection) heroSection.style.display = '';
     bodyLayout.style.display = '';
+    if (footer) footer.style.display = '';
   } else if (mode === 'dynamic') {
     ddView.style.display = '';
     ddInit();

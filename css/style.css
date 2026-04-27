@@ -302,11 +302,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  padding: 28px 32px;
+  padding: 16px 32px;
   gap: 24px;
   position: relative;
   overflow: hidden;
-  min-height: 140px;
 }
 /* Subtle dot pattern across hero */
 .hero-section::before {
@@ -544,8 +543,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* ── Date range ── */
 .date-range-compact {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
 }
 .date-display {
   font-size: 0.86rem;
@@ -557,7 +558,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .date-sliders-wrapper {
   position: relative;
   height: 20px;
-  width: 150px;
+  flex: 1;
+  min-width: 80px;
 }
 .date-slider {
   position: absolute;
