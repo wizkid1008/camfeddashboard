@@ -439,6 +439,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-light);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .filter-bar-apply {
   margin-left: auto;
@@ -479,14 +481,15 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234B2E83' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
-  min-width: 140px;
+  min-width: 0;
+  flex: 1;
   transition: border-color 0.15s;
 }
 .indicator-dropdown:focus { outline: none; border-color: var(--purple); }
 .indicator-dropdown:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* ── Country multi-select ── */
-.country-multi-wrap { position: relative; }
+.country-multi-wrap { position: relative; flex: 1; }
 .country-multi-trigger {
   display: flex;
   align-items: center;
@@ -501,7 +504,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-weight: 500;
   color: var(--text);
   cursor: pointer;
-  min-width: 140px;
+  min-width: 0;
+  width: 100%;
   white-space: nowrap;
   transition: border-color 0.15s;
 }
