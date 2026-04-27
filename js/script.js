@@ -126,7 +126,6 @@ if (typeof ChartDataLabels !== 'undefined') {
 }
 
 // ─── COLOUR PALETTE ────────────────────────────────────────────
-const C = ['Ghana','Malawi','Tanzania','Zambia','Zimbabwe'];
 const CC = {
   Ghana:   '#c8882a',
   Malawi:  '#5e2580',
@@ -136,7 +135,14 @@ const CC = {
   All:     '#8b3fb0'
 };
 // For bar charts always use these
-const BARS = ['#c8882a','#5e2580','#2e7d32','#7b3fa0','#c0392b'];
+const BARS = ['#c8882a','#5e2580','#2e7d32','#7b3fa0','#c0392b','#1565c0','#ad1457','#00695c','#e65100','#4527a0'];
+
+function countryColor(name) {
+  if (CC[name]) return CC[name];
+  const countries = window.DD ? DD.countries : [];
+  const idx = countries.indexOf(name);
+  return BARS[idx >= 0 ? idx % BARS.length : 0];
+}
 
 // ─── DATA ──────────────────────────────────────────────────────
 const D = {
@@ -431,8 +437,9 @@ function buildCountryMultiSelect() {
   const dropdown = document.getElementById('country-multi-dropdown');
   if (!trigger || !dropdown) return;
 
-  // Build checkbox options: "All Countries" first, then each country
-  const rows = [{ value: 'All', label: 'All Countries' }, ...C.map(c => ({ value: c, label: c }))];
+  // Build checkbox options: "All Countries" first, then each country from DB
+  const countries = window.DD ? DD.countries : [];
+  const rows = [{ value: 'All', label: 'All Countries' }, ...countries.map(c => ({ value: c, label: c }))];
   dropdown.innerHTML = rows.map(r => `
     <label class="country-multi-opt">
       <input type="checkbox" value="${r.value}"${r.value === 'All' ? ' checked' : ''}>
@@ -516,16 +523,23 @@ function buildLevelDropdown() {
 function buildSubLevelDropdown(panelId) {
   const select = document.getElementById('sublevel-select');
   select.innerHTML = '<option value="" disabled selected>Select Sub Level</option>';
-  hierarchyData
-    .filter(item => levelToPanelId[item.level] === panelId)
-    .forEach(item => {
-      const opt = document.createElement('option');
-      opt.value = item.subLevel;
-      opt.textContent = item.subLevel;
-      select.appendChild(opt);
-    });
+  const items = hierarchyData.filter(item => levelToPanelId[item.level] === panelId);
+  items.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.subLevel;
+    opt.textContent = item.subLevel;
+    select.appendChild(opt);
+  });
   select.disabled = false;
-  select.value = '';
+
+  // Auto-select and render the first sublevel
+  if (items.length) {
+    select.value = items[0].subLevel;
+    sel.subLevel = items[0].subLevel;
+    renderSubLevelStats(panelId, items[0].subLevel);
+  } else {
+    select.value = '';
+  }
 }
 
 // ─── RESOLVE KPI VALUE ────────────────────────────────────────
@@ -1539,7 +1553,7 @@ function buildL1() {
 
   // Dropout rate — no DD equivalent; keep D values
   const items = a.map(n=>({label:n, val:D.kpi15.pct[n], display:D.kpi15.pct[n].toFixed(2)+'%'}));
-  progList('l1-dropout', items, 5, l=>CC[l]||'#5e2580');
+  progList('l1-dropout', items, 5, l=>countryColor(l));
 
   // SLS — direct from gender column
   if (single) {
@@ -1586,11 +1600,11 @@ function buildL2() {
 
   // % metrics — no DD equivalent; keep D values
   const inc = a.map(n=>({label:n, val:D.kpi210.pct[n], display:D.kpi210.pct[n]+'%'}));
-  progList('l2-income', inc, 100, l=>CC[l]||'#5e2580');
+  progList('l2-income', inc, 100, l=>countryColor(l));
   const pro = a.map(n=>({label:n, val:D.kpi211.profit[n], display:D.kpi211.profit[n]+'%'}));
-  progList('l2-profit', pro, 100, l=>CC[l]||'#5e2580');
+  progList('l2-profit', pro, 100, l=>countryColor(l));
   const sur = a.map(n=>({label:n, val:D.kpi212.yr1[n], display:D.kpi212.yr1[n]+'%'}));
-  progList('l2-survival', sur, 100, l=>CC[l]||'#5e2580');
+  progList('l2-survival', sur, 100, l=>countryColor(l));
 }
 
 // ─── BUILD LEVEL 3 ─────────────────────────────────────────────
@@ -1630,6 +1644,22 @@ function rebuildActive() {
   if (sel.subLevel) renderSubLevelStats(sel.level, sel.subLevel);
 }
 
+// ─── HOME BUTTON ───────────────────────────────────────────────
+document.getElementById('home-btn').addEventListener('click', () => {
+  // Reset selects
+  document.getElementById('level-select').value = '';
+  const sublevelSel = document.getElementById('sublevel-select');
+  sublevelSel.innerHTML = '<option value="" disabled selected>Select Sub Level</option>';
+  sublevelSel.disabled = true;
+  sel.level = '';
+  sel.subLevel = '';
+
+  // Hide all panels and stats, show landing
+  document.querySelectorAll('.tab-panel').forEach(p => { p.classList.remove('active'); p.style.display = ''; });
+  document.getElementById('sublevel-stats-section').style.display = 'none';
+  document.getElementById('landing-section').style.display = '';
+});
+
 // ─── LEVEL DROPDOWN ────────────────────────────────────────────
 document.getElementById('level-select').addEventListener('change', e=>{
   const value = e.target.value;
@@ -1645,11 +1675,8 @@ document.getElementById('level-select').addEventListener('change', e=>{
   document.querySelectorAll('.tab-panel').forEach(p=>{ p.classList.remove('active'); p.style.display = ''; });
   document.getElementById('panel-' + value)?.classList.add('active');
 
-  // Reset and populate sublevel dropdown for the selected level
+  // Reset and populate sublevel dropdown (also auto-selects first sublevel)
   buildSubLevelDropdown(value);
-
-  // Clear any previously rendered statistics
-  document.getElementById('sublevel-stats-section').style.display = 'none';
 
   // Build charts for the selected level
   if (value === 'level1') buildL1();
@@ -2061,7 +2088,7 @@ const slSel = {
 // ── Geography helpers (uses DD from data/dashboardData.js) ──
 
 function slCountries() {
-  return window.DD ? DD.countries : C;
+  return window.DD ? DD.countries : [];
 }
 
 function slDistricts(countries) {
@@ -2471,6 +2498,9 @@ function slInit() {
 
 // Re-render the active dashboard panel once Supabase data has loaded
 document.addEventListener('dd:ready', () => {
-  if (window.DD) rebuildActive();
+  if (window.DD) {
+    buildCountryMultiSelect();
+    rebuildActive();
+  }
 });
 
