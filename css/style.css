@@ -327,29 +327,21 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* ── Hero filter panel (right column) ────────────────────── */
 .hero-filters {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 10px;
-  min-width: 360px;
-  max-width: 480px;
   background: var(--cream);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px 20px;
+  padding: 14px 16px;
   position: relative;
   z-index: 1;
   flex-shrink: 0;
+  flex-wrap: nowrap;
 }
-.hero-filter-row {
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
-}
-.hero-filter-row > .filter-bar-item {
+.hero-filters > .filter-bar-item {
   flex: 1;
-}
-.hero-filter-apply {
-  justify-content: flex-end;
-  margin-top: 2px;
+  min-width: 0;
 }
 .hero-breadcrumb {
   font-size: 0.76rem;
