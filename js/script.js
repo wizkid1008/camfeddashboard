@@ -2208,7 +2208,7 @@ const slSel = {
   districts: [], // [] = all districts within selected countries
   schools:   [], // [] = all schools within selected districts
   kpis:      [],
-  gender:    'all',
+  genders:   ['female', 'male'], // [] or both = all
   yearStart: 2020,
   yearEnd:   2030,
   chartType: 'number'
@@ -2267,8 +2267,10 @@ function slQuery() {
   rows = rows.filter(r => r.year >= slSel.yearStart && r.year <= slSel.yearEnd);
 
   // Deterministic gender split (data has no gender field — apply fixed ratio)
-  if (slSel.gender === 'female') rows = rows.map(r => ({...r, value: Math.round(r.value * 0.52)}));
-  else if (slSel.gender === 'male') rows = rows.map(r => ({...r, value: Math.round(r.value * 0.48)}));
+  const _onlyF = slSel.genders.length === 1 && slSel.genders[0] === 'female';
+  const _onlyM = slSel.genders.length === 1 && slSel.genders[0] === 'male';
+  if (_onlyF) rows = rows.map(r => ({...r, value: Math.round(r.value * 0.52)}));
+  else if (_onlyM) rows = rows.map(r => ({...r, value: Math.round(r.value * 0.48)}));
 
   return rows;
 }
@@ -2588,19 +2590,37 @@ function slInit() {
   });
   kpiDD.addEventListener('click', e => e.stopPropagation());
 
-  // ── Gender dropdown (radio inside dropdown) ──
-  const genderDD = document.getElementById('sl-gender-dropdown');
-  document.getElementById('sl-gender-trigger').addEventListener('click', e => {
+  // ── Gender dropdown (checkboxes) ──
+  const genderDD      = document.getElementById('sl-gender-dropdown');
+  const genderTrigger = document.getElementById('sl-gender-trigger');
+  const genderLabel   = document.getElementById('sl-gender-label');
+
+  function updateGenderState() {
+    const allCb    = genderDD.querySelector('input[value="all"]');
+    const femaleCb = genderDD.querySelector('input[value="female"]');
+    const maleCb   = genderDD.querySelector('input[value="male"]');
+    slSel.genders = [];
+    if (femaleCb.checked) slSel.genders.push('female');
+    if (maleCb.checked)   slSel.genders.push('male');
+    const both = femaleCb.checked && maleCb.checked;
+    if (both) genderLabel.textContent = 'All Genders';
+    else if (femaleCb.checked) genderLabel.textContent = 'Female';
+    else if (maleCb.checked)   genderLabel.textContent = 'Male';
+    else { femaleCb.checked = true; maleCb.checked = true; allCb.checked = true; slSel.genders = ['female','male']; genderLabel.textContent = 'All Genders'; }
+    allCb.checked = both;
+  }
+
+  genderTrigger.addEventListener('click', e => {
     e.stopPropagation();
     genderDD.hidden = !genderDD.hidden;
-    e.currentTarget.classList.toggle('open', !genderDD.hidden);
+    genderTrigger.classList.toggle('open', !genderDD.hidden);
   });
   genderDD.addEventListener('change', e => {
-    slSel.gender = e.target.value;
-    document.getElementById('sl-gender-label').textContent =
-      e.target.value === 'all' ? 'All' : e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1);
-    genderDD.hidden = true;
-    document.getElementById('sl-gender-trigger').classList.remove('open');
+    const allCb = genderDD.querySelector('input[value="all"]');
+    const femaleCb = genderDD.querySelector('input[value="female"]');
+    const maleCb   = genderDD.querySelector('input[value="male"]');
+    if (e.target.value === 'all') { femaleCb.checked = e.target.checked; maleCb.checked = e.target.checked; }
+    updateGenderState();
   });
   genderDD.addEventListener('click', e => e.stopPropagation());
 
