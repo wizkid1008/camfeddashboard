@@ -1660,7 +1660,14 @@ document.getElementById('home-btn').addEventListener('click', () => {
   // Hide all panels and stats, show landing
   document.querySelectorAll('.tab-panel').forEach(p => { p.classList.remove('active'); p.style.display = ''; });
   document.getElementById('sublevel-stats-section').style.display = 'none';
-  document.getElementById('landing-section').style.display = '';
+  document.getElementById('landing-section').style.display = 'block';
+
+  // Switch back to dashboard view if in dynamic/slicer
+  const atSel = document.getElementById('analysis-type-select');
+  if (atSel && atSel.value !== 'dashboard') {
+    atSel.value = 'dashboard';
+    atSel.dispatchEvent(new Event('change'));
+  }
 
   // Reset hero title and sidebar active state
   const heroTitle = document.getElementById('hero-title');
