@@ -23,6 +23,18 @@
       <img src="images/camfed-logo.png" alt="CAMFED" class="sidebar-logo-img">
     </div>
 
+    <div class="sidebar-resources">
+      <div class="sidebar-section-label">Resources</div>
+      <a href="#" class="sidebar-nav-item">
+        <svg class="sidebar-nav-icon" viewBox="0 0 20 20" fill="none"><rect x="4" y="2" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M7 6h6M7 10h6M7 14h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Guides &amp; Documentation
+      </a>
+      <a href="#" class="sidebar-nav-item">
+        <svg class="sidebar-nav-icon" viewBox="0 0 20 20" fill="none"><rect x="4" y="2" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M7 6h6M7 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="13" cy="14" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M15 16l1.5 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Data Dictionary
+      </a>
+    </div>
+
     <div class="sidebar-quote">
       <div class="sidebar-quote-dots"></div>
       <p class="sidebar-quote-text">Empowering girls<br>to create a future<br>without limits.</p>
@@ -535,58 +547,57 @@
             </div>
           </div>
         </div>
+        <span class="top-nav-divider" style="height:32px;margin:0 4px;"></span>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="12" width="3" height="6" rx="1" stroke="currentColor" stroke-width="1.7"/><rect x="8.5" y="7" width="3" height="11" rx="1" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="3" width="3" height="15" rx="1" stroke="currentColor" stroke-width="1.7"/></svg>
+            Data <span class="sl-kpi-count" id="sl-kpi-count"></span>
+          </label>
+          <div class="country-multi-wrap" id="sl-kpi-wrap">
+            <button type="button" class="country-multi-trigger" id="sl-kpi-trigger">
+              <span id="sl-kpi-label">Select Data</span>
+              <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <div class="country-multi-dropdown" id="sl-kpi-dropdown" hidden style="min-width:280px;max-height:300px;overflow-y:auto"></div>
+          </div>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="6" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            Gender
+          </label>
+          <div class="country-multi-wrap" id="sl-gender-wrap">
+            <button type="button" class="country-multi-trigger" id="sl-gender-trigger">
+              <span id="sl-gender-label">All Genders</span>
+              <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <div class="country-multi-dropdown" id="sl-gender-dropdown" hidden>
+              <label class="country-multi-opt"><input type="checkbox" value="all" checked><span>All Genders</span></label>
+              <label class="country-multi-opt"><input type="checkbox" value="female" checked><span>Female</span></label>
+              <label class="country-multi-opt"><input type="checkbox" value="male" checked><span>Male</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="filter-bar-item">
+          <label class="filter-bar-label">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M6 14V9M10 14V6M14 14v-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            Chart Type
+          </label>
+          <select id="sl-chart-type" class="indicator-dropdown">
+            <option value="number">Number</option>
+            <option value="line">Line</option>
+            <option value="multiline">Multi-Line</option>
+            <option value="bar">Bar</option>
+            <option value="pie">Pie</option>
+            <option value="table">Table</option>
+          </select>
+        </div>
+        <div class="filter-bar-item sl-go-item">
+          <button type="button" id="sl-go-btn" class="sl-go-btn">Go</button>
+        </div>
       </div>
       <div class="body-layout">
         <div class="main-content">
-          <div class="filter-bar sl-controls-bar">
-            <div class="filter-bar-item">
-              <label class="filter-bar-label">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="12" width="3" height="6" rx="1" stroke="currentColor" stroke-width="1.7"/><rect x="8.5" y="7" width="3" height="11" rx="1" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="3" width="3" height="15" rx="1" stroke="currentColor" stroke-width="1.7"/></svg>
-                Data <span class="sl-kpi-count" id="sl-kpi-count"></span>
-              </label>
-              <div class="country-multi-wrap" id="sl-kpi-wrap">
-                <button type="button" class="country-multi-trigger" id="sl-kpi-trigger">
-                  <span id="sl-kpi-label">Select Data</span>
-                  <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
-                </button>
-                <div class="country-multi-dropdown" id="sl-kpi-dropdown" hidden style="min-width:280px;max-height:300px;overflow-y:auto"></div>
-              </div>
-            </div>
-            <div class="filter-bar-item">
-              <label class="filter-bar-label">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="6" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-                Gender
-              </label>
-              <div class="country-multi-wrap" id="sl-gender-wrap">
-                <button type="button" class="country-multi-trigger" id="sl-gender-trigger">
-                  <span id="sl-gender-label">All Genders</span>
-                  <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
-                </button>
-                <div class="country-multi-dropdown" id="sl-gender-dropdown" hidden>
-                  <label class="country-multi-opt"><input type="checkbox" value="all" checked><span>All Genders</span></label>
-                  <label class="country-multi-opt"><input type="checkbox" value="female" checked><span>Female</span></label>
-                  <label class="country-multi-opt"><input type="checkbox" value="male" checked><span>Male</span></label>
-                </div>
-              </div>
-            </div>
-            <div class="filter-bar-item">
-              <label class="filter-bar-label">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M6 14V9M10 14V6M14 14v-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-                Chart Type
-              </label>
-              <select id="sl-chart-type" class="indicator-dropdown">
-                <option value="number">Number</option>
-                <option value="line">Line</option>
-                <option value="multiline">Multi-Line</option>
-                <option value="bar">Bar</option>
-                <option value="pie">Pie</option>
-                <option value="table">Table</option>
-              </select>
-            </div>
-            <div class="filter-bar-item sl-go-item">
-              <button type="button" id="sl-go-btn" class="sl-go-btn">Go</button>
-            </div>
-          </div>
           <div id="sl-output">
             <div class="landing-section">
               <div class="landing-title">How to Use the Slicer</div>
