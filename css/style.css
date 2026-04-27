@@ -1157,3 +1157,254 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 @media (max-width: 900px) {
   .er-grid { grid-template-columns: 1fr; }
 }
+
+/* ================================================================
+   PROGRESS LIST — row/val/bg aliases used by JS
+   ================================================================ */
+.prog-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+.prog-val {
+  font-size: 0.80rem;
+  font-weight: 700;
+  color: var(--text-mid);
+  white-space: nowrap;
+}
+.prog-bg {
+  height: 7px;
+  background: var(--cream-dark);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* ================================================================
+   SUBLEVEL STATS LIST — item / label / value / na
+   ================================================================ */
+.sublevel-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: var(--text-mid);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--cream-dark);
+}
+.sublevel-stat-item:last-child { border-bottom: none; padding-bottom: 0; }
+.sublevel-stat-label { flex: 1; line-height: 1.4; }
+.sublevel-stat-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--orange);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sublevel-stat-na {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-light);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ================================================================
+   LEARNER GUIDE STAT STRIP  (lg-*)
+   ================================================================ */
+.lg-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.lg-stat-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+  border-top: 3px solid var(--gold);
+}
+.lg-stat-title {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-light);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.lg-stat-value {
+  font-family: 'Merriweather', serif;
+  font-size: 1.55rem;
+  font-weight: 900;
+  color: var(--orange);
+  line-height: 1;
+}
+.lg-stat-na {
+  font-size: 0.82rem;
+  color: var(--text-light);
+  font-style: italic;
+  margin-top: 6px;
+}
+.lg-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.lg-radio-opt {
+  font-size: 0.78rem;
+  color: var(--text-mid);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+@media (max-width: 900px) {
+  .lg-stat-strip { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ================================================================
+   L3 HORIZONTAL BAR ROWS  (l3-*)
+   ================================================================ */
+.l3-section-title {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-light);
+  margin: 14px 0 8px;
+}
+.l3-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.l3-bar-label {
+  width: 80px;
+  font-size: 0.80rem;
+  color: var(--text-mid);
+  font-weight: 600;
+  flex-shrink: 0;
+  text-align: right;
+}
+.l3-bar-track {
+  flex: 1;
+  height: 22px;
+  background: var(--cream-dark);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.l3-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+  min-width: 2px;
+  transition: width 0.4s ease;
+}
+.l3-bar-val {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+}
+
+/* ================================================================
+   ER FILTER BADGE
+   ================================================================ */
+.er-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--gold-light);
+  color: var(--gold);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin: 0 16px 10px;
+}
+
+/* ================================================================
+   DYNAMIC DATA MODULE  (dd-*)
+   ================================================================ */
+.dd-breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0 14px;
+  flex-wrap: wrap;
+}
+.dd-breadcrumb {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.dd-geo-level-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--purple-faint);
+  color: var(--purple);
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+.dd-year-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--orange-light);
+  color: var(--orange);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.dd-year-badge.single {
+  background: var(--gold-light);
+  color: #7a5c10;
+}
+.dd-number-display {
+  font-family: 'Merriweather', serif;
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--orange);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.dd-number-label {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+/* ================================================================
+   MINI TABLE  (slicer)
+   ================================================================ */
+.mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+}
+.mini-table th {
+  text-align: left;
+  padding: 7px 12px;
+  font-size: 0.70rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-light);
+  border-bottom: 2px solid var(--cream-dark);
+  white-space: nowrap;
+}
+.mini-table td {
+  padding: 9px 12px;
+  color: var(--text-mid);
+  border-bottom: 1px solid var(--cream-dark);
+}
+.mini-table tr:last-child td { border-bottom: none; }
+.mini-table td:first-child { font-weight: 600; color: var(--text); }

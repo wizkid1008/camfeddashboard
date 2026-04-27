@@ -1818,14 +1818,15 @@ const checklistData = [
 
 // 3. Derived state and rendering logic
 
-const ddSel = { country: '', district: '', school: '', yearStart: 2020, yearEnd: 2030 };
+const ddSel = { countries: [], districts: [], schools: [], yearStart: 2020, yearEnd: 2030 };
 const ddCharts = {};
+const ddDrops  = {};
 
 function ddGeoLevel() {
-  if (ddSel.country && ddSel.district && ddSel.school) return 'school';
-  if (ddSel.country && ddSel.district) return 'district';
-  if (ddSel.country) return 'country';
-  return null;
+  if (!ddSel.countries.length) return null;
+  if (ddSel.schools.length)   return 'school';
+  if (ddSel.districts.length) return 'district';
+  return 'country';
 }
 
 function ddMultiYear() { return ddSel.yearEnd > ddSel.yearStart; }
@@ -1858,9 +1859,9 @@ function ddQueryValues(metricLabel, years) {
   if (!window.DD) return years.map(() => 0);
   return years.map(yr => {
     let rows = DD.data.filter(r => r.metric === metricLabel && r.year === yr);
-    if (ddSel.school)        rows = rows.filter(r => r.school    === ddSel.school);
-    else if (ddSel.district) rows = rows.filter(r => r.district  === ddSel.district);
-    else if (ddSel.country)  rows = rows.filter(r => r.country   === ddSel.country);
+    if (ddSel.schools.length)        rows = rows.filter(r => ddSel.schools.includes(r.school));
+    else if (ddSel.districts.length) rows = rows.filter(r => ddSel.districts.includes(r.district));
+    else if (ddSel.countries.length) rows = rows.filter(r => ddSel.countries.includes(r.country));
     return rows.reduce((s, r) => s + r.value, 0);
   });
 }
@@ -1939,9 +1940,14 @@ function ddRender() {
   const multiYear = ddMultiYear();
   const levelLabel = { country: 'Country Level', district: 'District Level', school: 'School Level' }[level];
 
-  let breadcrumb = ddSel.country;
-  if (ddSel.district) breadcrumb += ` › ${ddSel.district}`;
-  if (ddSel.school)   breadcrumb += ` › ${ddSel.school}`;
+  const _allCt = window.DD ? DD.countries : C;
+  let breadcrumb = ddSel.countries.length === _allCt.length
+    ? 'All Countries'
+    : ddSel.countries.join(', ');
+  if (ddSel.districts.length)
+    breadcrumb += ddSel.districts.length === 1 ? ` › ${ddSel.districts[0]}` : ` › ${ddSel.districts.length} Districts`;
+  if (ddSel.schools.length)
+    breadcrumb += ddSel.schools.length === 1 ? ` › ${ddSel.schools[0]}` : ` › ${ddSel.schools.length} Schools`;
 
   const yearBadge = multiYear
     ? '<span class="dd-year-badge">Multi-Year</span>'
@@ -1984,30 +1990,123 @@ function ddRender() {
   });
 }
 
-function ddPopulateDistricts(country) {
-  const el = document.getElementById('dd-district-select');
-  el.innerHTML = '<option value="" disabled selected>Select District</option>';
-  el.disabled = true;
-  if (!country || !window.DD) return;
-  (DD.districts[country] || []).forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d; opt.textContent = d;
-    el.appendChild(opt);
+// ─── DD MULTI-SELECT FACTORY ───────────────────────────────────
+function makeDDMultiDrop(wrapperId, placeholder, onChange) {
+  const wrap = document.getElementById(wrapperId);
+  wrap.className = 'country-multi-wrap';
+  wrap.innerHTML = `
+    <button type="button" class="country-multi-trigger" id="${wrapperId}-trigger">
+      <span id="${wrapperId}-label">Select ${placeholder}</span>
+      <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="country-multi-dropdown" id="${wrapperId}-dropdown" hidden></div>`;
+
+  const trigger  = document.getElementById(`${wrapperId}-trigger`);
+  const dropdown = document.getElementById(`${wrapperId}-dropdown`);
+  const labelEl  = document.getElementById(`${wrapperId}-label`);
+
+  function updateLabel() {
+    const all   = dropdown.querySelector('input[value="__all__"]');
+    const indiv = [...dropdown.querySelectorAll('input:not([value="__all__"])')];
+    const sel   = indiv.filter(x => x.checked);
+    if (!indiv.length || (all && all.checked)) {
+      labelEl.textContent = `All ${placeholder}`;
+    } else if (sel.length === 0) {
+      labelEl.textContent = `Select ${placeholder}`;
+    } else if (sel.length === 1) {
+      labelEl.textContent = sel[0].value;
+    } else {
+      labelEl.textContent = `${sel.length} ${placeholder}`;
+    }
+  }
+
+  function isAllChecked() {
+    const all = dropdown.querySelector('input[value="__all__"]');
+    return !all || all.checked;
+  }
+
+  function getSelected() {
+    return [...dropdown.querySelectorAll('input:not([value="__all__"])')].filter(x => x.checked).map(x => x.value);
+  }
+
+  trigger.addEventListener('click', e => {
+    e.stopPropagation();
+    if (trigger.disabled) return;
+    dropdown.hidden = !dropdown.hidden;
+    trigger.classList.toggle('open', !dropdown.hidden);
   });
-  el.disabled = false;
+
+  document.addEventListener('click', e => {
+    if (!wrap.contains(e.target)) { dropdown.hidden = true; trigger.classList.remove('open'); }
+  });
+
+  dropdown.addEventListener('change', e => {
+    const cb    = e.target;
+    const all   = dropdown.querySelector('input[value="__all__"]');
+    const indiv = [...dropdown.querySelectorAll('input:not([value="__all__"])')];
+    if (cb.value === '__all__') {
+      indiv.forEach(x => x.checked = cb.checked);
+      if (!cb.checked) { cb.checked = true; indiv.forEach(x => x.checked = true); }
+    } else {
+      const checked = indiv.filter(x => x.checked);
+      if (!checked.length) { all.checked = true; indiv.forEach(x => x.checked = true); }
+      else all.checked = checked.length === indiv.length;
+    }
+    updateLabel();
+    onChange({ selected: getSelected(), allChecked: isAllChecked() });
+  });
+
+  function populate(items, preCheckAll = true) {
+    const rows = [
+      `<label class="country-multi-opt"><input type="checkbox" value="__all__"${preCheckAll ? ' checked' : ''}><span>All ${placeholder}</span></label>`,
+      ...items.map(v => `<label class="country-multi-opt"><input type="checkbox" value="${v}"${preCheckAll ? ' checked' : ''}><span>${v}</span></label>`)
+    ];
+    dropdown.innerHTML = rows.join('');
+    setDisabled(!items.length);
+    updateLabel();
+  }
+
+  function setDisabled(val) {
+    trigger.disabled = val;
+    trigger.style.opacity = val ? '0.45' : '';
+    trigger.style.cursor  = val ? 'not-allowed' : '';
+  }
+
+  function reset() {
+    dropdown.innerHTML = '';
+    labelEl.textContent = `Select ${placeholder}`;
+    setDisabled(true);
+  }
+
+  setDisabled(true);
+  return { populate, getSelected, isAllChecked, setDisabled, reset };
 }
 
-function ddPopulateSchools(country, district) {
-  const el = document.getElementById('dd-school-select');
-  el.innerHTML = '<option value="" disabled selected>Select School</option>';
-  el.disabled = true;
-  if (!district || !window.DD) return;
-  (DD.schools[district] || []).forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s; opt.textContent = s;
-    el.appendChild(opt);
-  });
-  el.disabled = false;
+function ddRefreshDistricts() {
+  if (!ddSel.countries.length || !window.DD) {
+    ddDrops.district.reset();
+    ddSel.districts = [];
+    ddRefreshSchools();
+    return;
+  }
+  const dists = [...new Set(ddSel.countries.flatMap(c => (DD.districts && DD.districts[c]) || []))].sort();
+  ddDrops.district.populate(dists, true);
+  ddSel.districts = [];
+  ddRefreshSchools();
+}
+
+function ddRefreshSchools() {
+  const activeDists = ddSel.districts.length > 0
+    ? ddSel.districts
+    : ddSel.countries.flatMap(c => (window.DD && DD.districts && DD.districts[c]) || []);
+  if (!activeDists.length || !window.DD) {
+    ddDrops.school.reset();
+    ddSel.schools = [];
+    return;
+  }
+  const schools = [...new Set(activeDists.flatMap(d => (DD.schools && DD.schools[d]) || []))].sort();
+  ddDrops.school.populate(schools, true);
+  ddSel.schools = [];
 }
 
 function ddUpdateYear() {
@@ -2030,35 +2129,28 @@ function ddInit() {
   }
   ddInitialised = true;
 
-  // Populate country dropdown from DD.countries
-  const countrySel = document.getElementById('dd-country-select');
-  const ddCountries = window.DD ? DD.countries : [];
-  ddCountries.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c; opt.textContent = c;
-    countrySel.appendChild(opt);
-  });
-
-  document.getElementById('dd-country-select').addEventListener('change', e => {
-    ddSel.country  = e.target.value;
-    ddSel.district = '';
-    ddSel.school   = '';
-    ddPopulateDistricts(ddSel.country);
-    ddPopulateSchools('', '');
+  ddDrops.country = makeDDMultiDrop('dd-country-wrap', 'Countries', ({ selected }) => {
+    ddSel.countries = selected;
+    ddSel.districts = [];
+    ddSel.schools   = [];
+    ddRefreshDistricts();
     ddRender();
   });
 
-  document.getElementById('dd-district-select').addEventListener('change', e => {
-    ddSel.district = e.target.value;
-    ddSel.school   = '';
-    ddPopulateSchools(ddSel.country, ddSel.district);
+  ddDrops.district = makeDDMultiDrop('dd-district-wrap', 'Districts', ({ selected, allChecked }) => {
+    ddSel.districts = allChecked ? [] : selected;
+    ddSel.schools   = [];
+    ddRefreshSchools();
     ddRender();
   });
 
-  document.getElementById('dd-school-select').addEventListener('change', e => {
-    ddSel.school = e.target.value;
+  ddDrops.school = makeDDMultiDrop('dd-school-wrap', 'Schools', ({ selected, allChecked }) => {
+    ddSel.schools = allChecked ? [] : selected;
     ddRender();
   });
+
+  ddDrops.country.populate(DD.countries, false);
+  ddDrops.country.setDisabled(false);
 
   document.getElementById('dd-date-start').addEventListener('input', ddUpdateYear);
   document.getElementById('dd-date-end').addEventListener('input', ddUpdateYear);
