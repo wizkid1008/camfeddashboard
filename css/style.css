@@ -307,19 +307,26 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   position: relative;
 }
 .content-header {
-  padding: 20px 24px 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  padding: 16px 24px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--white);
+  flex-wrap: wrap;
 }
 .content-header .hero-title {
   font-family: 'Merriweather', serif;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--purple);
-  margin-bottom: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .content-header .hero-desc {
-  font-size: 0.87rem;
+  font-size: 0.85rem;
   color: var(--text-mid);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 /* Subtle dot pattern across hero */
 .hero-section::before {
