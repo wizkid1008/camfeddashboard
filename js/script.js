@@ -434,28 +434,33 @@ function progList(id, items, max, colorFn) {
 }
 
 // ─── COUNTRY MULTI-SELECT ─────────────────────────────────────
-function buildCountryMultiSelect() {
-  const trigger  = document.getElementById('country-multi-trigger');
+function rebuildCountryOptions() {
   const dropdown = document.getElementById('country-multi-dropdown');
-  if (!trigger || !dropdown) return;
-
-  // Build checkbox options: "All Countries" first, then each country
-  // C starts as the hardcoded fallback and is updated to DB values on dd:ready
+  if (!dropdown) return;
   const rows = [{ value: 'All', label: 'All Countries' }, ...C.map(c => ({ value: c, label: c }))];
   dropdown.innerHTML = rows.map(r => `
     <label class="country-multi-opt">
       <input type="checkbox" value="${r.value}"${r.value === 'All' ? ' checked' : ''}>
       <span>${r.label}</span>
     </label>`).join('');
+}
 
-  // Toggle dropdown open/closed
+function buildCountryMultiSelect() {
+  const trigger  = document.getElementById('country-multi-trigger');
+  const dropdown = document.getElementById('country-multi-dropdown');
+  if (!trigger || !dropdown) return;
+
+  // Build initial options (C starts as hardcoded fallback, updates to DB on dd:ready)
+  rebuildCountryOptions();
+
+  // Toggle dropdown open/closed — attached once only
   trigger.addEventListener('click', e => {
     e.stopPropagation();
     dropdown.hidden = !dropdown.hidden;
     trigger.classList.toggle('open', !dropdown.hidden);
   });
 
-  // Close when clicking outside
+  // Close when clicking outside — attached once only
   document.addEventListener('click', e => {
     if (!document.getElementById('country-multi-wrap').contains(e.target)) {
       dropdown.hidden = true;
@@ -463,21 +468,18 @@ function buildCountryMultiSelect() {
     }
   });
 
-  // Handle checkbox changes
+  // Handle checkbox changes — attached once only
   dropdown.addEventListener('change', e => {
     const cb    = e.target;
     const all   = dropdown.querySelector('input[value="All"]');
     const indiv = [...dropdown.querySelectorAll('input:not([value="All"])')];
 
     if (cb.value === 'All') {
-      // "All Countries" toggled — sync all individual boxes
       indiv.forEach(x => x.checked = cb.checked);
       sel.countries = cb.checked ? ['All'] : [];
     } else {
-      // Individual country toggled — uncheck "All Countries"
       all.checked = false;
       const chosen = indiv.filter(x => x.checked).map(x => x.value);
-      // If every individual country is now checked, snap back to "All"
       if (chosen.length === C.length) {
         all.checked = true;
         indiv.forEach(x => x.checked = true);
@@ -487,7 +489,6 @@ function buildCountryMultiSelect() {
       }
     }
 
-    // Guard: nothing selected — reset to All
     if (!sel.countries.length) {
       all.checked = true;
       indiv.forEach(x => x.checked = true);
@@ -2502,7 +2503,7 @@ function slInit() {
 document.addEventListener('dd:ready', () => {
   if (window.DD) {
     C = DD.countries;           // keep C in sync with live DB country list
-    buildCountryMultiSelect();
+    rebuildCountryOptions();    // refresh options only — no duplicate listeners
     rebuildActive();
   }
 });
