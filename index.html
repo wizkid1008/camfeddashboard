@@ -4,406 +4,500 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAMFED Dashboards</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23dda03a'>C</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%234B2E83'>C</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=13">
+    <link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body>
 
-<div class="blobs">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-    <div class="blob blob-4"></div>
-    <div class="blob blob-5"></div>
-</div>
+<div class="app-shell">
 
-<div class="app">
+  <!-- ═══════════════════════════════════════════════════════
+       LEFT SIDEBAR
+  ════════════════════════════════════════════════════════ -->
+  <aside class="sidebar">
 
-    <!-- HEADER -->
+    <div class="sidebar-logo">
+      <img src="images/camfed-logo.png" alt="CAMFED" class="sidebar-logo-img">
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">DATA DASHBOARDS</div>
+
+      <a class="sidebar-nav-item" href="#" data-level="level2">
+        <svg class="sidebar-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 9.5c-2.5 0-4.7-1.3-6-3.2.03-2 4-3.1 6-3.1s5.97 1.1 6 3.1A7.1 7.1 0 0110 14.5z" fill="currentColor"/></svg>
+        Livelihoods &amp; Leadership
+      </a>
+      <a class="sidebar-nav-item" href="#" data-level="level1">
+        <svg class="sidebar-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M2 5h16M2 10h10M2 15h13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Education
+      </a>
+      <a class="sidebar-nav-item sidebar-nav-item--soon" href="#" data-level="level3">
+        <svg class="sidebar-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 17l4-8 4 5 3-3 3 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Education Systems
+      </a>
+      <a class="sidebar-nav-item sidebar-nav-item--disabled" href="#">
+        <svg class="sidebar-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M10 10a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 0114 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Wellbeing
+      </a>
+      <a class="sidebar-nav-item sidebar-nav-item--disabled" href="#">
+        <svg class="sidebar-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M9 12l2 2 4-4M7 3H4a1 1 0 00-1 1v13a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1h-3M9 1h2a1 1 0 011 1v1H8V2a1 1 0 011-1z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Safeguarding
+      </a>
+      <a class="sidebar-nav-item sidebar-nav-item--disabled" href="#">
+        <svg class="sidebar-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M3 10h14M10 3v14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.8"/></svg>
+        Financials
+      </a>
+
+      <div class="sidebar-section-label sidebar-section-gap">RESOURCES</div>
+      <a class="sidebar-nav-item sidebar-nav-item--disabled" href="#">
+        <svg class="sidebar-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4zM8 4v12M4 8h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Guides &amp; Documentation
+      </a>
+      <a class="sidebar-nav-item sidebar-nav-item--disabled" href="#">
+        <svg class="sidebar-nav-icon" viewBox="0 0 20 20" fill="none"><path d="M5 3h10a1 1 0 011 1v13l-3-2-3 2-3-2-3 2V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Data Dictionary
+      </a>
+    </nav>
+
+    <div class="sidebar-quote">
+      <div class="sidebar-quote-dots"></div>
+      <p class="sidebar-quote-text">Empowering girls<br>to create a future<br>without limits.</p>
+    </div>
+
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════════════
+       MAIN AREA
+  ════════════════════════════════════════════════════════ -->
+  <div class="app">
+
+    <!-- ── TOP HEADER ── -->
     <div class="header">
-        <!-- CAMFED Logo -->
-        <div class="header-logo-section">
-            <img src="images/camfed-logo.png" alt="CAMFED Logo" class="camfed-logo-img">
-        </div>
-        <div class="header-title">CAMFED Dashboards</div>
-        <button id="home-btn" class="home-btn" title="How to use this dashboard">&#8962; Home</button>
+      <nav class="top-nav">
+        <button id="home-btn" class="top-nav-item" title="Return to home screen">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1h-4v-4H8v4H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          Home
+        </button>
+        <span class="top-nav-divider"></span>
+        <a class="top-nav-item top-nav-item--active" href="#">Dashboards</a>
+        <a class="top-nav-item top-nav-item--muted" href="#">Reports</a>
+        <a class="top-nav-item top-nav-item--muted" href="#">Data Explorer</a>
+        <a class="top-nav-item top-nav-item--muted" href="#">Library</a>
+      </nav>
+
+      <div class="header-right">
         <div class="analysis-type-wrap">
-          <label class="analysis-type-label" for="analysis-type-select">Data Analysis Type</label>
+          <label class="analysis-type-label" for="analysis-type-select">View</label>
           <select id="analysis-type-select" class="analysis-type-select">
             <option value="dashboard" selected>Data Dashboard</option>
             <option value="dynamic">Dynamic Data</option>
             <option value="slicer">Slicer</option>
           </select>
         </div>
+        <div class="profile-avatar">W</div>
+      </div>
     </div>
 
-    <!-- FILTER BAR -->
+    <!-- ── HERO SECTION ── -->
+    <section class="hero-section" id="hero-section">
+      <div class="hero-text">
+        <div class="hero-breadcrumb">Dashboards / Impact Overview</div>
+        <h1 class="hero-title" id="hero-title">CAMFED Impact Dashboard</h1>
+        <p class="hero-desc" id="hero-desc">Select a level from the filters below to explore programme data by country, year, and sublevel.</p>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-arc"></div>
+        <div class="hero-dots"></div>
+        <img src="images/camfed-logo.png" alt="" class="hero-logo-watermark">
+      </div>
+    </section>
+
+    <!-- ── FILTER BAR ── -->
     <div class="filter-bar">
-        <div class="filter-bar-item">
-            <label class="filter-bar-label">Level</label>
-            <select id="level-select" class="indicator-dropdown">
-                <option value="" disabled selected>Select Level</option>
-            </select>
-        </div>
+      <div class="filter-bar-item">
+        <label class="filter-bar-label">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M3 3h14v2.5L11 11v6l-2-1.5V11L3 5.5V3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+          Level
+        </label>
+        <select id="level-select" class="indicator-dropdown">
+          <option value="" disabled selected>Select Level</option>
+        </select>
+      </div>
 
-        <div class="filter-bar-item">
-            <label class="filter-bar-label">Sub Level</label>
-            <select id="sublevel-select" class="indicator-dropdown" disabled>
-                <option value="" disabled selected>Select Sub Level</option>
-            </select>
-        </div>
+      <div class="filter-bar-item">
+        <label class="filter-bar-label">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 6h12M4 10h8M4 14h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Sub Level
+        </label>
+        <select id="sublevel-select" class="indicator-dropdown" disabled>
+          <option value="" disabled selected>Select Sub Level</option>
+        </select>
+      </div>
 
-        <div class="filter-bar-item">
-            <label class="filter-bar-label">Date Range</label>
-            <div class="date-range-compact">
-                <div class="date-display" id="date-display">2020 — 2030</div>
-                <div class="date-sliders-wrapper">
-                    <input type="range" id="date-range-start" class="date-slider" min="2020" max="2030" value="2020">
-                    <input type="range" id="date-range-end" class="date-slider" min="2020" max="2030" value="2030">
-                </div>
-            </div>
+      <div class="filter-bar-item">
+        <label class="filter-bar-label">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M10 2c0 0-4 3.5-4 8s4 8 4 8M10 2c0 0 4 3.5 4 8s-4 8-4 8M2 10h16" stroke="currentColor" stroke-width="1.4"/></svg>
+          Country
+        </label>
+        <div class="country-multi-wrap" id="country-multi-wrap">
+          <button type="button" class="country-multi-trigger" id="country-multi-trigger">
+            <span id="country-multi-label">All Countries</span>
+            <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <div class="country-multi-dropdown" id="country-multi-dropdown" hidden>
+            <!-- Options injected by buildCountryMultiSelect() -->
+          </div>
         </div>
+      </div>
 
-        <div class="filter-bar-item">
-            <label class="filter-bar-label">Country</label>
-            <div class="country-multi-wrap" id="country-multi-wrap">
-                <button type="button" class="country-multi-trigger" id="country-multi-trigger">
-                    <span id="country-multi-label">All Countries</span>
-                    <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#dda03a" stroke-width="2" stroke-linecap="round"/></svg>
-                </button>
-                <div class="country-multi-dropdown" id="country-multi-dropdown" hidden>
-                    <!-- Options injected by buildCountryMultiSelect() -->
-                </div>
-            </div>
+      <div class="filter-bar-item">
+        <label class="filter-bar-label">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M2 8h16M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Date Range
+        </label>
+        <div class="date-range-compact">
+          <div class="date-display" id="date-display">2020 — 2030</div>
+          <div class="date-sliders-wrapper">
+            <input type="range" id="date-range-start" class="date-slider" min="2020" max="2030" value="2020">
+            <input type="range" id="date-range-end" class="date-slider" min="2020" max="2030" value="2030">
+          </div>
         </div>
+      </div>
+
+      <div class="filter-bar-apply">
+        <button class="apply-filters-btn" onclick="if(window.rebuildActive)rebuildActive()">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M3 3h14v2.5L11 11v6l-2-1.5V11L3 5.5V3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          Apply Filters
+        </button>
+      </div>
     </div>
 
-    <!-- BODY -->
+    <!-- ── BODY ── -->
     <div class="body-layout">
+      <div class="main-content">
 
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-
-            <!-- ══ LANDING / ONBOARDING (visible before any Level is selected) ══ -->
-            <div id="landing-section" class="landing-section">
-                <div class="landing-title">How to Use This Dashboard</div>
-                <p class="landing-intro">Use the filters above to explore dashboard data by level, sublevel, year, and country.</p>
-                <div class="landing-steps">
-                    <div class="landing-step">
-                        <span class="landing-step-num">1</span>
-                        <div class="landing-step-text">
-                            <strong>Select a Data Level</strong>
-                            <span>Choose a programme level from the Level dropdown above.</span>
-                        </div>
-                    </div>
-                    <div class="landing-step">
-                        <span class="landing-step-num">2</span>
-                        <div class="landing-step-text">
-                            <strong>Select a SubLevel</strong>
-                            <span>Narrow down to a specific area within your selected level.</span>
-                        </div>
-                    </div>
-                    <div class="landing-step">
-                        <span class="landing-step-num">3</span>
-                        <div class="landing-step-text">
-                            <strong>Select the Year(s)</strong>
-                            <span>Use the date range slider. Move both ends to the same year for a single-year view.</span>
-                        </div>
-                    </div>
-                    <div class="landing-step">
-                        <span class="landing-step-num">4</span>
-                        <div class="landing-step-text">
-                            <strong>Select a Country</strong>
-                            <span>Filter by a specific country or view all countries together.</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="landing-tip">
-                    <span class="landing-tip-arrow">→</span>
-                    <span>For <strong>school and district level data</strong>, click <span class="landing-tip-badge">Dynamic Data</span> in the upper right-hand corner.</span>
-                </div>
+        <!-- ══ LANDING ══ -->
+        <div id="landing-section" class="landing-section">
+          <div class="landing-title">How to Use This Dashboard</div>
+          <p class="landing-intro">Use the filters above to explore programme data by level, sublevel, year, and country.</p>
+          <div class="landing-steps">
+            <div class="landing-step">
+              <span class="landing-step-num">1</span>
+              <div class="landing-step-text">
+                <strong>Select a Data Level</strong>
+                <span>Choose a programme level from the sidebar or the Level dropdown above.</span>
+              </div>
             </div>
-
-            <!-- ══ SUBLEVEL STATISTICS (auto-populated on SubLevel selection) ══ -->
-            <div id="sublevel-stats-section" style="display:none">
-                <div class="data-card">
-                    <div class="data-card-header">
-                        <span id="sublevel-stats-title"></span>
-                    </div>
-                    <div class="data-card-body">
-                        <ul id="sublevel-stats-list" class="sublevel-stats-list"></ul>
-                    </div>
-                </div>
+            <div class="landing-step">
+              <span class="landing-step-num">2</span>
+              <div class="landing-step-text">
+                <strong>Select a Sub Level</strong>
+                <span>Narrow down to a specific area within your chosen level.</span>
+              </div>
             </div>
-
-            <!-- ══ LEVEL 1 ══ -->
-            <div class="tab-panel" id="panel-level1">
-
-                <div class="headline-banner">
-                    <h2 id="l1-headline">Select a country to view Level 1 data — Girls' Education &amp; Bursary Support</h2>
-                </div>
-
-                <!-- Stat strip -->
-                <div class="stat-strip stat-strip-6" id="l1-stats">
-                    <div class="stat-cell">
-                        <div class="stat-cell-label">Girls — Bursary Annual</div>
-                        <div class="stat-cell-value gold" id="s-bursary">—</div>
-                        <div class="stat-cell-sub">KPI 1.1 · Girls Total</div>
-                    </div>
-                    <div class="stat-cell">
-                        <div class="stat-cell-label">CAMA &amp; Community Support</div>
-                        <div class="stat-cell-value gold" id="s-cama-school">—</div>
-                        <div class="stat-cell-sub">KPI 1.2 · Girls Total</div>
-                    </div>
-                    <div class="stat-cell">
-                        <div class="stat-cell-label">Social &amp; Learning Support</div>
-                        <div class="stat-cell-value gold" id="s-sls">—</div>
-                        <div class="stat-cell-sub">KPI 1.3 · Annual</div>
-                    </div>
-                    <div class="stat-cell">
-                        <div class="stat-cell-label">Learner Guides Active</div>
-                        <div class="stat-cell-value gold" id="s-lg">—</div>
-                        <div class="stat-cell-sub">KPI 1.9 · Annual Total</div>
-                    </div>
-                    <div class="stat-cell">
-                        <div class="stat-cell-label">Total Girls Supported</div>
-                        <div class="stat-cell-value gold" id="s-girls-total">—</div>
-                        <div class="stat-cell-sub">KPI 1.13 · Annual</div>
-                    </div>
-                    <div class="stat-cell">
-                        <div class="stat-cell-label">Total Boys Supported</div>
-                        <div class="stat-cell-value gold" id="s-boys-total">—</div>
-                        <div class="stat-cell-sub">KPI 1.14 · Annual</div>
-                    </div>
-                </div>
-
-                <div class="card-grid-2">
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            Children Supported in School with Education Bursaries
-                            <button class="current-data-btn">Current Data</button>
-                        </div>
-                        <div class="data-card-body">
-                            <div class="chart-container h200"><canvas id="l1-bursary-chart"></canvas></div>
-                        </div>
-                    </div>
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            Active Learner Guides
-                            <span class="data-card-badge">KPI 1.9</span>
-                        </div>
-                        <div class="data-card-body">
-                            <div class="chart-container h200"><canvas id="l1-lg-chart"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-grid-2">
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            Number of Girls by School Level (Primary vs Secondary)
-                            <span class="data-card-badge">KPI 1.1</span>
-                        </div>
-                        <div class="data-card-body">
-                            <div class="chart-container h200"><canvas id="l1-levels-chart"></canvas></div>
-                        </div>
-                    </div>
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            Bursary Support — Annual to Cumulative
-                            <span class="data-card-badge purple">All Periods</span>
-                        </div>
-                        <div class="data-card-body">
-                            <div class="chart-container h200"><canvas id="l1-periods-chart"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-grid-3">
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            Dropout Rate — Pregnancy / Early Marriage
-                            <span class="data-card-badge">KPI 1.5</span>
-                        </div>
-                        <div class="data-card-body">
-                            <div class="prog-list" id="l1-dropout"></div>
-                        </div>
-                    </div>
-                    <div class="data-card">
-                        <div class="data-card-header">Social &amp; Learning Support Recipients</div>
-                        <div class="data-card-body">
-                            <div class="chart-container h140"><canvas id="l1-sls-chart"></canvas></div>
-                        </div>
-                    </div>
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            Number of Clients by Form / Dropout Rate
-                            <span class="data-card-badge">P9</span>
-                        </div>
-                        <div class="data-card-body">
-                            <div class="prog-list" id="l1-dropout-form"></div>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="landing-step">
+              <span class="landing-step-num">3</span>
+              <div class="landing-step-text">
+                <strong>Select Year(s)</strong>
+                <span>Use the date range slider — move both ends to the same year for a snapshot view.</span>
+              </div>
             </div>
-
-            <!-- ══ LEVEL 2 ══ -->
-            <div class="tab-panel" id="panel-level2">
-
-                <div class="headline-banner">
-                    <h2 id="l2-headline">Level 2 — Young women transition to secure livelihoods &amp; join CAMA</h2>
-                </div>
-
-                <div class="stat-strip stat-strip-3">
-                    <div class="stat-cell">
-                        <div class="stat-cell-label">CAMA Members Cumulative</div>
-                        <div class="stat-cell-value gold" id="s2-cama">312,747</div>
-                        <div class="stat-cell-sub">KPI 2.1</div>
-                    </div>
-                    <div class="stat-cell">
-                        <div class="stat-cell-label">Jobs Created (Annual)</div>
-                        <div class="stat-cell-value gold" id="s2-jobs">34,558</div>
-                        <div class="stat-cell-sub">KPI 2.9</div>
-                    </div>
-                    <div class="stat-cell">
-                        <div class="stat-cell-label">Female Entrepreneurs</div>
-                        <div class="stat-cell-value gold" id="s2-ent">12,344</div>
-                        <div class="stat-cell-sub">KPI 2.6 · Annual</div>
-                    </div>
-                </div>
-
-                <div class="card-grid-2">
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            Total CAMA Members by Country
-                            <span class="data-card-badge">KPI 2.1</span>
-                        </div>
-                        <div class="data-card-body">
-                            <div class="chart-container h220"><canvas id="l2-cama-chart"></canvas></div>
-                        </div>
-                    </div>
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            Active Guides — Transition, Agriculture &amp; Business
-                            <span class="data-card-badge">KPI 2.2</span>
-                        </div>
-                        <div class="data-card-body">
-                            <div class="chart-container h220"><canvas id="l2-guides-chart"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-grid-2">
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            Businesses Supported by Enterprise Guides
-                            <span class="data-card-badge">KPI 2.7</span>
-                        </div>
-                        <div class="data-card-body">
-                            <div class="chart-container h200"><canvas id="l2-biz-chart"></canvas></div>
-                        </div>
-                    </div>
-                    <div class="data-card">
-                        <div class="data-card-header">Jobs Created Through Enterprise Programme</div>
-                        <div class="data-card-body">
-                            <div class="chart-container h200"><canvas id="l2-jobs-chart"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-grid-3">
-                    <div class="data-card">
-                        <div class="data-card-header">Income Increase (%)<span class="data-card-badge">KPI 2.10</span></div>
-                        <div class="data-card-body"><div class="prog-list" id="l2-income"></div></div>
-                    </div>
-                    <div class="data-card">
-                        <div class="data-card-header">Making a Profit (%)<span class="data-card-badge">KPI 2.11</span></div>
-                        <div class="data-card-body"><div class="prog-list" id="l2-profit"></div></div>
-                    </div>
-                    <div class="data-card">
-                        <div class="data-card-header">Business Survival — 1yr (%)<span class="data-card-badge">KPI 2.12</span></div>
-                        <div class="data-card-body"><div class="prog-list" id="l2-survival"></div></div>
-                    </div>
-                </div>
-
+            <div class="landing-step">
+              <span class="landing-step-num">4</span>
+              <div class="landing-step-text">
+                <strong>Select a Country</strong>
+                <span>Filter by a specific country or view all countries together.</span>
+              </div>
             </div>
+          </div>
+          <div class="landing-tip">
+            <span class="landing-tip-arrow">→</span>
+            <span>For <strong>school and district level data</strong>, switch to <span class="landing-tip-badge">Dynamic Data</span> using the View selector in the top right.</span>
+          </div>
+        </div>
 
-            <!-- ══ LEVEL 3 ══ -->
-            <div class="tab-panel" id="panel-level3">
-
-                <div class="headline-banner">
-                    <h2>Level 3 — Adoption of best practices in national education systems at scale</h2>
-                </div>
-
-                <div class="stat-strip stat-strip-3">
-                    <div class="stat-cell">
-                        <div class="stat-cell-label">Total Schools (all delivery)</div>
-                        <div class="stat-cell-value gold" id="s3-schools">7,537</div>
-                        <div class="stat-cell-sub">KPI 3.1</div>
-                    </div>
-                    <div class="stat-cell">
-                        <div class="stat-cell-label">Partner Districts</div>
-                        <div class="stat-cell-value gold" id="s3-districts">199</div>
-                        <div class="stat-cell-sub">KPI 3.4</div>
-                    </div>
-                    <div class="stat-cell">
-                        <div class="stat-cell-label">Children in Partner Schools</div>
-                        <div class="stat-cell-value gold" id="s3-children">5,090,492</div>
-                        <div class="stat-cell-sub">KPI 3.5 · Annual Total</div>
-                    </div>
-                </div>
-
-                <div class="card-grid-2">
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            Schools with Active Structures by Country &amp; Type
-                            <span class="data-card-badge">KPI 3.1</span>
-                        </div>
-                        <div class="data-card-body">
-                            <div class="chart-container h220"><canvas id="l3-schools-chart"></canvas></div>
-                        </div>
-                    </div>
-                    <div class="data-card">
-                        <div class="data-card-header">
-                            Children in Improved Learning Environment
-                            <span class="data-card-badge">KPI 3.5</span>
-                        </div>
-                        <div class="data-card-body">
-                            <div class="chart-container h220"><canvas id="l3-children-chart"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-grid-2">
-                    <div class="data-card">
-                        <div class="data-card-header">Partner Districts by Country<span class="data-card-badge">KPI 3.4</span></div>
-                        <div class="data-card-body">
-                            <div class="chart-container h180"><canvas id="l3-districts-chart"></canvas></div>
-                        </div>
-                    </div>
-                    <div class="data-card">
-                        <div class="data-card-header">Total Children Supported — P1 Annual</div>
-                        <div class="data-card-body">
-                            <div class="chart-container h180"><canvas id="l3-p1-chart"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-
+        <!-- ══ SUBLEVEL STATISTICS ══ -->
+        <div id="sublevel-stats-section" style="display:none">
+          <div class="data-card">
+            <div class="data-card-header">
+              <span id="sublevel-stats-title"></span>
             </div>
+            <div class="data-card-body">
+              <ul id="sublevel-stats-list" class="sublevel-stats-list"></ul>
+            </div>
+          </div>
+        </div>
 
-        </div><!-- /main-content -->
+        <!-- ══ LEVEL 1: GIRL'S EDUCATION ══ -->
+        <div class="tab-panel" id="panel-level1">
 
+          <div class="headline-banner">
+            <h2 id="l1-headline">Select a country to view Level 1 data — Girls' Education &amp; Bursary Support</h2>
+          </div>
+
+          <div class="stat-strip stat-strip-6" id="l1-stats">
+            <div class="stat-cell">
+              <div class="stat-cell-label">Girls — Bursary Annual</div>
+              <div class="stat-cell-value gold" id="s-bursary">—</div>
+              <div class="stat-cell-sub">KPI 1.1 · Girls Total</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-cell-label">CAMA &amp; Community Support</div>
+              <div class="stat-cell-value gold" id="s-cama-school">—</div>
+              <div class="stat-cell-sub">KPI 1.2 · Girls Total</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-cell-label">Social &amp; Learning Support</div>
+              <div class="stat-cell-value gold" id="s-sls">—</div>
+              <div class="stat-cell-sub">KPI 1.3 · Annual</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-cell-label">Learner Guides Active</div>
+              <div class="stat-cell-value gold" id="s-lg">—</div>
+              <div class="stat-cell-sub">KPI 1.9 · Annual Total</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-cell-label">Total Girls Supported</div>
+              <div class="stat-cell-value gold" id="s-girls-total">—</div>
+              <div class="stat-cell-sub">KPI 1.13 · Annual</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-cell-label">Total Boys Supported</div>
+              <div class="stat-cell-value gold" id="s-boys-total">—</div>
+              <div class="stat-cell-sub">KPI 1.14 · Annual</div>
+            </div>
+          </div>
+
+          <div class="card-grid-2">
+            <div class="data-card">
+              <div class="data-card-header">
+                Children Supported in School with Education Bursaries
+                <button class="current-data-btn">Current Data</button>
+              </div>
+              <div class="data-card-body">
+                <div class="chart-container h200"><canvas id="l1-bursary-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="data-card">
+              <div class="data-card-header">
+                Active Learner Guides
+                <span class="data-card-badge">KPI 1.9</span>
+              </div>
+              <div class="data-card-body">
+                <div class="chart-container h200"><canvas id="l1-lg-chart"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-grid-2">
+            <div class="data-card">
+              <div class="data-card-header">
+                Number of Girls by School Level (Primary vs Secondary)
+                <span class="data-card-badge">KPI 1.1</span>
+              </div>
+              <div class="data-card-body">
+                <div class="chart-container h200"><canvas id="l1-levels-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="data-card">
+              <div class="data-card-header">
+                Bursary Support — Annual to Cumulative
+                <span class="data-card-badge purple">All Periods</span>
+              </div>
+              <div class="data-card-body">
+                <div class="chart-container h200"><canvas id="l1-periods-chart"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-grid-3">
+            <div class="data-card">
+              <div class="data-card-header">
+                Dropout Rate — Pregnancy / Early Marriage
+                <span class="data-card-badge">KPI 1.5</span>
+              </div>
+              <div class="data-card-body">
+                <div class="prog-list" id="l1-dropout"></div>
+              </div>
+            </div>
+            <div class="data-card">
+              <div class="data-card-header">Social &amp; Learning Support Recipients</div>
+              <div class="data-card-body">
+                <div class="chart-container h140"><canvas id="l1-sls-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="data-card">
+              <div class="data-card-header">
+                Number of Clients by Form / Dropout Rate
+                <span class="data-card-badge">P9</span>
+              </div>
+              <div class="data-card-body">
+                <div class="prog-list" id="l1-dropout-form"></div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /panel-level1 -->
+
+        <!-- ══ LEVEL 2: LIVELIHOODS & LEADERSHIP ══ -->
+        <div class="tab-panel" id="panel-level2">
+
+          <div class="headline-banner">
+            <h2 id="l2-headline">Level 2 — Young women transition to secure livelihoods &amp; join CAMA</h2>
+          </div>
+
+          <div class="stat-strip stat-strip-3">
+            <div class="stat-cell">
+              <div class="stat-cell-label">CAMA Members Cumulative</div>
+              <div class="stat-cell-value gold" id="s2-cama">312,747</div>
+              <div class="stat-cell-sub">KPI 2.1</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-cell-label">Jobs Created (Annual)</div>
+              <div class="stat-cell-value gold" id="s2-jobs">34,558</div>
+              <div class="stat-cell-sub">KPI 2.9</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-cell-label">Female Entrepreneurs</div>
+              <div class="stat-cell-value gold" id="s2-ent">12,344</div>
+              <div class="stat-cell-sub">KPI 2.6 · Annual</div>
+            </div>
+          </div>
+
+          <div class="card-grid-2">
+            <div class="data-card">
+              <div class="data-card-header">
+                Total CAMA Members by Country
+                <span class="data-card-badge">KPI 2.1</span>
+              </div>
+              <div class="data-card-body">
+                <div class="chart-container h220"><canvas id="l2-cama-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="data-card">
+              <div class="data-card-header">
+                Active Guides — Transition, Agriculture &amp; Business
+                <span class="data-card-badge">KPI 2.2</span>
+              </div>
+              <div class="data-card-body">
+                <div class="chart-container h220"><canvas id="l2-guides-chart"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-grid-2">
+            <div class="data-card">
+              <div class="data-card-header">
+                Businesses Supported by Enterprise Guides
+                <span class="data-card-badge">KPI 2.7</span>
+              </div>
+              <div class="data-card-body">
+                <div class="chart-container h200"><canvas id="l2-biz-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="data-card">
+              <div class="data-card-header">Jobs Created Through Enterprise Programme</div>
+              <div class="data-card-body">
+                <div class="chart-container h200"><canvas id="l2-jobs-chart"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-grid-3">
+            <div class="data-card">
+              <div class="data-card-header">Income Increase (%)<span class="data-card-badge">KPI 2.10</span></div>
+              <div class="data-card-body"><div class="prog-list" id="l2-income"></div></div>
+            </div>
+            <div class="data-card">
+              <div class="data-card-header">Making a Profit (%)<span class="data-card-badge">KPI 2.11</span></div>
+              <div class="data-card-body"><div class="prog-list" id="l2-profit"></div></div>
+            </div>
+            <div class="data-card">
+              <div class="data-card-header">Business Survival — 1yr (%)<span class="data-card-badge">KPI 2.12</span></div>
+              <div class="data-card-body"><div class="prog-list" id="l2-survival"></div></div>
+            </div>
+          </div>
+
+        </div><!-- /panel-level2 -->
+
+        <!-- ══ LEVEL 3: EDUCATION SYSTEMS ══ -->
+        <div class="tab-panel" id="panel-level3">
+
+          <div class="headline-banner">
+            <h2>Level 3 — Adoption of best practices in national education systems at scale</h2>
+          </div>
+
+          <div class="stat-strip stat-strip-3">
+            <div class="stat-cell">
+              <div class="stat-cell-label">Total Schools (all delivery)</div>
+              <div class="stat-cell-value gold" id="s3-schools">7,537</div>
+              <div class="stat-cell-sub">KPI 3.1</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-cell-label">Partner Districts</div>
+              <div class="stat-cell-value gold" id="s3-districts">199</div>
+              <div class="stat-cell-sub">KPI 3.4</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-cell-label">Children in Partner Schools</div>
+              <div class="stat-cell-value gold" id="s3-children">5,090,492</div>
+              <div class="stat-cell-sub">KPI 3.5 · Annual Total</div>
+            </div>
+          </div>
+
+          <div class="card-grid-2">
+            <div class="data-card">
+              <div class="data-card-header">
+                Schools with Active Structures by Country &amp; Type
+                <span class="data-card-badge">KPI 3.1</span>
+              </div>
+              <div class="data-card-body">
+                <div class="chart-container h220"><canvas id="l3-schools-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="data-card">
+              <div class="data-card-header">
+                Children in Improved Learning Environment
+                <span class="data-card-badge">KPI 3.5</span>
+              </div>
+              <div class="data-card-body">
+                <div class="chart-container h220"><canvas id="l3-children-chart"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-grid-2">
+            <div class="data-card">
+              <div class="data-card-header">Partner Districts by Country<span class="data-card-badge">KPI 3.4</span></div>
+              <div class="data-card-body">
+                <div class="chart-container h180"><canvas id="l3-districts-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="data-card">
+              <div class="data-card-header">Total Children Supported — P1 Annual</div>
+              <div class="data-card-body">
+                <div class="chart-container h180"><canvas id="l3-p1-chart"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /panel-level3 -->
+
+      </div><!-- /main-content -->
     </div><!-- /body-layout -->
 
+    <!-- ── FOOTER ── -->
+    <footer class="dashboard-footer">
+      <span class="footer-quote">&#10077; When you educate a girl, you empower a community. <em>— CAMFED</em></span>
+    </footer>
 
-    <!-- DYNAMIC DATA VIEW (hidden by default; toggled by header button) -->
+    <!-- ═══════════════════════════════════════════════════════
+         DYNAMIC DATA VIEW (hidden; toggled by analysis-type-select)
+    ════════════════════════════════════════════════════════ -->
     <div id="dynamic-data-view" style="display:none">
-
-      <!-- DD filter bar: Country / District / School / Year -->
       <div class="filter-bar">
         <div class="filter-bar-item">
           <label class="filter-bar-label">Country</label>
@@ -434,65 +528,35 @@
           </div>
         </div>
       </div>
-
-      <!-- DD content area -->
       <div class="body-layout">
         <div class="main-content">
           <div id="dd-choose-geo" class="landing-section">
             <div class="landing-title">How to Use Dynamic Data</div>
             <p class="landing-intro">Drill into country, district, and school-level data for any metric across any year range.</p>
             <div class="landing-steps">
-              <div class="landing-step">
-                <span class="landing-step-num">1</span>
-                <div class="landing-step-text">
-                  <strong>Select a Country</strong>
-                  <span>Choose from the Country dropdown in the filter bar above to load district data.</span>
-                </div>
-              </div>
-              <div class="landing-step">
-                <span class="landing-step-num">2</span>
-                <div class="landing-step-text">
-                  <strong>Narrow to a District</strong>
-                  <span>Once a country is selected the District dropdown activates — pick a district for district-level metrics.</span>
-                </div>
-              </div>
-              <div class="landing-step">
-                <span class="landing-step-num">3</span>
-                <div class="landing-step-text">
-                  <strong>Drill to a School</strong>
-                  <span>Optionally select a specific school for the most granular, school-level view.</span>
-                </div>
-              </div>
-              <div class="landing-step">
-                <span class="landing-step-num">4</span>
-                <div class="landing-step-text">
-                  <strong>Set the Year Range</strong>
-                  <span>Use the date sliders to view a single year snapshot or a multi-year trend across all metrics.</span>
-                </div>
-              </div>
+              <div class="landing-step"><span class="landing-step-num">1</span><div class="landing-step-text"><strong>Select a Country</strong><span>Choose from the Country dropdown to load district data.</span></div></div>
+              <div class="landing-step"><span class="landing-step-num">2</span><div class="landing-step-text"><strong>Narrow to a District</strong><span>Once a country is selected the District dropdown activates.</span></div></div>
+              <div class="landing-step"><span class="landing-step-num">3</span><div class="landing-step-text"><strong>Drill to a School</strong><span>Optionally select a specific school for granular data.</span></div></div>
+              <div class="landing-step"><span class="landing-step-num">4</span><div class="landing-step-text"><strong>Set the Year Range</strong><span>Use the date sliders to view a snapshot or trend.</span></div></div>
             </div>
-            <div class="landing-tip">
-              <span class="landing-tip-arrow">→</span>
-              <span>Charts automatically switch between <strong>single-year</strong> and <strong>multi-year</strong> views based on your date range selection.</span>
-            </div>
+            <div class="landing-tip"><span class="landing-tip-arrow">→</span><span>Charts automatically switch between <strong>single-year</strong> and <strong>multi-year</strong> views based on your date range.</span></div>
           </div>
           <div id="dd-content" style="display:none"></div>
         </div>
       </div>
-
     </div><!-- /dynamic-data-view -->
 
-    <!-- SLICER VIEW -->
+    <!-- ═══════════════════════════════════════════════════════
+         SLICER VIEW (hidden; toggled by analysis-type-select)
+    ════════════════════════════════════════════════════════ -->
     <div id="slicer-view" style="display:none">
-
-      <!-- Geography + year filter bar -->
       <div class="filter-bar">
         <div class="filter-bar-item">
           <label class="filter-bar-label">Countries</label>
           <div class="country-multi-wrap" id="sl-country-wrap">
             <button type="button" class="country-multi-trigger" id="sl-country-trigger">
               <span id="sl-country-label">All Countries</span>
-              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#dda03a" stroke-width="2" stroke-linecap="round"/></svg>
+              <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
             </button>
             <div class="country-multi-dropdown" id="sl-country-dropdown" hidden></div>
           </div>
@@ -502,7 +566,7 @@
           <div class="country-multi-wrap" id="sl-district-wrap">
             <button type="button" class="country-multi-trigger" id="sl-district-trigger">
               <span id="sl-district-label">All Districts</span>
-              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#dda03a" stroke-width="2" stroke-linecap="round"/></svg>
+              <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
             </button>
             <div class="country-multi-dropdown" id="sl-district-dropdown" hidden style="max-height:240px;overflow-y:auto"></div>
           </div>
@@ -512,7 +576,7 @@
           <div class="country-multi-wrap" id="sl-school-wrap">
             <button type="button" class="country-multi-trigger" id="sl-school-trigger">
               <span id="sl-school-label">All Schools</span>
-              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#dda03a" stroke-width="2" stroke-linecap="round"/></svg>
+              <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
             </button>
             <div class="country-multi-dropdown" id="sl-school-dropdown" hidden style="max-height:240px;overflow-y:auto"></div>
           </div>
@@ -528,19 +592,15 @@
           </div>
         </div>
       </div>
-
-      <!-- Slicer body -->
       <div class="body-layout">
         <div class="main-content">
-
-          <!-- Controls bar: Data + Gender + Chart Type + Go -->
           <div class="filter-bar sl-controls-bar">
             <div class="filter-bar-item">
               <label class="filter-bar-label">Data <span class="sl-kpi-count" id="sl-kpi-count"></span></label>
               <div class="country-multi-wrap" id="sl-kpi-wrap">
                 <button type="button" class="country-multi-trigger" id="sl-kpi-trigger">
                   <span id="sl-kpi-label">Select Data</span>
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#dda03a" stroke-width="2" stroke-linecap="round"/></svg>
+                  <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
                 </button>
                 <div class="country-multi-dropdown" id="sl-kpi-dropdown" hidden style="min-width:280px;max-height:300px;overflow-y:auto"></div>
               </div>
@@ -550,7 +610,7 @@
               <div class="country-multi-wrap" id="sl-gender-wrap">
                 <button type="button" class="country-multi-trigger" id="sl-gender-trigger">
                   <span id="sl-gender-label">All</span>
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#dda03a" stroke-width="2" stroke-linecap="round"/></svg>
+                  <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
                 </button>
                 <div class="country-multi-dropdown" id="sl-gender-dropdown" hidden>
                   <label class="country-multi-opt"><input type="radio" name="sl-gender-r" value="all" checked><span>All</span></label>
@@ -574,56 +634,86 @@
               <button type="button" id="sl-go-btn" class="sl-go-btn">Go</button>
             </div>
           </div>
-
-          <!-- Output area -->
           <div id="sl-output">
             <div class="landing-section">
               <div class="landing-title">How to Use the Slicer</div>
               <p class="landing-intro">Build a custom cross-geography analysis — combine any metrics, geographies, gender filter, and chart type.</p>
               <div class="landing-steps">
-                <div class="landing-step">
-                  <span class="landing-step-num">1</span>
-                  <div class="landing-step-text">
-                    <strong>Filter Geography</strong>
-                    <span>Use the Countries, Districts, and Schools dropdowns to narrow your scope. Leave all unchecked to include everything.</span>
-                  </div>
-                </div>
-                <div class="landing-step">
-                  <span class="landing-step-num">2</span>
-                  <div class="landing-step-text">
-                    <strong>Pick KPIs</strong>
-                    <span>Select up to 8 metrics from the checklist above to compare side by side.</span>
-                  </div>
-                </div>
-                <div class="landing-step">
-                  <span class="landing-step-num">3</span>
-                  <div class="landing-step-text">
-                    <strong>Filter by Gender</strong>
-                    <span>Choose All, Female, or Male to segment results — the data is split 52 % female / 48 % male.</span>
-                  </div>
-                </div>
-                <div class="landing-step">
-                  <span class="landing-step-num">4</span>
-                  <div class="landing-step-text">
-                    <strong>Choose a Chart Type</strong>
-                    <span>Select Number, Line, Bar, Pie, Multi-Line, or Table to control how the output is visualised.</span>
-                  </div>
-                </div>
+                <div class="landing-step"><span class="landing-step-num">1</span><div class="landing-step-text"><strong>Filter Geography</strong><span>Use Countries, Districts, and Schools dropdowns to narrow scope.</span></div></div>
+                <div class="landing-step"><span class="landing-step-num">2</span><div class="landing-step-text"><strong>Pick KPIs</strong><span>Select up to 8 metrics to compare side by side.</span></div></div>
+                <div class="landing-step"><span class="landing-step-num">3</span><div class="landing-step-text"><strong>Filter by Gender</strong><span>Choose All, Female, or Male to segment results.</span></div></div>
+                <div class="landing-step"><span class="landing-step-num">4</span><div class="landing-step-text"><strong>Choose a Chart Type</strong><span>Select Number, Line, Bar, Pie, Multi-Line, or Table.</span></div></div>
               </div>
-              <div class="landing-tip">
-                <span class="landing-tip-arrow">→</span>
-                <span>Set a <strong>year range</strong> first — the Slicer shows trends for every selected KPI across the years you choose.</span>
-              </div>
+              <div class="landing-tip"><span class="landing-tip-arrow">→</span><span>Set a <strong>year range</strong> first — the Slicer shows trends for every selected KPI across the years you choose.</span></div>
             </div>
           </div>
-
         </div>
       </div>
-
     </div><!-- /slicer-view -->
-</div><!-- /app -->
+
+  </div><!-- /app -->
+</div><!-- /app-shell -->
 
 <script src="data/dashboardData.js"></script>
 <script src="js/script.js?v=18"></script>
+
+<!-- Sidebar navigation wiring -->
+<script>
+(function() {
+  var heroTitles = {
+    level1: 'Girls\u2019 Education Impact Dashboard',
+    level2: 'Livelihoods \u0026 Leadership Impact Dashboard',
+    level3: 'Education Systems Impact Dashboard'
+  };
+  var heroDescs = {
+    level1: 'Track education bursary reach, learner guide programmes, and school outcomes for girls across CAMFED\u2019s partner countries.',
+    level2: 'Track progress in economic empowerment, CAMA membership, livelihoods support, and leadership development.',
+    level3: 'Monitor systems-level adoption of best practices in national education across partner countries.'
+  };
+
+  document.querySelectorAll('[data-level]').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      var level = item.getAttribute('data-level');
+      if (!level) return;
+
+      // Set level select and fire change
+      var levelSel = document.getElementById('level-select');
+      if (levelSel) {
+        levelSel.value = level;
+        levelSel.dispatchEvent(new Event('change'));
+      }
+
+      // Update sidebar active state
+      document.querySelectorAll('.sidebar-nav-item').forEach(function(i) {
+        i.classList.remove('sidebar-nav-item--active');
+      });
+      item.classList.add('sidebar-nav-item--active');
+
+      // Update hero text
+      var title = document.getElementById('hero-title');
+      var desc  = document.getElementById('hero-desc');
+      if (title && heroTitles[level]) title.textContent = heroTitles[level];
+      if (desc  && heroDescs[level])  desc.textContent  = heroDescs[level];
+    });
+  });
+
+  // Also update hero + sidebar when level-select changes directly
+  var levelSel = document.getElementById('level-select');
+  if (levelSel) {
+    levelSel.addEventListener('change', function() {
+      var level = levelSel.value;
+      var title = document.getElementById('hero-title');
+      var desc  = document.getElementById('hero-desc');
+      if (title && heroTitles[level]) title.textContent = heroTitles[level];
+      if (desc  && heroDescs[level])  desc.textContent  = heroDescs[level];
+      document.querySelectorAll('[data-level]').forEach(function(item) {
+        item.classList.toggle('sidebar-nav-item--active', item.getAttribute('data-level') === level);
+      });
+    });
+  }
+})();
+</script>
+
 </body>
 </html>
