@@ -1668,6 +1668,9 @@ document.getElementById('home-btn').addEventListener('click', () => {
     atSel.value = 'dashboard';
     atSel.dispatchEvent(new Event('change'));
   }
+  document.querySelectorAll('.top-nav-mode').forEach(b => b.classList.remove('top-nav-item--active'));
+  const dashBtn = document.querySelector('.top-nav-mode[data-mode="dashboard"]');
+  if (dashBtn) dashBtn.classList.add('top-nav-item--active');
 
   // Reset hero title and sidebar active state
   const heroTitle = document.getElementById('hero-title');
@@ -2083,6 +2086,16 @@ function switchMode(mode) {
 
 document.getElementById('analysis-type-select').addEventListener('change', e => {
   switchMode(e.target.value);
+});
+
+document.querySelectorAll('.top-nav-mode').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const mode = btn.dataset.mode;
+    document.querySelectorAll('.top-nav-mode').forEach(b => b.classList.remove('top-nav-item--active'));
+    btn.classList.add('top-nav-item--active');
+    document.getElementById('analysis-type-select').value = mode;
+    switchMode(mode);
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════
