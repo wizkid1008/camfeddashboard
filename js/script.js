@@ -1661,6 +1661,8 @@ document.getElementById('home-btn').addEventListener('click', () => {
   document.querySelectorAll('.tab-panel').forEach(p => { p.classList.remove('active'); p.style.display = ''; });
   document.getElementById('sublevel-stats-section').style.display = 'none';
   document.getElementById('landing-section').style.display = 'block';
+  const ch = document.getElementById('content-header');
+  if (ch) ch.style.display = 'none';
 
   // Switch back to dashboard view if in dynamic/slicer
   const atSel = document.getElementById('analysis-type-select');
@@ -1685,8 +1687,10 @@ document.getElementById('level-select').addEventListener('change', e=>{
   const value = e.target.value;
   if (!value) return;
 
-  // Hide landing section once user selects a level
+  // Hide landing section once user selects a level; show content header
   document.getElementById('landing-section').style.display = 'none';
+  const ch = document.getElementById('content-header');
+  if (ch) ch.style.display = '';
 
   sel.level = value;
   sel.subLevel = '';
