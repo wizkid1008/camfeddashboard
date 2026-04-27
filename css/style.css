@@ -77,8 +77,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px 20px;
+  height: var(--header-h);
+  padding: 0 20px;
   border-bottom: 3px solid var(--purple);
+  flex-shrink: 0;
 }
 .sidebar-logo-img {
   height: 44px;
@@ -423,9 +425,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .filter-bar-item {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 140px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 .filter-bar-label {
   display: flex;

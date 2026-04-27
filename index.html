@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=16">
+    <link rel="stylesheet" href="css/style.css?v=17">
 </head>
 <body>
 
@@ -43,16 +43,15 @@
           Home
         </button>
         <span class="top-nav-divider"></span>
-        <select id="analysis-type-select" class="analysis-type-select">
-          <option value="dashboard" selected>Data Dashboard</option>
-          <option value="dynamic">Dynamic Data</option>
-          <option value="slicer">Slicer</option>
-        </select>
+        <button class="top-nav-item top-nav-mode top-nav-item--active" data-mode="dashboard">Data Dashboard</button>
+        <button class="top-nav-item top-nav-mode" data-mode="dynamic">Dynamic Data</button>
+        <button class="top-nav-item top-nav-mode" data-mode="slicer">Data Slicer</button>
       </nav>
-
-      <div class="header-right">
-        <div class="profile-avatar">W</div>
-      </div>
+      <select id="analysis-type-select" style="display:none">
+        <option value="dashboard" selected>Data Dashboard</option>
+        <option value="dynamic">Dynamic Data</option>
+        <option value="slicer">Slicer</option>
+      </select>
     </div>
 
     <!-- ── HERO + FILTERS ── -->
