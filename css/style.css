@@ -659,12 +659,24 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* ================================================================
    LANDING / ONBOARDING
    ================================================================ */
+/* Home landing card (no padding — inner sections handle spacing) */
 .landing-section {
   background: var(--white);
   border-radius: var(--radius-lg);
-  overflow: hidden;
   box-shadow: var(--shadow);
   margin: 20px 0 32px;
+}
+#landing-section {
+  overflow: hidden;
+}
+
+/* How-to landing sections (DD, Slicer) — restore original padded layout */
+#dd-choose-geo.landing-section,
+#slicer-view .landing-section {
+  padding: 40px 48px;
+  overflow: visible;
+  max-width: 700px;
+  margin: 20px auto 32px;
 }
 
 /* Landing hero */
@@ -718,7 +730,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 40%;
+  object-position: center 20%;
   display: block;
 }
 
@@ -738,19 +750,24 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .landing-card:last-child { border-right: none; }
 .landing-card:hover { background: var(--purple-faint); }
 .landing-card-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   background: var(--purple);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(58,26,95,0.25);
 }
 .landing-card-icon svg {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   stroke: white;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .landing-card-label {
   font-size: 0.68rem;
@@ -1215,10 +1232,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .filter-bar { flex-direction: column; align-items: stretch; }
   .filter-bar-apply { margin-left: 0; }
   .top-nav-item--muted { display: none; }
-  .top-nav { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-shrink: 1; min-width: 0; }
-  .top-nav::-webkit-scrollbar { display: none; }
-  .top-nav-item { font-size: 0.78rem; padding: 6px 8px; }
-  .top-nav-divider { flex-shrink: 0; }
+  .header { flex-direction: column; align-items: stretch; padding: 0; }
+  .top-nav { flex-wrap: wrap; gap: 0; }
+  .top-nav-divider { display: none; }
+  #home-btn { padding: 10px 16px; border-bottom: 1px solid var(--border); width: 100%; justify-content: flex-start; border-radius: 0; }
+  .top-nav-mode { flex: 1 1 auto; justify-content: center; padding: 10px 8px; font-size: 0.82rem; border-radius: 0; border-bottom: 1px solid var(--border); }
 }
 
 /* ================================================================
