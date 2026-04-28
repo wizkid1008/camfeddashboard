@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=33">
+    <link rel="stylesheet" href="css/style.css?v=34">
 </head>
 <body>
 
@@ -156,41 +156,45 @@
 
         <!-- ══ LANDING ══ -->
         <div id="landing-section" class="landing-section">
-          <div class="landing-title">How to Use This Dashboard</div>
-          <p class="landing-intro">Use the filters above to explore programme data by level, sublevel, year, and country.</p>
-          <div class="landing-steps">
-            <div class="landing-step">
-              <span class="landing-step-num">1</span>
-              <div class="landing-step-text">
-                <strong>Select a Data Level</strong>
-                <span>Choose a programme level from the sidebar or the Level dropdown above.</span>
-              </div>
+
+          <!-- Hero banner -->
+          <div class="landing-hero">
+            <div class="landing-hero-text">
+              <div class="landing-hero-tag">Impact Overview</div>
+              <h2 class="landing-hero-title">CAMFED Impact Dashboard</h2>
+              <p class="landing-hero-desc">Explore programme data across girls' education, livelihoods &amp; leadership, and education systems — filtered by country, year, and sub-level.</p>
             </div>
-            <div class="landing-step">
-              <span class="landing-step-num">2</span>
-              <div class="landing-step-text">
-                <strong>Select a Sub Level</strong>
-                <span>Narrow down to a specific area within your chosen level.</span>
-              </div>
-            </div>
-            <div class="landing-step">
-              <span class="landing-step-num">3</span>
-              <div class="landing-step-text">
-                <strong>Select Year(s)</strong>
-                <span>Use the date range slider — move both ends to the same year for a snapshot view.</span>
-              </div>
-            </div>
-            <div class="landing-step">
-              <span class="landing-step-num">4</span>
-              <div class="landing-step-text">
-                <strong>Select a Country</strong>
-                <span>Filter by a specific country or view all countries together.</span>
-              </div>
+            <div class="landing-hero-img-wrap">
+              <img src="images/girls-on-bikes.jpg" alt="CAMFED girls on bikes" class="landing-hero-img">
             </div>
           </div>
-          <div class="landing-tip">
-            <span class="landing-tip-arrow">→</span>
-            <span>For <strong>school and district level data</strong>, switch to <span class="landing-tip-badge">Dynamic Data</span> using the View selector in the top right.</span>
+
+          <!-- Section cards -->
+          <div class="landing-cards">
+            <div class="landing-card" onclick="document.getElementById('level-select').value='level1';document.getElementById('level-select').dispatchEvent(new Event('change'))">
+              <div class="landing-card-icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="landing-card-label">Data Dashboard</div>
+              <div class="landing-card-title">Girls' Education, Livelihoods &amp; Systems</div>
+              <div class="landing-card-desc">KPI-level programme data across three impact levels, filterable by country and year.</div>
+            </div>
+            <div class="landing-card" onclick="document.querySelector('.top-nav-mode[data-mode=\'dynamic\']').click()">
+              <div class="landing-card-icon">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+              <div class="landing-card-label">Dynamic Data</div>
+              <div class="landing-card-title">District &amp; School Level Data</div>
+              <div class="landing-card-desc">Drill down to district and school level with multi-select country, district, and school filters.</div>
+            </div>
+            <div class="landing-card" onclick="document.querySelector('.top-nav-mode[data-mode=\'slicer\']').click()">
+              <div class="landing-card-icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h12M3 18h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+              <div class="landing-card-label">Data Slicer</div>
+              <div class="landing-card-title">Custom Slices &amp; Comparisons</div>
+              <div class="landing-card-desc">Compare data across gender, number ranges, and other dimensions using flexible slicer controls.</div>
+            </div>
           </div>
 
         </div>
