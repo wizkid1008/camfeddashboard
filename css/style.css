@@ -758,6 +758,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   display: block;
   padding-top: 40px;
 }
+#sublevel-stats-section {
+  padding-top: 40px;
+}
 
 /* ================================================================
    HEADLINE BANNER

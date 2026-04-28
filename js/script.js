@@ -1710,7 +1710,7 @@ document.getElementById('level-select').addEventListener('change', e=>{
       title: "Education Reach Impact Dashboard",
       desc:  "Track key progress indicators that reflect CAMFED's reach in classroom support, teacher training and learning outcomes across the continent.",
       img:   "images/camfed-classroom.jpg",
-      imgPos: "center top"
+      imgPos: "center 60%"
     }
   };
   const meta = levelMeta[value];
