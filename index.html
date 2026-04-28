@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=25">
+    <link rel="stylesheet" href="css/style.css?v=29">
 </head>
 <body>
 
@@ -41,6 +41,15 @@
     <div class="sidebar-quote">
       <div class="sidebar-quote-dots"></div>
       <p class="sidebar-quote-text">Empowering girls<br>to create a future<br>without limits.</p>
+    </div>
+
+    <div class="sidebar-deco-bottom" aria-hidden="true">
+      <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice">
+        <circle cx="20" cy="130" r="90" fill="rgba(255,255,255,0.06)"/>
+        <circle cx="110" cy="140" r="70" fill="rgba(255,255,255,0.05)"/>
+        <circle cx="150" cy="90" r="55" fill="rgba(255,255,255,0.04)"/>
+        <circle cx="-10" cy="80" r="40" fill="rgba(255,255,255,0.05)"/>
+      </svg>
     </div>
 
   </aside>
@@ -128,9 +137,21 @@
       <div class="main-content">
 
         <!-- ══ CONTENT HEADER (shown when a level is active) ══ -->
+        <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
+          <defs>
+            <clipPath id="hero-img-clip" clipPathUnits="objectBoundingBox">
+              <path d="M0.18,0 C0,0.25 0,0.75 0.18,1 L1,1 L1,0 Z"/>
+            </clipPath>
+          </defs>
+        </svg>
         <div id="content-header" class="content-header" style="display:none">
-          <h1 class="hero-title" id="hero-title">CAMFED Impact Dashboard</h1>
-          <p class="hero-desc" id="hero-desc">Select a level from the filters to explore programme data by country, year, and sublevel.</p>
+          <div class="content-header-text">
+            <h1 class="hero-title" id="hero-title">CAMFED Impact Dashboard</h1>
+            <p class="hero-desc" id="hero-desc">Select a level from the filters to explore programme data by country, year, and sublevel.</p>
+          </div>
+          <div class="content-header-img-wrap">
+            <img id="hero-level-img" class="content-header-img" src="" alt="CAMFED programme">
+          </div>
         </div>
 
         <!-- ══ LANDING ══ -->
@@ -171,6 +192,7 @@
             <span class="landing-tip-arrow">→</span>
             <span>For <strong>school and district level data</strong>, switch to <span class="landing-tip-badge">Dynamic Data</span> using the View selector in the top right.</span>
           </div>
+
         </div>
 
         <!-- ══ SUBLEVEL STATISTICS ══ -->
