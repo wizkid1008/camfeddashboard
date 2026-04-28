@@ -1697,17 +1697,20 @@ document.getElementById('level-select').addEventListener('change', e=>{
     level1: {
       title: "Girls' Education Impact Dashboard",
       desc:  "Track key progress indicators that reflect CAMFED's work in girls' bursary support, learner guides and community-based education across the continent.",
-      img:   "images/camfed-mentor-student.jpg"
+      img:   "images/camfed-mentor-student.jpg",
+      imgPos: "center 15%"
     },
     level2: {
       title: "Livelihoods & Leadership Impact Dashboard",
       desc:  "Track key progress indicators that reflect CAMFED's work in economic empowerment, leadership development and systems strengthening across the continent.",
-      img:   "images/camfed-students-running.jpg"
+      img:   "images/camfed-students-running.jpg",
+      imgPos: "center 10%"
     },
     level3: {
       title: "Education Reach Impact Dashboard",
       desc:  "Track key progress indicators that reflect CAMFED's reach in classroom support, teacher training and learning outcomes across the continent.",
-      img:   "images/camfed-classroom.jpg"
+      img:   "images/camfed-classroom.jpg",
+      imgPos: "center top"
     }
   };
   const meta = levelMeta[value];
@@ -1717,7 +1720,7 @@ document.getElementById('level-select').addEventListener('change', e=>{
     const hi = document.getElementById('hero-level-img');
     if (ht) ht.textContent = meta.title;
     if (hd) hd.textContent = meta.desc;
-    if (hi) hi.src = meta.img;
+    if (hi) { hi.src = meta.img; hi.style.objectPosition = meta.imgPos; }
   }
 
   sel.level = value;
