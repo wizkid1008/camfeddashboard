@@ -327,7 +327,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background: var(--cream);
   overflow: hidden;
   position: relative;
-  min-height: 170px;
+  height: 300px;
   border-bottom: 1px solid var(--border);
 }
 .content-header-text {
