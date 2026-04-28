@@ -756,6 +756,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .tab-panel.active {
   display: block;
+  padding-top: 24px;
 }
 
 /* ================================================================
