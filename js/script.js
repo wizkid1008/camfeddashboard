@@ -1657,10 +1657,12 @@ document.getElementById('home-btn').addEventListener('click', () => {
   sel.level = '';
   sel.subLevel = '';
 
-  // Hide all panels and stats, show landing
+  // Hide all panels and stats, show home landing
   document.querySelectorAll('.tab-panel').forEach(p => { p.classList.remove('active'); p.style.display = ''; });
   document.getElementById('sublevel-stats-section').style.display = 'none';
   document.getElementById('landing-section').style.display = 'block';
+  const dht = document.getElementById('dashboard-howto');
+  if (dht) dht.style.display = 'none';
   const ch = document.getElementById('content-header');
   if (ch) ch.style.display = 'none';
 
@@ -1687,8 +1689,10 @@ document.getElementById('level-select').addEventListener('change', e=>{
   const value = e.target.value;
   if (!value) return;
 
-  // Hide landing section once user selects a level; show content header
+  // Hide landing sections once user selects a level; show content header
   document.getElementById('landing-section').style.display = 'none';
+  const howto = document.getElementById('dashboard-howto');
+  if (howto) howto.style.display = 'none';
   const ch = document.getElementById('content-header');
   if (ch) ch.style.display = '';
 
@@ -2205,6 +2209,14 @@ function switchMode(mode) {
     if (heroSection) heroSection.style.display = '';
     bodyLayout.style.display = '';
     if (footer) footer.style.display = '';
+    // If no level selected, show how-to instead of home landing
+    const noLevel = !sel.level;
+    const landingSec = document.getElementById('landing-section');
+    const howto = document.getElementById('dashboard-howto');
+    if (noLevel) {
+      if (landingSec) landingSec.style.display = 'none';
+      if (howto) howto.style.display = '';
+    }
   } else if (mode === 'dynamic') {
     ddView.style.display = '';
     ddInit();
