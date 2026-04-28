@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=35">
+    <link rel="stylesheet" href="css/style.css?v=36">
 </head>
 <body>
 
@@ -67,9 +67,18 @@
           Home
         </button>
         <span class="top-nav-divider"></span>
-        <button class="top-nav-item top-nav-mode top-nav-item--active" data-mode="dashboard">Data Dashboard</button>
-        <button class="top-nav-item top-nav-mode" data-mode="dynamic">Dynamic Data</button>
-        <button class="top-nav-item top-nav-mode" data-mode="slicer">Data Slicer</button>
+        <button class="top-nav-item top-nav-mode top-nav-item--active" data-mode="dashboard">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2" y="10" width="4" height="8" rx="1" stroke="currentColor" stroke-width="1.7"/><rect x="8" y="6" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="2" width="4" height="16" rx="1" stroke="currentColor" stroke-width="1.7"/></svg>
+          Data Dashboard
+        </button>
+        <button class="top-nav-item top-nav-mode" data-mode="dynamic">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M10 2c0 0-3 3-3 8s3 8 3 8M10 2c0 0 3 3 3 8s-3 8-3 8M2 10h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Dynamic Data
+        </button>
+        <button class="top-nav-item top-nav-mode" data-mode="slicer">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 5h14M5 10h10M8 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Data Slicer
+        </button>
       </nav>
       <select id="analysis-type-select" style="display:none">
         <option value="dashboard" selected>Data Dashboard</option>
@@ -171,9 +180,9 @@
 
           <!-- Section cards -->
           <div class="landing-cards">
-            <div class="landing-card" onclick="document.getElementById('level-select').value='level1';document.getElementById('level-select').dispatchEvent(new Event('change'))">
+            <div class="landing-card" onclick="document.querySelector('.top-nav-mode[data-mode=\'dashboard\']').click()">
               <div class="landing-card-icon">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                <svg viewBox="0 0 20 20" fill="none"><rect x="2" y="10" width="4" height="8" rx="1" stroke="white" stroke-width="1.7"/><rect x="8" y="6" width="4" height="12" rx="1" stroke="white" stroke-width="1.7"/><rect x="14" y="2" width="4" height="16" rx="1" stroke="white" stroke-width="1.7"/></svg>
               </div>
               <div class="landing-card-label">Data Dashboard</div>
               <div class="landing-card-title">Girls' Education, Livelihoods &amp; Systems</div>
@@ -181,7 +190,7 @@
             </div>
             <div class="landing-card" onclick="document.querySelector('.top-nav-mode[data-mode=\'dynamic\']').click()">
               <div class="landing-card-icon">
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="white" stroke-width="1.7"/><path d="M10 2c0 0-3 3-3 8s3 8 3 8M10 2c0 0 3 3 3 8s-3 8-3 8M2 10h16" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
               </div>
               <div class="landing-card-label">Dynamic Data</div>
               <div class="landing-card-title">District &amp; School Level Data</div>
@@ -189,7 +198,7 @@
             </div>
             <div class="landing-card" onclick="document.querySelector('.top-nav-mode[data-mode=\'slicer\']').click()">
               <div class="landing-card-icon">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h12M3 18h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <svg viewBox="0 0 20 20" fill="none"><path d="M3 5h14M5 10h10M8 15h4" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
               </div>
               <div class="landing-card-label">Data Slicer</div>
               <div class="landing-card-title">Custom Slices &amp; Comparisons</div>
@@ -197,6 +206,19 @@
             </div>
           </div>
 
+        </div>
+
+        <!-- ══ DASHBOARD HOW-TO (shown when Dashboard tab active, no level selected) ══ -->
+        <div id="dashboard-howto" class="landing-section" style="display:none;padding:40px 48px;max-width:700px;margin:20px auto 32px;">
+          <div class="landing-title">How to Use the Data Dashboard</div>
+          <p class="landing-intro">Explore programme data by selecting a level, sub level, year range, and country using the filters above.</p>
+          <div class="landing-steps">
+            <div class="landing-step"><span class="landing-step-num">1</span><div class="landing-step-text"><strong>Select a Data Level</strong><span>Choose a programme level from the Level dropdown above.</span></div></div>
+            <div class="landing-step"><span class="landing-step-num">2</span><div class="landing-step-text"><strong>Select a Sub Level</strong><span>Narrow down to a specific area within your chosen level.</span></div></div>
+            <div class="landing-step"><span class="landing-step-num">3</span><div class="landing-step-text"><strong>Select Year(s)</strong><span>Use the date range slider — move both ends to the same year for a snapshot view.</span></div></div>
+            <div class="landing-step"><span class="landing-step-num">4</span><div class="landing-step-text"><strong>Select a Country</strong><span>Filter by a specific country or view all countries together.</span></div></div>
+          </div>
+          <div class="landing-tip"><span class="landing-tip-arrow">→</span><span>For <strong>school and district level data</strong>, switch to <span class="landing-tip-badge">Dynamic Data</span> using the view selector at the top.</span></div>
         </div>
 
         <!-- ══ SUBLEVEL STATISTICS ══ -->
