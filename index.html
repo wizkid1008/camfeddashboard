@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=27">
+    <link rel="stylesheet" href="css/style.css?v=28">
 </head>
 <body>
 
@@ -137,9 +137,21 @@
       <div class="main-content">
 
         <!-- ══ CONTENT HEADER (shown when a level is active) ══ -->
+        <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
+          <defs>
+            <clipPath id="hero-img-clip" clipPathUnits="objectBoundingBox">
+              <path d="M0.18,0 C0,0.25 0,0.75 0.18,1 L1,1 L1,0 Z"/>
+            </clipPath>
+          </defs>
+        </svg>
         <div id="content-header" class="content-header" style="display:none">
-          <h1 class="hero-title" id="hero-title">CAMFED Impact Dashboard</h1>
-          <p class="hero-desc" id="hero-desc">Select a level from the filters to explore programme data by country, year, and sublevel.</p>
+          <div class="content-header-text">
+            <h1 class="hero-title" id="hero-title">CAMFED Impact Dashboard</h1>
+            <p class="hero-desc" id="hero-desc">Select a level from the filters to explore programme data by country, year, and sublevel.</p>
+          </div>
+          <div class="content-header-img-wrap">
+            <img id="hero-level-img" class="content-header-img" src="" alt="CAMFED programme">
+          </div>
         </div>
 
         <!-- ══ LANDING ══ -->
@@ -181,20 +193,6 @@
             <span>For <strong>school and district level data</strong>, switch to <span class="landing-tip-badge">Dynamic Data</span> using the View selector in the top right.</span>
           </div>
 
-          <div class="photo-strip">
-            <div class="photo-strip-card">
-              <img src="images/camfed-mentor-student.jpg" alt="CAMA mentor with student" class="photo-strip-img">
-              <div class="photo-strip-caption">Mentorship &amp; Support</div>
-            </div>
-            <div class="photo-strip-card">
-              <img src="images/camfed-classroom.jpg" alt="Teacher in classroom" class="photo-strip-img">
-              <div class="photo-strip-caption">Quality Education</div>
-            </div>
-            <div class="photo-strip-card">
-              <img src="images/camfed-students-running.jpg" alt="Students at school" class="photo-strip-img">
-              <div class="photo-strip-caption">Girls Thriving</div>
-            </div>
-          </div>
         </div>
 
         <!-- ══ SUBLEVEL STATISTICS ══ -->
