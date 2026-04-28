@@ -443,6 +443,16 @@ function rebuildCountryOptions() {
       <input type="checkbox" value="${r.value}"${r.value === 'All' ? ' checked' : ''}>
       <span>${r.label}</span>
     </label>`).join('');
+  injectDropdownControls(dropdown, 'Countries',
+    () => {
+      dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+      dropdown.dispatchEvent(new Event('change', { bubbles: true }));
+    },
+    () => {
+      dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+      dropdown.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  );
 }
 
 function buildCountryMultiSelect() {
@@ -1673,8 +1683,8 @@ document.getElementById('home-btn').addEventListener('click', () => {
     atSel.dispatchEvent(new Event('change'));
   }
   document.querySelectorAll('.top-nav-mode').forEach(b => b.classList.remove('top-nav-item--active'));
-  const dashBtn = document.querySelector('.top-nav-mode[data-mode="dashboard"]');
-  if (dashBtn) dashBtn.classList.add('top-nav-item--active');
+  const homeBtn = document.getElementById('home-btn');
+  if (homeBtn) homeBtn.classList.add('top-nav-item--active');
 
   // Reset hero title and sidebar active state
   const heroTitle = document.getElementById('hero-title');
@@ -2025,6 +2035,35 @@ function ddRender() {
   });
 }
 
+// ─── SHARED: inject search + Select All/None into any dropdown ─
+function injectDropdownControls(dropdown, placeholder, onAll, onNone) {
+  const ctrl = document.createElement('div');
+  ctrl.className = 'multi-drop-controls';
+  ctrl.innerHTML = `
+    <input type="text" class="multi-drop-search" placeholder="Search ${placeholder}…" autocomplete="off">
+    <div class="multi-drop-actions">
+      <button type="button" class="multi-drop-act" data-act="all">Select All</button>
+      <span class="multi-drop-sep">·</span>
+      <button type="button" class="multi-drop-act" data-act="none">Select None</button>
+    </div>`;
+  dropdown.insertBefore(ctrl, dropdown.firstChild);
+
+  const searchEl = ctrl.querySelector('.multi-drop-search');
+  searchEl.addEventListener('input', () => {
+    const q = searchEl.value.toLowerCase().trim();
+    dropdown.querySelectorAll('.country-multi-opt').forEach(opt => {
+      const v = opt.querySelector('input')?.value;
+      if (v === '__all__' || v === 'All') { opt.style.display = q ? 'none' : ''; return; }
+      opt.style.display = opt.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+  searchEl.addEventListener('click', e => e.stopPropagation());
+  searchEl.addEventListener('keydown', e => e.stopPropagation());
+
+  ctrl.querySelector('[data-act="all"]').addEventListener('click', e => { e.stopPropagation(); onAll(); });
+  ctrl.querySelector('[data-act="none"]').addEventListener('click', e => { e.stopPropagation(); onNone(); });
+}
+
 // ─── DD MULTI-SELECT FACTORY ───────────────────────────────────
 function makeDDMultiDrop(wrapperId, placeholder, onChange) {
   const wrap = document.getElementById(wrapperId);
@@ -2097,6 +2136,24 @@ function makeDDMultiDrop(wrapperId, placeholder, onChange) {
       ...items.map(v => `<label class="country-multi-opt"><input type="checkbox" value="${v}"${preCheckAll ? ' checked' : ''}><span>${v}</span></label>`)
     ];
     dropdown.innerHTML = rows.join('');
+    injectDropdownControls(dropdown, placeholder,
+      () => {
+        const all = dropdown.querySelector('input[value="__all__"]');
+        const indiv = [...dropdown.querySelectorAll('input:not([value="__all__"])')];
+        indiv.forEach(x => x.checked = true);
+        if (all) all.checked = true;
+        updateLabel();
+        onChange({ selected: getSelected(), allChecked: true });
+      },
+      () => {
+        const all = dropdown.querySelector('input[value="__all__"]');
+        const indiv = [...dropdown.querySelectorAll('input:not([value="__all__"])')];
+        indiv.forEach(x => x.checked = false);
+        if (all) all.checked = false;
+        updateLabel();
+        onChange({ selected: [], allChecked: false });
+      }
+    );
     setDisabled(!items.length);
     updateLabel();
   }
@@ -2234,6 +2291,8 @@ document.querySelectorAll('.top-nav-mode').forEach(btn => {
   btn.addEventListener('click', () => {
     const mode = btn.dataset.mode;
     document.querySelectorAll('.top-nav-mode').forEach(b => b.classList.remove('top-nav-item--active'));
+    const homeBtn = document.getElementById('home-btn');
+    if (homeBtn) homeBtn.classList.remove('top-nav-item--active');
     btn.classList.add('top-nav-item--active');
     document.getElementById('analysis-type-select').value = mode;
     switchMode(mode);
@@ -2490,8 +2549,13 @@ function slRebuildDistricts() {
   const dists = slDistricts(srcCountries);
   slSel.districts = [];
   slSel.schools   = [];
-  document.getElementById('sl-district-dropdown').innerHTML = dists.map(d =>
+  const slDistDD = document.getElementById('sl-district-dropdown');
+  slDistDD.innerHTML = dists.map(d =>
     `<label class="country-multi-opt"><input type="checkbox" value="${d}" checked><span>${d}</span></label>`).join('');
+  injectDropdownControls(slDistDD, 'Districts',
+    () => { slDistDD.querySelectorAll('input').forEach(cb => cb.checked = true); slDistDD.dispatchEvent(new Event('change', {bubbles:true})); },
+    () => { slDistDD.querySelectorAll('input').forEach(cb => cb.checked = false); slDistDD.dispatchEvent(new Event('change', {bubbles:true})); }
+  );
   document.getElementById('sl-district-label').textContent = 'All Districts';
   slRebuildSchools();
 }
@@ -2502,8 +2566,13 @@ function slRebuildSchools() {
     : slDistricts(slSel.countries.length ? slSel.countries : slCountries());
   const schools = slSchools(srcDists).slice(0, 60);
   slSel.schools = [];
-  document.getElementById('sl-school-dropdown').innerHTML = schools.map(s =>
+  const slSchDD = document.getElementById('sl-school-dropdown');
+  slSchDD.innerHTML = schools.map(s =>
     `<label class="country-multi-opt"><input type="checkbox" value="${s}" checked><span>${s}</span></label>`).join('');
+  injectDropdownControls(slSchDD, 'Schools',
+    () => { slSchDD.querySelectorAll('input').forEach(cb => cb.checked = true); slSchDD.dispatchEvent(new Event('change', {bubbles:true})); },
+    () => { slSchDD.querySelectorAll('input').forEach(cb => cb.checked = false); slSchDD.dispatchEvent(new Event('change', {bubbles:true})); }
+  );
   document.getElementById('sl-school-label').textContent = 'All Schools';
 }
 
@@ -2516,6 +2585,10 @@ function slBuildKpiList() {
   dropdown.innerHTML = kpis.map(kpi =>
     `<label class="country-multi-opt"><input type="checkbox" class="sl-kpi-cb" value="${kpi}"><span>${kpi}</span></label>`
   ).join('');
+  injectDropdownControls(dropdown, 'Metrics',
+    () => { dropdown.querySelectorAll('input').forEach(cb => cb.checked = true); dropdown.dispatchEvent(new Event('change', {bubbles:true})); },
+    () => { dropdown.querySelectorAll('input').forEach(cb => cb.checked = false); dropdown.dispatchEvent(new Event('change', {bubbles:true})); }
+  );
 }
 
 // ── Slicer init (runs once) ──
@@ -2537,6 +2610,10 @@ function slInit() {
   const countryDD = document.getElementById('sl-country-dropdown');
   countryDD.innerHTML = allCountries.map(c =>
     `<label class="country-multi-opt"><input type="checkbox" value="${c}" checked><span>${c}</span></label>`).join('');
+  injectDropdownControls(countryDD, 'Countries',
+    () => { countryDD.querySelectorAll('input').forEach(cb => cb.checked = true); countryDD.dispatchEvent(new Event('change', {bubbles:true})); },
+    () => { countryDD.querySelectorAll('input').forEach(cb => cb.checked = false); countryDD.dispatchEvent(new Event('change', {bubbles:true})); }
+  );
   document.getElementById('sl-country-trigger').addEventListener('click', e => {
     e.stopPropagation();
     countryDD.hidden = !countryDD.hidden;
@@ -2697,3 +2774,7 @@ document.addEventListener('dd:ready', () => {
   }
 });
 
+
+// Set Home as active on initial load
+document.getElementById('home-btn')?.classList.add('top-nav-item--active');
+document.querySelector('.top-nav-mode[data-mode="dashboard"]')?.classList.remove('top-nav-item--active');
