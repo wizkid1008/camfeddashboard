@@ -655,7 +655,7 @@ function renderEducationReachCharts() {
   const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
 
   // Data
-  const BUR = 'Children Supported in School with Education Bursaries';
+  const BUR = BUR_METRICS[l1BurType] || BUR_METRICS.newly;
   const bVals   = a.map(c => ddQC(BUR, c));
   const bTotal  = bVals.reduce((s, v) => s + v, 0);
 
@@ -674,6 +674,12 @@ function renderEducationReachCharts() {
         <div class="er-card-header">
           <span class="er-card-title">Girls Supported in School with Education Bursaries</span>
           <span class="er-total-badge">Total &nbsp;${fmt(bTotal)}</span>
+        </div>
+        <div class="chart-type-toggle" id="er-bursary-toggle" style="padding:8px 0 4px 0">
+          <button class="chart-toggle-btn${l1BurType==='newly'?' active':''}" data-bur="newly">Newly Supported</button>
+          <button class="chart-toggle-btn${l1BurType==='annual'?' active':''}" data-bur="annual">Annual</button>
+          <button class="chart-toggle-btn${l1BurType==='cum2030'?' active':''}" data-bur="cum2030">Cumulative 2020–2030</button>
+          <button class="chart-toggle-btn${l1BurType==='cumall'?' active':''}" data-bur="cumall">Cumulative All-time</button>
         </div>
         <div class="er-chart-wrap"><canvas id="er-bursary-chart"></canvas></div>
       </div>
@@ -1763,12 +1769,13 @@ document.getElementById('level-select').addEventListener('change', e=>{
 
 // ─── BURSARY TOGGLE ────────────────────────────────────────────
 document.addEventListener('click', e => {
-  const btn = e.target.closest('#l1-bursary-toggle .chart-toggle-btn');
+  const btn = e.target.closest('.chart-toggle-btn[data-bur]');
   if (!btn) return;
-  document.querySelectorAll('#l1-bursary-toggle .chart-toggle-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.chart-toggle-btn[data-bur]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   l1BurType = btn.dataset.bur;
-  buildL1();
+  if (sel.subLevel === 'Education Reach') renderEducationReachCharts();
+  else buildL1();
 });
 
 // ─── SUBLEVEL DROPDOWN ─────────────────────────────────────────
