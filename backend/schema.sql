@@ -161,13 +161,31 @@ GROUP BY country, district, disbursal_year
 
 UNION ALL
 
--- 10. CAMA Members (annual new joiners)
-SELECT country, district, school_name AS school, join_year AS year,
+-- 10. Girls supported by CAMA (newly supported)
+SELECT country, 'National' AS district, 'National' AS school, year,
        'CAMA Members'::text AS metric,
-       COUNT(*)::int AS value
-FROM rep_warehouse.view_cama_membership
-WHERE school_name IS NOT NULL AND join_year IS NOT NULL
-GROUP BY country, district, school_name, join_year
+       SUM(CASE WHEN value ~ '^[0-9]+(\.[0-9]+)?$' THEN value::numeric ELSE 0 END)::int AS value
+FROM rep_warehouse.view_observed_kpi
+WHERE indicator = 'Number of children supported to go to school by CAMA'
+  AND disaggregation_level_one = 'Newly supported'
+  AND disaggregation_level_two = 'Girls Total'
+  AND year_quarter = 1
+  AND year IS NOT NULL AND country IS NOT NULL
+GROUP BY country, year
+
+UNION ALL
+
+-- 10b. Girls supported through community initiatives (newly supported)
+SELECT country, 'National' AS district, 'National' AS school, year,
+       'Community Champions'::text AS metric,
+       SUM(CASE WHEN value ~ '^[0-9]+(\.[0-9]+)?$' THEN value::numeric ELSE 0 END)::int AS value
+FROM rep_warehouse.view_observed_kpi
+WHERE indicator = 'Number of children supported to go to school through community initiatives'
+  AND disaggregation_level_one = 'Newly supported'
+  AND disaggregation_level_two = 'Girls Total'
+  AND year_quarter = 1
+  AND year IS NOT NULL AND country IS NOT NULL
+GROUP BY country, year
 
 UNION ALL
 

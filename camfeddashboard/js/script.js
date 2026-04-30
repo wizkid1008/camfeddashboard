@@ -660,7 +660,7 @@ function renderEducationReachCharts() {
   const bTotal  = bVals.reduce((s, v) => s + v, 0);
 
   const camaVals = a.map(c => ddQC('CAMA Members', c));
-  const commVals = a.map(c => ddQC('Active Guides by Type', c));
+  const commVals = a.map(c => ddQC('Community Champions', c));
   const ccTotal  = camaVals.reduce((s, v) => s + v, 0) + commVals.reduce((s, v) => s + v, 0);
 
   const gVals   = a.map(c => ddQC('Number of Clients by Form — Girls', c));
