@@ -663,11 +663,13 @@ function renderEducationReachCharts() {
   const commVals = a.map(c => ddQC('Community Champions', c));
   const ccTotal  = camaVals.reduce((s, v) => s + v, 0) + commVals.reduce((s, v) => s + v, 0);
 
-  const burNewly = a.map(c => ddQC('Children Supported in School with Education Bursaries', c));
-  const gVals   = a.map((_, i) => burNewly[i] + camaVals[i] + commVals[i]);
-  const gTotal  = gVals.reduce((s, v) => s + v, 0);
-  const boVals  = a.map(c => ddQC('Number of Clients by Form — Boys', c));
-  const boTotal = boVals.reduce((s, v) => s + v, 0);
+  const burNewly  = a.map(c => ddQC('Children Supported in School with Education Bursaries', c));
+  const gVals    = a.map((_, i) => burNewly[i] + camaVals[i] + commVals[i]);
+  const gTotal   = gVals.reduce((s, v) => s + v, 0);
+  const camaBoys = a.map(c => ddQC('CAMA Boys', c));
+  const commBoys = a.map(c => ddQC('Community Boys', c));
+  const boVals   = a.map((_, i) => camaBoys[i] + commBoys[i]);
+  const boTotal  = boVals.reduce((s, v) => s + v, 0);
 
   section.innerHTML = `
     <div class="er-grid">
