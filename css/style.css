@@ -1035,6 +1035,29 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   padding: 16px 18px;
 }
 
+.chart-type-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.chart-toggle-btn {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1.5px solid var(--purple);
+  background: none;
+  color: var(--purple);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Lato', sans-serif;
+  transition: background 0.15s, color 0.15s;
+}
+.chart-toggle-btn.active {
+  background: var(--purple);
+  color: #fff;
+}
+
 /* Badges */
 .data-card-badge {
   display: inline-flex;

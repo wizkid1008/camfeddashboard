@@ -9,7 +9,7 @@ DROP MATERIALIZED VIEW IF EXISTS public.dashboard_data_agg;
 
 CREATE MATERIALIZED VIEW public.dashboard_data_agg AS
 
--- 1. Children Supported with Education Bursaries
+-- 1a. Children Supported — Newly supported
 SELECT country, 'National' AS district, 'National' AS school, year,
        'Children Supported in School with Education Bursaries'::text AS metric,
        SUM(value::numeric)::int AS value
@@ -17,7 +17,46 @@ FROM rep_warehouse.view_observed_kpi
 WHERE disaggregation_level_two = 'Girls Total'
   AND disaggregation_level_one = 'Newly supported'
   AND indicator ILIKE '%girls receiving CAMF%'
-  AND year IS NOT NULL
+  AND year IS NOT NULL AND country IS NOT NULL
+GROUP BY country, year
+
+UNION ALL
+
+-- 1b. Children Supported — Annual
+SELECT country, 'National' AS district, 'National' AS school, year,
+       'Children Supported in School with Education Bursaries — Annual'::text AS metric,
+       SUM(value::numeric)::int AS value
+FROM rep_warehouse.view_observed_kpi
+WHERE disaggregation_level_two = 'Girls Total'
+  AND disaggregation_level_one = 'Annual'
+  AND indicator ILIKE '%girls receiving CAMF%'
+  AND year IS NOT NULL AND country IS NOT NULL
+GROUP BY country, year
+
+UNION ALL
+
+-- 1c. Children Supported — Cumulative 2020-2030
+SELECT country, 'National' AS district, 'National' AS school, year,
+       'Children Supported in School with Education Bursaries — Cumulative 2020-2030'::text AS metric,
+       SUM(value::numeric)::int AS value
+FROM rep_warehouse.view_observed_kpi
+WHERE disaggregation_level_two = 'Girls Total'
+  AND disaggregation_level_one = 'Cumulative (2020-2030)'
+  AND indicator ILIKE '%girls receiving CAMF%'
+  AND year IS NOT NULL AND country IS NOT NULL
+GROUP BY country, year
+
+UNION ALL
+
+-- 1d. Children Supported — Cumulative all-time
+SELECT country, 'National' AS district, 'National' AS school, year,
+       'Children Supported in School with Education Bursaries — Cumulative all-time'::text AS metric,
+       SUM(value::numeric)::int AS value
+FROM rep_warehouse.view_observed_kpi
+WHERE disaggregation_level_two = 'Girls Total'
+  AND disaggregation_level_one = 'Cumulative (all-time)'
+  AND indicator ILIKE '%girls receiving CAMF%'
+  AND year IS NOT NULL AND country IS NOT NULL
 GROUP BY country, year
 
 UNION ALL
