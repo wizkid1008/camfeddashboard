@@ -1511,12 +1511,20 @@ function updateStats() {
   setTxt('s3-children',  fmt(ddQA('Grants Disbursed')));
 }
 
+let l1BurType = 'newly';
+const BUR_METRICS = {
+  newly:   'Children Supported in School with Education Bursaries',
+  annual:  'Children Supported in School with Education Bursaries — Annual',
+  cum2030: 'Children Supported in School with Education Bursaries — Cumulative 2020-2030',
+  cumall:  'Children Supported in School with Education Bursaries — Cumulative all-time',
+};
+
 // ─── BUILD LEVEL 1 ─────────────────────────────────────────────
 function buildL1() {
   const a = activeCt();
   const single = a.length === 1;
   const c = single ? a[0] : null;
-  const BUR = 'Children Supported in School with Education Bursaries';
+  const BUR = BUR_METRICS[l1BurType] || BUR_METRICS.newly;
   const LG  = 'Active Learner Guides';
 
   // Bursary chart: single → period breakdown using DD; multi → per-country totals
@@ -1751,6 +1759,16 @@ document.getElementById('level-select').addEventListener('change', e=>{
   if (value === 'level1') buildL1();
   else if (value === 'level2') buildL2();
   else if (value === 'level3') buildL3();
+});
+
+// ─── BURSARY TOGGLE ────────────────────────────────────────────
+document.addEventListener('click', e => {
+  const btn = e.target.closest('#l1-bursary-toggle .chart-toggle-btn');
+  if (!btn) return;
+  document.querySelectorAll('#l1-bursary-toggle .chart-toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  l1BurType = btn.dataset.bur;
+  buildL1();
 });
 
 // ─── SUBLEVEL DROPDOWN ─────────────────────────────────────────
