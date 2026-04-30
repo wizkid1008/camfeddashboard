@@ -663,7 +663,8 @@ function renderEducationReachCharts() {
   const commVals = a.map(c => ddQC('Community Champions', c));
   const ccTotal  = camaVals.reduce((s, v) => s + v, 0) + commVals.reduce((s, v) => s + v, 0);
 
-  const gVals   = a.map(c => ddQC('Number of Clients by Form — Girls', c));
+  const burNewly = a.map(c => ddQC('Children Supported in School with Education Bursaries', c));
+  const gVals   = a.map((_, i) => burNewly[i] + camaVals[i] + commVals[i]);
   const gTotal  = gVals.reduce((s, v) => s + v, 0);
   const boVals  = a.map(c => ddQC('Number of Clients by Form — Boys', c));
   const boTotal = boVals.reduce((s, v) => s + v, 0);
