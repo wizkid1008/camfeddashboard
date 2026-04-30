@@ -617,7 +617,7 @@ function erBar(id, labels, datasets, opts = {}) {
           display: opts.stackLabels ? ctx => ctx.dataset.data[ctx.dataIndex] > 0 : true,
           color: opts.stackLabels ? '#ffffff' : '#3a1a5a',
           font: { size: 10, weight: '700', family: "'Lato', sans-serif" },
-          formatter: opts.formatter ? opts.formatter : (opts.pctLabel ? v => v.toFixed(2) + '%' : v => fmtK(v)),
+          formatter: opts.formatter ? opts.formatter : (opts.pctLabel ? v => v.toFixed(2) + '%' : v => fmt(v)),
           anchor: opts.stackLabels ? 'center' : (horiz ? 'end' : 'end'),
           align: opts.stackLabels ? 'center' : (horiz ? 'right' : 'top'),
           offset: 2,

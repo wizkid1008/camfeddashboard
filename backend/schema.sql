@@ -10,12 +10,15 @@ DROP MATERIALIZED VIEW IF EXISTS public.dashboard_data_agg;
 CREATE MATERIALIZED VIEW public.dashboard_data_agg AS
 
 -- 1. Children Supported with Education Bursaries
-SELECT country, district, school_name AS school, year,
+SELECT country, 'National' AS district, 'National' AS school, year,
        'Children Supported in School with Education Bursaries'::text AS metric,
-       COUNT(*)::int AS value
-FROM rep_warehouse.view_children_supported
-WHERE active_on_bursary = true AND school_name IS NOT NULL AND year IS NOT NULL
-GROUP BY country, district, school_name, year
+       SUM(value::numeric)::int AS value
+FROM rep_warehouse.view_observed_kpi
+WHERE disaggregation_level_two = 'Girls Total'
+  AND disaggregation_level_one = 'Newly supported'
+  AND indicator ILIKE '%girls receiving CAMF%'
+  AND year IS NOT NULL
+GROUP BY country, year
 
 UNION ALL
 
