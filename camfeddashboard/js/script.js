@@ -137,7 +137,7 @@ const CC = {
   All:     '#b4a8cc'
 };
 // For bar charts always use these
-const BARS = ['#c8882a','#5e2580','#2e7d32','#7b3fa0','#c0392b','#1565c0','#ad1457','#00695c','#e65100','#4527a0'];
+const BARS = ['#e0d8f0','#b4a8cc','#9a8838','#aa5545','#5830a0','#c8c0e8','#786820','#8a3530','#3e2070','#d4c8e8'];
 
 function countryColor(name) {
   if (CC[name]) return CC[name];
