@@ -126,7 +126,8 @@ if (typeof ChartDataLabels !== 'undefined') {
 }
 
 // ─── COLOUR PALETTE ────────────────────────────────────────────
-const C = ['Ghana','Malawi','Tanzania','Zambia','Zimbabwe'];
+// Starts with known countries as fallback; updated to live DB list on dd:ready
+let C = ['Ghana','Malawi','Tanzania','Zambia','Zimbabwe'];
 const CC = {
   Ghana:   '#c8882a',
   Malawi:  '#5e2580',
@@ -136,7 +137,14 @@ const CC = {
   All:     '#8b3fb0'
 };
 // For bar charts always use these
-const BARS = ['#c8882a','#5e2580','#2e7d32','#7b3fa0','#c0392b'];
+const BARS = ['#c8882a','#5e2580','#2e7d32','#7b3fa0','#c0392b','#1565c0','#ad1457','#00695c','#e65100','#4527a0'];
+
+function countryColor(name) {
+  if (CC[name]) return CC[name];
+  const countries = window.DD ? DD.countries : [];
+  const idx = countries.indexOf(name);
+  return BARS[idx >= 0 ? idx % BARS.length : 0];
+}
 
 // ─── DATA ──────────────────────────────────────────────────────
 const D = {
@@ -426,27 +434,43 @@ function progList(id, items, max, colorFn) {
 }
 
 // ─── COUNTRY MULTI-SELECT ─────────────────────────────────────
-function buildCountryMultiSelect() {
-  const trigger  = document.getElementById('country-multi-trigger');
+function rebuildCountryOptions() {
   const dropdown = document.getElementById('country-multi-dropdown');
-  if (!trigger || !dropdown) return;
-
-  // Build checkbox options: "All Countries" first, then each country
+  if (!dropdown) return;
   const rows = [{ value: 'All', label: 'All Countries' }, ...C.map(c => ({ value: c, label: c }))];
   dropdown.innerHTML = rows.map(r => `
     <label class="country-multi-opt">
       <input type="checkbox" value="${r.value}"${r.value === 'All' ? ' checked' : ''}>
       <span>${r.label}</span>
     </label>`).join('');
+  injectDropdownControls(dropdown, 'Countries',
+    () => {
+      dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+      dropdown.dispatchEvent(new Event('change', { bubbles: true }));
+    },
+    () => {
+      dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+      dropdown.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  );
+}
 
-  // Toggle dropdown open/closed
+function buildCountryMultiSelect() {
+  const trigger  = document.getElementById('country-multi-trigger');
+  const dropdown = document.getElementById('country-multi-dropdown');
+  if (!trigger || !dropdown) return;
+
+  // Build initial options (C starts as hardcoded fallback, updates to DB on dd:ready)
+  rebuildCountryOptions();
+
+  // Toggle dropdown open/closed — attached once only
   trigger.addEventListener('click', e => {
     e.stopPropagation();
     dropdown.hidden = !dropdown.hidden;
     trigger.classList.toggle('open', !dropdown.hidden);
   });
 
-  // Close when clicking outside
+  // Close when clicking outside — attached once only
   document.addEventListener('click', e => {
     if (!document.getElementById('country-multi-wrap').contains(e.target)) {
       dropdown.hidden = true;
@@ -454,21 +478,18 @@ function buildCountryMultiSelect() {
     }
   });
 
-  // Handle checkbox changes
+  // Handle checkbox changes — attached once only
   dropdown.addEventListener('change', e => {
     const cb    = e.target;
     const all   = dropdown.querySelector('input[value="All"]');
     const indiv = [...dropdown.querySelectorAll('input:not([value="All"])')];
 
     if (cb.value === 'All') {
-      // "All Countries" toggled — sync all individual boxes
       indiv.forEach(x => x.checked = cb.checked);
       sel.countries = cb.checked ? ['All'] : [];
     } else {
-      // Individual country toggled — uncheck "All Countries"
       all.checked = false;
       const chosen = indiv.filter(x => x.checked).map(x => x.value);
-      // If every individual country is now checked, snap back to "All"
       if (chosen.length === C.length) {
         all.checked = true;
         indiv.forEach(x => x.checked = true);
@@ -478,7 +499,6 @@ function buildCountryMultiSelect() {
       }
     }
 
-    // Guard: nothing selected — reset to All
     if (!sel.countries.length) {
       all.checked = true;
       indiv.forEach(x => x.checked = true);
@@ -516,16 +536,23 @@ function buildLevelDropdown() {
 function buildSubLevelDropdown(panelId) {
   const select = document.getElementById('sublevel-select');
   select.innerHTML = '<option value="" disabled selected>Select Sub Level</option>';
-  hierarchyData
-    .filter(item => levelToPanelId[item.level] === panelId)
-    .forEach(item => {
-      const opt = document.createElement('option');
-      opt.value = item.subLevel;
-      opt.textContent = item.subLevel;
-      select.appendChild(opt);
-    });
+  const items = hierarchyData.filter(item => levelToPanelId[item.level] === panelId);
+  items.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.subLevel;
+    opt.textContent = item.subLevel;
+    select.appendChild(opt);
+  });
   select.disabled = false;
-  select.value = '';
+
+  // Auto-select and render the first sublevel
+  if (items.length) {
+    select.value = items[0].subLevel;
+    sel.subLevel = items[0].subLevel;
+    renderSubLevelStats(panelId, items[0].subLevel);
+  } else {
+    select.value = '';
+  }
 }
 
 // ─── RESOLVE KPI VALUE ────────────────────────────────────────
@@ -590,7 +617,7 @@ function erBar(id, labels, datasets, opts = {}) {
           display: opts.stackLabels ? ctx => ctx.dataset.data[ctx.dataIndex] > 0 : true,
           color: opts.stackLabels ? '#ffffff' : '#3a1a5a',
           font: { size: 10, weight: '700', family: "'Lato', sans-serif" },
-          formatter: opts.formatter ? opts.formatter : (opts.pctLabel ? v => v.toFixed(2) + '%' : v => fmtK(v)),
+          formatter: opts.formatter ? opts.formatter : (opts.pctLabel ? v => v.toFixed(2) + '%' : v => fmt(v)),
           anchor: opts.stackLabels ? 'center' : (horiz ? 'end' : 'end'),
           align: opts.stackLabels ? 'center' : (horiz ? 'right' : 'top'),
           offset: 2,
@@ -628,18 +655,21 @@ function renderEducationReachCharts() {
   const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
 
   // Data
-  const BUR = 'Children Supported in School with Education Bursaries';
+  const BUR = BUR_METRICS[l1BurType] || BUR_METRICS.newly;
   const bVals   = a.map(c => ddQC(BUR, c));
   const bTotal  = bVals.reduce((s, v) => s + v, 0);
 
   const camaVals = a.map(c => ddQC('CAMA Members', c));
-  const commVals = a.map(c => ddQC('Active Guides by Type', c));
+  const commVals = a.map(c => ddQC('Community Champions', c));
   const ccTotal  = camaVals.reduce((s, v) => s + v, 0) + commVals.reduce((s, v) => s + v, 0);
 
-  const gVals   = a.map(c => ddQC('Number of Clients by Form — Girls', c));
-  const gTotal  = gVals.reduce((s, v) => s + v, 0);
-  const boVals  = a.map(c => ddQC('Number of Clients by Form — Boys', c));
-  const boTotal = boVals.reduce((s, v) => s + v, 0);
+  const burNewly  = a.map(c => ddQC('Children Supported in School with Education Bursaries', c));
+  const gVals    = a.map((_, i) => burNewly[i] + camaVals[i] + commVals[i]);
+  const gTotal   = gVals.reduce((s, v) => s + v, 0);
+  const camaBoys = a.map(c => ddQC('CAMA Boys', c));
+  const commBoys = a.map(c => ddQC('Community Boys', c));
+  const boVals   = a.map((_, i) => camaBoys[i] + commBoys[i]);
+  const boTotal  = boVals.reduce((s, v) => s + v, 0);
 
   section.innerHTML = `
     <div class="er-grid">
@@ -647,6 +677,12 @@ function renderEducationReachCharts() {
         <div class="er-card-header">
           <span class="er-card-title">Girls Supported in School with Education Bursaries</span>
           <span class="er-total-badge">Total &nbsp;${fmt(bTotal)}</span>
+        </div>
+        <div class="chart-type-toggle" id="er-bursary-toggle" style="padding:8px 0 4px 0">
+          <button class="chart-toggle-btn${l1BurType==='newly'?' active':''}" data-bur="newly">Newly Supported</button>
+          <button class="chart-toggle-btn${l1BurType==='annual'?' active':''}" data-bur="annual">Annual</button>
+          <button class="chart-toggle-btn${l1BurType==='cum2030'?' active':''}" data-bur="cum2030">Cumulative 2020–2030</button>
+          <button class="chart-toggle-btn${l1BurType==='cumall'?' active':''}" data-bur="cumall">Cumulative All-time</button>
         </div>
         <div class="er-chart-wrap"><canvas id="er-bursary-chart"></canvas></div>
       </div>
@@ -1484,12 +1520,20 @@ function updateStats() {
   setTxt('s3-children',  fmt(ddQA('Grants Disbursed')));
 }
 
+let l1BurType = 'newly';
+const BUR_METRICS = {
+  newly:   'Children Supported in School with Education Bursaries',
+  annual:  'Children Supported in School with Education Bursaries — Annual',
+  cum2030: 'Children Supported in School with Education Bursaries — Cumulative 2020-2030',
+  cumall:  'Children Supported in School with Education Bursaries — Cumulative all-time',
+};
+
 // ─── BUILD LEVEL 1 ─────────────────────────────────────────────
 function buildL1() {
   const a = activeCt();
   const single = a.length === 1;
   const c = single ? a[0] : null;
-  const BUR = 'Children Supported in School with Education Bursaries';
+  const BUR = BUR_METRICS[l1BurType] || BUR_METRICS.newly;
   const LG  = 'Active Learner Guides';
 
   // Bursary chart: single → period breakdown using DD; multi → per-country totals
@@ -1539,7 +1583,7 @@ function buildL1() {
 
   // Dropout rate — no DD equivalent; keep D values
   const items = a.map(n=>({label:n, val:D.kpi15.pct[n], display:D.kpi15.pct[n].toFixed(2)+'%'}));
-  progList('l1-dropout', items, 5, l=>CC[l]||'#5e2580');
+  progList('l1-dropout', items, 5, l=>countryColor(l));
 
   // SLS — direct from gender column
   if (single) {
@@ -1586,11 +1630,11 @@ function buildL2() {
 
   // % metrics — no DD equivalent; keep D values
   const inc = a.map(n=>({label:n, val:D.kpi210.pct[n], display:D.kpi210.pct[n]+'%'}));
-  progList('l2-income', inc, 100, l=>CC[l]||'#5e2580');
+  progList('l2-income', inc, 100, l=>countryColor(l));
   const pro = a.map(n=>({label:n, val:D.kpi211.profit[n], display:D.kpi211.profit[n]+'%'}));
-  progList('l2-profit', pro, 100, l=>CC[l]||'#5e2580');
+  progList('l2-profit', pro, 100, l=>countryColor(l));
   const sur = a.map(n=>({label:n, val:D.kpi212.yr1[n], display:D.kpi212.yr1[n]+'%'}));
-  progList('l2-survival', sur, 100, l=>CC[l]||'#5e2580');
+  progList('l2-survival', sur, 100, l=>countryColor(l));
 }
 
 // ─── BUILD LEVEL 3 ─────────────────────────────────────────────
@@ -1630,13 +1674,85 @@ function rebuildActive() {
   if (sel.subLevel) renderSubLevelStats(sel.level, sel.subLevel);
 }
 
+// ─── HOME BUTTON ───────────────────────────────────────────────
+document.getElementById('home-btn').addEventListener('click', () => {
+  // Reset selects
+  document.getElementById('level-select').value = '';
+  const sublevelSel = document.getElementById('sublevel-select');
+  sublevelSel.innerHTML = '<option value="" disabled selected>Select Sub Level</option>';
+  sublevelSel.disabled = true;
+  sel.level = '';
+  sel.subLevel = '';
+
+  // Hide all panels and stats, show home landing
+  document.querySelectorAll('.tab-panel').forEach(p => { p.classList.remove('active'); p.style.display = ''; });
+  document.getElementById('sublevel-stats-section').style.display = 'none';
+  document.getElementById('landing-section').style.display = 'block';
+  const dht = document.getElementById('dashboard-howto');
+  if (dht) dht.style.display = 'none';
+  const ch = document.getElementById('content-header');
+  if (ch) ch.style.display = 'none';
+
+  // Switch back to dashboard view if in dynamic/slicer
+  const atSel = document.getElementById('analysis-type-select');
+  if (atSel && atSel.value !== 'dashboard') {
+    atSel.value = 'dashboard';
+    atSel.dispatchEvent(new Event('change'));
+  }
+  document.querySelectorAll('.top-nav-mode').forEach(b => b.classList.remove('top-nav-item--active'));
+  const homeBtn = document.getElementById('home-btn');
+  if (homeBtn) homeBtn.classList.add('top-nav-item--active');
+
+  // Reset hero title and sidebar active state
+  const heroTitle = document.getElementById('hero-title');
+  const heroDesc  = document.getElementById('hero-desc');
+  if (heroTitle) heroTitle.textContent = 'CAMFED Impact Dashboard';
+  if (heroDesc)  heroDesc.textContent  = 'Select a level from the filters below to explore programme data by country, year, and sublevel.';
+  document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('sidebar-nav-item--active'));
+});
+
 // ─── LEVEL DROPDOWN ────────────────────────────────────────────
 document.getElementById('level-select').addEventListener('change', e=>{
   const value = e.target.value;
   if (!value) return;
 
-  // Hide landing section once user selects a level
+  // Hide landing sections once user selects a level; show content header
   document.getElementById('landing-section').style.display = 'none';
+  const howto = document.getElementById('dashboard-howto');
+  if (howto) howto.style.display = 'none';
+  const ch = document.getElementById('content-header');
+  if (ch) ch.style.display = '';
+
+  // Set banner title, description and image per level
+  const levelMeta = {
+    level1: {
+      title: "Girls' Education Impact Dashboard",
+      desc:  "Track key progress indicators that reflect CAMFED's work in girls' bursary support, learner guides and community-based education across the continent.",
+      img:   "images/camfed-mentor-student.jpg",
+      imgPos: "center 15%"
+    },
+    level2: {
+      title: "Livelihoods & Leadership Impact Dashboard",
+      desc:  "Track key progress indicators that reflect CAMFED's work in economic empowerment, leadership development and systems strengthening across the continent.",
+      img:   "images/camfed-students-running.jpg",
+      imgPos: "center 10%"
+    },
+    level3: {
+      title: "Education Reach Impact Dashboard",
+      desc:  "Track key progress indicators that reflect CAMFED's reach in classroom support, teacher training and learning outcomes across the continent.",
+      img:   "images/camfed-classroom.jpg",
+      imgPos: "center 60%"
+    }
+  };
+  const meta = levelMeta[value];
+  if (meta) {
+    const ht = document.getElementById('hero-title');
+    const hd = document.getElementById('hero-desc');
+    const hi = document.getElementById('hero-level-img');
+    if (ht) ht.textContent = meta.title;
+    if (hd) hd.textContent = meta.desc;
+    if (hi) { hi.src = meta.img; hi.style.objectPosition = meta.imgPos; }
+  }
 
   sel.level = value;
   sel.subLevel = '';
@@ -1645,16 +1761,24 @@ document.getElementById('level-select').addEventListener('change', e=>{
   document.querySelectorAll('.tab-panel').forEach(p=>{ p.classList.remove('active'); p.style.display = ''; });
   document.getElementById('panel-' + value)?.classList.add('active');
 
-  // Reset and populate sublevel dropdown for the selected level
+  // Reset and populate sublevel dropdown (also auto-selects first sublevel)
   buildSubLevelDropdown(value);
-
-  // Clear any previously rendered statistics
-  document.getElementById('sublevel-stats-section').style.display = 'none';
 
   // Build charts for the selected level
   if (value === 'level1') buildL1();
   else if (value === 'level2') buildL2();
   else if (value === 'level3') buildL3();
+});
+
+// ─── BURSARY TOGGLE ────────────────────────────────────────────
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.chart-toggle-btn[data-bur]');
+  if (!btn) return;
+  document.querySelectorAll('.chart-toggle-btn[data-bur]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  l1BurType = btn.dataset.bur;
+  if (sel.subLevel === 'Education Reach') renderEducationReachCharts();
+  else buildL1();
 });
 
 // ─── SUBLEVEL DROPDOWN ─────────────────────────────────────────
@@ -1767,14 +1891,15 @@ const checklistData = [
 
 // 3. Derived state and rendering logic
 
-const ddSel = { country: '', district: '', school: '', yearStart: 2020, yearEnd: 2030 };
+const ddSel = { countries: [], districts: [], schools: [], yearStart: 2020, yearEnd: 2030 };
 const ddCharts = {};
+const ddDrops  = {};
 
 function ddGeoLevel() {
-  if (ddSel.country && ddSel.district && ddSel.school) return 'school';
-  if (ddSel.country && ddSel.district) return 'district';
-  if (ddSel.country) return 'country';
-  return null;
+  if (!ddSel.countries.length) return null;
+  if (ddSel.schools.length)   return 'school';
+  if (ddSel.districts.length) return 'district';
+  return 'country';
 }
 
 function ddMultiYear() { return ddSel.yearEnd > ddSel.yearStart; }
@@ -1807,9 +1932,9 @@ function ddQueryValues(metricLabel, years) {
   if (!window.DD) return years.map(() => 0);
   return years.map(yr => {
     let rows = DD.data.filter(r => r.metric === metricLabel && r.year === yr);
-    if (ddSel.school)        rows = rows.filter(r => r.school    === ddSel.school);
-    else if (ddSel.district) rows = rows.filter(r => r.district  === ddSel.district);
-    else if (ddSel.country)  rows = rows.filter(r => r.country   === ddSel.country);
+    if (ddSel.schools.length)        rows = rows.filter(r => ddSel.schools.includes(r.school));
+    else if (ddSel.districts.length) rows = rows.filter(r => ddSel.districts.includes(r.district));
+    else if (ddSel.countries.length) rows = rows.filter(r => ddSel.countries.includes(r.country));
     return rows.reduce((s, r) => s + r.value, 0);
   });
 }
@@ -1888,9 +2013,14 @@ function ddRender() {
   const multiYear = ddMultiYear();
   const levelLabel = { country: 'Country Level', district: 'District Level', school: 'School Level' }[level];
 
-  let breadcrumb = ddSel.country;
-  if (ddSel.district) breadcrumb += ` › ${ddSel.district}`;
-  if (ddSel.school)   breadcrumb += ` › ${ddSel.school}`;
+  const _allCt = window.DD ? DD.countries : C;
+  let breadcrumb = ddSel.countries.length === _allCt.length
+    ? 'All Countries'
+    : ddSel.countries.join(', ');
+  if (ddSel.districts.length)
+    breadcrumb += ddSel.districts.length === 1 ? ` › ${ddSel.districts[0]}` : ` › ${ddSel.districts.length} Districts`;
+  if (ddSel.schools.length)
+    breadcrumb += ddSel.schools.length === 1 ? ` › ${ddSel.schools[0]}` : ` › ${ddSel.schools.length} Schools`;
 
   const yearBadge = multiYear
     ? '<span class="dd-year-badge">Multi-Year</span>'
@@ -1933,30 +2063,170 @@ function ddRender() {
   });
 }
 
-function ddPopulateDistricts(country) {
-  const el = document.getElementById('dd-district-select');
-  el.innerHTML = '<option value="" disabled selected>Select District</option>';
-  el.disabled = true;
-  if (!country || !window.DD) return;
-  (DD.districts[country] || []).forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d; opt.textContent = d;
-    el.appendChild(opt);
+// ─── SHARED: inject search + Select All/None into any dropdown ─
+function injectDropdownControls(dropdown, placeholder, onAll, onNone) {
+  const ctrl = document.createElement('div');
+  ctrl.className = 'multi-drop-controls';
+  ctrl.innerHTML = `
+    <input type="text" class="multi-drop-search" placeholder="Search ${placeholder}…" autocomplete="off">
+    <div class="multi-drop-actions">
+      <button type="button" class="multi-drop-act" data-act="all">Select All</button>
+      <span class="multi-drop-sep">·</span>
+      <button type="button" class="multi-drop-act" data-act="none">Select None</button>
+    </div>`;
+  dropdown.insertBefore(ctrl, dropdown.firstChild);
+
+  const searchEl = ctrl.querySelector('.multi-drop-search');
+  searchEl.addEventListener('input', () => {
+    const q = searchEl.value.toLowerCase().trim();
+    dropdown.querySelectorAll('.country-multi-opt').forEach(opt => {
+      const v = opt.querySelector('input')?.value;
+      if (v === '__all__' || v === 'All') { opt.style.display = q ? 'none' : ''; return; }
+      opt.style.display = opt.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
   });
-  el.disabled = false;
+  searchEl.addEventListener('click', e => e.stopPropagation());
+  searchEl.addEventListener('keydown', e => e.stopPropagation());
+
+  ctrl.querySelector('[data-act="all"]').addEventListener('click', e => { e.stopPropagation(); onAll(); });
+  ctrl.querySelector('[data-act="none"]').addEventListener('click', e => { e.stopPropagation(); onNone(); });
 }
 
-function ddPopulateSchools(country, district) {
-  const el = document.getElementById('dd-school-select');
-  el.innerHTML = '<option value="" disabled selected>Select School</option>';
-  el.disabled = true;
-  if (!district || !window.DD) return;
-  (DD.schools[district] || []).forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s; opt.textContent = s;
-    el.appendChild(opt);
+// ─── DD MULTI-SELECT FACTORY ───────────────────────────────────
+function makeDDMultiDrop(wrapperId, placeholder, onChange) {
+  const wrap = document.getElementById(wrapperId);
+  wrap.className = 'country-multi-wrap';
+  wrap.innerHTML = `
+    <button type="button" class="country-multi-trigger" id="${wrapperId}-trigger">
+      <span id="${wrapperId}-label">Select ${placeholder}</span>
+      <svg width="11" height="7" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="country-multi-dropdown" id="${wrapperId}-dropdown" hidden></div>`;
+
+  const trigger  = document.getElementById(`${wrapperId}-trigger`);
+  const dropdown = document.getElementById(`${wrapperId}-dropdown`);
+  const labelEl  = document.getElementById(`${wrapperId}-label`);
+
+  function updateLabel() {
+    const all   = dropdown.querySelector('input[value="__all__"]');
+    const indiv = [...dropdown.querySelectorAll('input:not([value="__all__"])')];
+    const sel   = indiv.filter(x => x.checked);
+    if (!indiv.length || (all && all.checked)) {
+      labelEl.textContent = `All ${placeholder}`;
+    } else if (sel.length === 0) {
+      labelEl.textContent = `Select ${placeholder}`;
+    } else if (sel.length === 1) {
+      labelEl.textContent = sel[0].value;
+    } else {
+      labelEl.textContent = `${sel.length} ${placeholder}`;
+    }
+  }
+
+  function isAllChecked() {
+    const all = dropdown.querySelector('input[value="__all__"]');
+    return !all || all.checked;
+  }
+
+  function getSelected() {
+    return [...dropdown.querySelectorAll('input:not([value="__all__"])')].filter(x => x.checked).map(x => x.value);
+  }
+
+  trigger.addEventListener('click', e => {
+    e.stopPropagation();
+    if (trigger.disabled) return;
+    dropdown.hidden = !dropdown.hidden;
+    trigger.classList.toggle('open', !dropdown.hidden);
   });
-  el.disabled = false;
+
+  document.addEventListener('click', e => {
+    if (!wrap.contains(e.target)) { dropdown.hidden = true; trigger.classList.remove('open'); }
+  });
+
+  dropdown.addEventListener('change', e => {
+    const cb    = e.target;
+    const all   = dropdown.querySelector('input[value="__all__"]');
+    const indiv = [...dropdown.querySelectorAll('input:not([value="__all__"])')];
+    if (cb.value === '__all__') {
+      indiv.forEach(x => x.checked = cb.checked);
+      if (!cb.checked) { cb.checked = true; indiv.forEach(x => x.checked = true); }
+    } else {
+      const checked = indiv.filter(x => x.checked);
+      if (!checked.length) { all.checked = true; indiv.forEach(x => x.checked = true); }
+      else all.checked = checked.length === indiv.length;
+    }
+    updateLabel();
+    onChange({ selected: getSelected(), allChecked: isAllChecked() });
+  });
+
+  function populate(items, preCheckAll = true) {
+    const rows = [
+      `<label class="country-multi-opt"><input type="checkbox" value="__all__"${preCheckAll ? ' checked' : ''}><span>All ${placeholder}</span></label>`,
+      ...items.map(v => `<label class="country-multi-opt"><input type="checkbox" value="${v}"${preCheckAll ? ' checked' : ''}><span>${v}</span></label>`)
+    ];
+    dropdown.innerHTML = rows.join('');
+    injectDropdownControls(dropdown, placeholder,
+      () => {
+        const all = dropdown.querySelector('input[value="__all__"]');
+        const indiv = [...dropdown.querySelectorAll('input:not([value="__all__"])')];
+        indiv.forEach(x => x.checked = true);
+        if (all) all.checked = true;
+        updateLabel();
+        onChange({ selected: getSelected(), allChecked: true });
+      },
+      () => {
+        const all = dropdown.querySelector('input[value="__all__"]');
+        const indiv = [...dropdown.querySelectorAll('input:not([value="__all__"])')];
+        indiv.forEach(x => x.checked = false);
+        if (all) all.checked = false;
+        updateLabel();
+        onChange({ selected: [], allChecked: false });
+      }
+    );
+    setDisabled(!items.length);
+    updateLabel();
+  }
+
+  function setDisabled(val) {
+    trigger.disabled = val;
+    trigger.style.opacity = val ? '0.45' : '';
+    trigger.style.cursor  = val ? 'not-allowed' : '';
+  }
+
+  function reset() {
+    dropdown.innerHTML = '';
+    labelEl.textContent = `Select ${placeholder}`;
+    setDisabled(true);
+  }
+
+  setDisabled(true);
+  return { populate, getSelected, isAllChecked, setDisabled, reset };
+}
+
+function ddRefreshDistricts() {
+  if (!ddSel.countries.length || !window.DD) {
+    ddDrops.district.reset();
+    ddSel.districts = [];
+    ddRefreshSchools();
+    return;
+  }
+  const dists = [...new Set(ddSel.countries.flatMap(c => (DD.districts && DD.districts[c]) || []))].sort();
+  ddDrops.district.populate(dists, true);
+  ddSel.districts = [];
+  ddRefreshSchools();
+}
+
+function ddRefreshSchools() {
+  const activeDists = ddSel.districts.length > 0
+    ? ddSel.districts
+    : ddSel.countries.flatMap(c => (window.DD && DD.districts && DD.districts[c]) || []);
+  if (!activeDists.length || !window.DD) {
+    ddDrops.school.reset();
+    ddSel.schools = [];
+    return;
+  }
+  const schools = [...new Set(activeDists.flatMap(d => (DD.schools && DD.schools[d]) || []))].sort();
+  ddDrops.school.populate(schools, true);
+  ddSel.schools = [];
 }
 
 function ddUpdateYear() {
@@ -1979,35 +2249,28 @@ function ddInit() {
   }
   ddInitialised = true;
 
-  // Populate country dropdown from DD.countries
-  const countrySel = document.getElementById('dd-country-select');
-  const ddCountries = window.DD ? DD.countries : [];
-  ddCountries.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c; opt.textContent = c;
-    countrySel.appendChild(opt);
-  });
-
-  document.getElementById('dd-country-select').addEventListener('change', e => {
-    ddSel.country  = e.target.value;
-    ddSel.district = '';
-    ddSel.school   = '';
-    ddPopulateDistricts(ddSel.country);
-    ddPopulateSchools('', '');
+  ddDrops.country = makeDDMultiDrop('dd-country-wrap', 'Countries', ({ selected }) => {
+    ddSel.countries = selected;
+    ddSel.districts = [];
+    ddSel.schools   = [];
+    ddRefreshDistricts();
     ddRender();
   });
 
-  document.getElementById('dd-district-select').addEventListener('change', e => {
-    ddSel.district = e.target.value;
-    ddSel.school   = '';
-    ddPopulateSchools(ddSel.country, ddSel.district);
+  ddDrops.district = makeDDMultiDrop('dd-district-wrap', 'Districts', ({ selected, allChecked }) => {
+    ddSel.districts = allChecked ? [] : selected;
+    ddSel.schools   = [];
+    ddRefreshSchools();
     ddRender();
   });
 
-  document.getElementById('dd-school-select').addEventListener('change', e => {
-    ddSel.school = e.target.value;
+  ddDrops.school = makeDDMultiDrop('dd-school-wrap', 'Schools', ({ selected, allChecked }) => {
+    ddSel.schools = allChecked ? [] : selected;
     ddRender();
   });
+
+  ddDrops.country.populate(DD.countries, false);
+  ddDrops.country.setDisabled(false);
 
   document.getElementById('dd-date-start').addEventListener('input', ddUpdateYear);
   document.getElementById('dd-date-end').addEventListener('input', ddUpdateYear);
@@ -2015,19 +2278,30 @@ function ddInit() {
 
 // ── MODE SWITCHER ──────────────────────────────────────────────
 function switchMode(mode) {
-  const mainFilter = document.querySelector('.app > .filter-bar');
-  const bodyLayout = document.querySelector('.body-layout');
-  const ddView     = document.getElementById('dynamic-data-view');
-  const slView     = document.getElementById('slicer-view');
+  const heroSection = document.getElementById('hero-section');
+  const bodyLayout  = document.querySelector('.body-layout');
+  const ddView      = document.getElementById('dynamic-data-view');
+  const slView      = document.getElementById('slicer-view');
+  const footer      = document.querySelector('.dashboard-footer');
 
-  mainFilter.style.display = 'none';
+  if (heroSection) heroSection.style.display = 'none';
   bodyLayout.style.display = 'none';
   ddView.style.display     = 'none';
   slView.style.display     = 'none';
+  if (footer) footer.style.display = 'none';
 
   if (mode === 'dashboard') {
-    mainFilter.style.display = '';
+    if (heroSection) heroSection.style.display = '';
     bodyLayout.style.display = '';
+    if (footer) footer.style.display = '';
+    // If no level selected, show how-to instead of home landing
+    const noLevel = !sel.level;
+    const landingSec = document.getElementById('landing-section');
+    const howto = document.getElementById('dashboard-howto');
+    if (noLevel) {
+      if (landingSec) landingSec.style.display = 'none';
+      if (howto) howto.style.display = '';
+    }
   } else if (mode === 'dynamic') {
     ddView.style.display = '';
     ddInit();
@@ -2041,6 +2315,18 @@ document.getElementById('analysis-type-select').addEventListener('change', e => 
   switchMode(e.target.value);
 });
 
+document.querySelectorAll('.top-nav-mode').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const mode = btn.dataset.mode;
+    document.querySelectorAll('.top-nav-mode').forEach(b => b.classList.remove('top-nav-item--active'));
+    const homeBtn = document.getElementById('home-btn');
+    if (homeBtn) homeBtn.classList.remove('top-nav-item--active');
+    btn.classList.add('top-nav-item--active');
+    document.getElementById('analysis-type-select').value = mode;
+    switchMode(mode);
+  });
+});
+
 // ═══════════════════════════════════════════════════════════════
 // ── SLICER MODULE ──────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════
@@ -2052,7 +2338,7 @@ const slSel = {
   districts: [], // [] = all districts within selected countries
   schools:   [], // [] = all schools within selected districts
   kpis:      [],
-  gender:    'all',
+  genders:   ['female', 'male'], // [] or both = all
   yearStart: 2020,
   yearEnd:   2030,
   chartType: 'number'
@@ -2111,8 +2397,10 @@ function slQuery() {
   rows = rows.filter(r => r.year >= slSel.yearStart && r.year <= slSel.yearEnd);
 
   // Deterministic gender split (data has no gender field — apply fixed ratio)
-  if (slSel.gender === 'female') rows = rows.map(r => ({...r, value: Math.round(r.value * 0.52)}));
-  else if (slSel.gender === 'male') rows = rows.map(r => ({...r, value: Math.round(r.value * 0.48)}));
+  const _onlyF = slSel.genders.length === 1 && slSel.genders[0] === 'female';
+  const _onlyM = slSel.genders.length === 1 && slSel.genders[0] === 'male';
+  if (_onlyF) rows = rows.map(r => ({...r, value: Math.round(r.value * 0.52)}));
+  else if (_onlyM) rows = rows.map(r => ({...r, value: Math.round(r.value * 0.48)}));
 
   return rows;
 }
@@ -2289,8 +2577,13 @@ function slRebuildDistricts() {
   const dists = slDistricts(srcCountries);
   slSel.districts = [];
   slSel.schools   = [];
-  document.getElementById('sl-district-dropdown').innerHTML = dists.map(d =>
+  const slDistDD = document.getElementById('sl-district-dropdown');
+  slDistDD.innerHTML = dists.map(d =>
     `<label class="country-multi-opt"><input type="checkbox" value="${d}" checked><span>${d}</span></label>`).join('');
+  injectDropdownControls(slDistDD, 'Districts',
+    () => { slDistDD.querySelectorAll('input').forEach(cb => cb.checked = true); slDistDD.dispatchEvent(new Event('change', {bubbles:true})); },
+    () => { slDistDD.querySelectorAll('input').forEach(cb => cb.checked = false); slDistDD.dispatchEvent(new Event('change', {bubbles:true})); }
+  );
   document.getElementById('sl-district-label').textContent = 'All Districts';
   slRebuildSchools();
 }
@@ -2301,8 +2594,13 @@ function slRebuildSchools() {
     : slDistricts(slSel.countries.length ? slSel.countries : slCountries());
   const schools = slSchools(srcDists).slice(0, 60);
   slSel.schools = [];
-  document.getElementById('sl-school-dropdown').innerHTML = schools.map(s =>
+  const slSchDD = document.getElementById('sl-school-dropdown');
+  slSchDD.innerHTML = schools.map(s =>
     `<label class="country-multi-opt"><input type="checkbox" value="${s}" checked><span>${s}</span></label>`).join('');
+  injectDropdownControls(slSchDD, 'Schools',
+    () => { slSchDD.querySelectorAll('input').forEach(cb => cb.checked = true); slSchDD.dispatchEvent(new Event('change', {bubbles:true})); },
+    () => { slSchDD.querySelectorAll('input').forEach(cb => cb.checked = false); slSchDD.dispatchEvent(new Event('change', {bubbles:true})); }
+  );
   document.getElementById('sl-school-label').textContent = 'All Schools';
 }
 
@@ -2315,6 +2613,10 @@ function slBuildKpiList() {
   dropdown.innerHTML = kpis.map(kpi =>
     `<label class="country-multi-opt"><input type="checkbox" class="sl-kpi-cb" value="${kpi}"><span>${kpi}</span></label>`
   ).join('');
+  injectDropdownControls(dropdown, 'Metrics',
+    () => { dropdown.querySelectorAll('input').forEach(cb => cb.checked = true); dropdown.dispatchEvent(new Event('change', {bubbles:true})); },
+    () => { dropdown.querySelectorAll('input').forEach(cb => cb.checked = false); dropdown.dispatchEvent(new Event('change', {bubbles:true})); }
+  );
 }
 
 // ── Slicer init (runs once) ──
@@ -2336,6 +2638,10 @@ function slInit() {
   const countryDD = document.getElementById('sl-country-dropdown');
   countryDD.innerHTML = allCountries.map(c =>
     `<label class="country-multi-opt"><input type="checkbox" value="${c}" checked><span>${c}</span></label>`).join('');
+  injectDropdownControls(countryDD, 'Countries',
+    () => { countryDD.querySelectorAll('input').forEach(cb => cb.checked = true); countryDD.dispatchEvent(new Event('change', {bubbles:true})); },
+    () => { countryDD.querySelectorAll('input').forEach(cb => cb.checked = false); countryDD.dispatchEvent(new Event('change', {bubbles:true})); }
+  );
   document.getElementById('sl-country-trigger').addEventListener('click', e => {
     e.stopPropagation();
     countryDD.hidden = !countryDD.hidden;
@@ -2432,19 +2738,37 @@ function slInit() {
   });
   kpiDD.addEventListener('click', e => e.stopPropagation());
 
-  // ── Gender dropdown (radio inside dropdown) ──
-  const genderDD = document.getElementById('sl-gender-dropdown');
-  document.getElementById('sl-gender-trigger').addEventListener('click', e => {
+  // ── Gender dropdown (checkboxes) ──
+  const genderDD      = document.getElementById('sl-gender-dropdown');
+  const genderTrigger = document.getElementById('sl-gender-trigger');
+  const genderLabel   = document.getElementById('sl-gender-label');
+
+  function updateGenderState() {
+    const allCb    = genderDD.querySelector('input[value="all"]');
+    const femaleCb = genderDD.querySelector('input[value="female"]');
+    const maleCb   = genderDD.querySelector('input[value="male"]');
+    slSel.genders = [];
+    if (femaleCb.checked) slSel.genders.push('female');
+    if (maleCb.checked)   slSel.genders.push('male');
+    const both = femaleCb.checked && maleCb.checked;
+    if (both) genderLabel.textContent = 'All Genders';
+    else if (femaleCb.checked) genderLabel.textContent = 'Female';
+    else if (maleCb.checked)   genderLabel.textContent = 'Male';
+    else { femaleCb.checked = true; maleCb.checked = true; allCb.checked = true; slSel.genders = ['female','male']; genderLabel.textContent = 'All Genders'; }
+    allCb.checked = both;
+  }
+
+  genderTrigger.addEventListener('click', e => {
     e.stopPropagation();
     genderDD.hidden = !genderDD.hidden;
-    e.currentTarget.classList.toggle('open', !genderDD.hidden);
+    genderTrigger.classList.toggle('open', !genderDD.hidden);
   });
   genderDD.addEventListener('change', e => {
-    slSel.gender = e.target.value;
-    document.getElementById('sl-gender-label').textContent =
-      e.target.value === 'all' ? 'All' : e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1);
-    genderDD.hidden = true;
-    document.getElementById('sl-gender-trigger').classList.remove('open');
+    const allCb = genderDD.querySelector('input[value="all"]');
+    const femaleCb = genderDD.querySelector('input[value="female"]');
+    const maleCb   = genderDD.querySelector('input[value="male"]');
+    if (e.target.value === 'all') { femaleCb.checked = e.target.checked; maleCb.checked = e.target.checked; }
+    updateGenderState();
   });
   genderDD.addEventListener('click', e => e.stopPropagation());
 
@@ -2471,6 +2795,14 @@ function slInit() {
 
 // Re-render the active dashboard panel once Supabase data has loaded
 document.addEventListener('dd:ready', () => {
-  if (window.DD) rebuildActive();
+  if (window.DD) {
+    C = DD.countries;           // keep C in sync with live DB country list
+    rebuildCountryOptions();    // refresh options only — no duplicate listeners
+    rebuildActive();
+  }
 });
 
+
+// Set Home as active on initial load
+document.getElementById('home-btn')?.classList.add('top-nav-item--active');
+document.querySelector('.top-nav-mode[data-mode="dashboard"]')?.classList.remove('top-nav-item--active');
