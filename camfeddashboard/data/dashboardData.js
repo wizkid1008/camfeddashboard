@@ -21,6 +21,7 @@ window.DD = null;
   requestAnimationFrame(() => { bar.style.width = '80%'; });
 
   try {
+    // ── Main dashboard RPC ──────────────────────────────────────────────────────
     const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_dashboard_data`, {
       method: 'POST',
       headers: {
@@ -37,6 +38,33 @@ window.DD = null;
 
     const payload = await res.json();
     const rows = payload.data || [];
+
+    // ── KPI 1.3: Total Girls / Boys supported (direct from view_observed_kpi) ──
+    const kpi13Res = await fetch(
+      `${SUPABASE_URL}/rest/v1/view_observed_kpi` +
+      `?select=country,disaggregation_level_two,year,value` +
+      `&kpi_id=eq.1.3` +
+      `&disaggregation_level_two=in.(Girls,Boys)`,
+      {
+        headers: {
+          'apikey':         SUPABASE_ANON_KEY,
+          'Authorization':  `Bearer ${SUPABASE_ANON_KEY}`,
+          'Accept-Profile': 'rep_warehouse',
+        },
+      }
+    );
+    window.DD_KPI13 = [];
+    if (kpi13Res.ok) {
+      const kpi13Rows = await kpi13Res.json();
+      window.DD_KPI13 = kpi13Rows.map(r => ({
+        country: r.country,
+        gender:  r.disaggregation_level_two,   // 'Girls' or 'Boys'
+        year:    +r.year,
+        value:   parseFloat(r.value) || 0,
+      }));
+    } else {
+      console.warn('[CAMFED] KPI 1.3 fetch failed:', kpi13Res.status);
+    }
 
     const countriesSet = new Set();
     const districts    = {};

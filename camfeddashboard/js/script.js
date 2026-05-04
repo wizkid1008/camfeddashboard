@@ -319,6 +319,14 @@ function ddQ(metric, countries, yearStart, yearEnd) {
 function ddQA(metric) { return ddQ(metric, activeCt(), sel.dateStart, sel.dateEnd); }
 // Single country, current date range
 function ddQC(metric, country) { return ddQ(metric, [country], sel.dateStart, sel.dateEnd); }
+// KPI 1.3 — Total Girls / Boys: direct from rep_warehouse.view_observed_kpi
+function kpi13Q(gender, country) {
+  if (!window.DD_KPI13 || !window.DD_KPI13.length) return 0;
+  return window.DD_KPI13
+    .filter(r => r.gender === gender && r.country === country
+              && r.year >= sel.dateStart && r.year <= sel.dateEnd)
+    .reduce((s, r) => s + r.value, 0);
+}
 // Apply a D-object sub-ratio to a DD total (preserves breakdown proportions)
 function ddSplit(ddTotal, numerator, denominator) {
   return denominator > 0 ? Math.round(ddTotal * numerator / denominator) : 0;
@@ -663,16 +671,11 @@ function renderEducationReachCharts() {
   const commVals = a.map(c => ddQC('Community Champions', c));
   const ccTotal  = camaVals.reduce((s, v) => s + v, 0) + commVals.reduce((s, v) => s + v, 0);
 
-  // Total Girls: newly-supported bursary girls + CAMA girls + community girls (live from Supabase)
-  const burGirls = a.map(c => ddQC(BUR_METRICS.newly, c));
-  const gVals    = a.map((_, i) => burGirls[i] + camaVals[i] + commVals[i]);
-  const gTotal   = gVals.reduce((s, v) => s + v, 0);
-
-  // Total Boys: CAMA boys + community boys (live from Supabase)
-  const camaBoys = a.map(c => ddQC('CAMA Boys', c));
-  const commBoys = a.map(c => ddQC('Community Boys', c));
-  const boVals   = a.map((_, i) => camaBoys[i] + commBoys[i]);
-  const boTotal  = boVals.reduce((s, v) => s + v, 0);
+  // Total Girls / Boys: direct from rep_warehouse.view_observed_kpi (KPI 1.3)
+  const gVals  = a.map(c => kpi13Q('Girls', c));
+  const gTotal = gVals.reduce((s, v) => s + v, 0);
+  const boVals = a.map(c => kpi13Q('Boys', c));
+  const boTotal = boVals.reduce((s, v) => s + v, 0);
 
   section.innerHTML = `
     <div class="er-grid">
