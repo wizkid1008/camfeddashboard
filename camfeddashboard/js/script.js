@@ -752,7 +752,7 @@ function renderEducationOutcomesCharts() {
     return a.map(c => {
       const f1 = D.p9.form1[c], f2 = D.p9.form2[c],
             f3 = D.p9.form3[c], f4 = D.p9.form4[c];
-      const cell = v => v != null && v > 0 ? v.toFixed(1) + '%' : '—';
+      const cell = v => v != null && v > 0 ? (100 - v).toFixed(1) + '%' : '—';
       return `<tr><td>${c}</td><td>${cell(f1)}</td><td>${cell(f2)}</td><td>${cell(f3)}</td><td>${cell(f4)}</td></tr>`;
     }).join('');
   }
