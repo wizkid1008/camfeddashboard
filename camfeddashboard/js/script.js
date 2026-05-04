@@ -171,6 +171,11 @@ const D = {
   kpi34:{districts:{Ghana:44,Malawi:17,Tanzania:35,Zambia:61,Zimbabwe:42,Total:199}},
   kpi35:{primary:{Ghana:0,Malawi:3082975,Tanzania:0,Zambia:239094,Zimbabwe:0,Total:3322069},secondary:{Ghana:325297,Malawi:7783,Tanzania:643671,Zambia:271494,Zimbabwe:520178,Total:1768423},total:{Ghana:325297,Malawi:3090758,Tanzania:643671,Zambia:510588,Zimbabwe:520178,Total:5090492}},
   p1:{girls:{Ghana:226228,Malawi:185997,Tanzania:156466,Zambia:166358,Zimbabwe:431058,Total:1166107},boys:{Ghana:99123,Malawi:84080,Tanzania:68027,Zambia:67115,Zimbabwe:181221,Total:499566},total:{Ghana:325351,Malawi:270077,Tanzania:224493,Zambia:233473,Zimbabwe:612279,Total:1665673}},
+  // 2024 newly-supported totals (source: PBI dashboard) — used for Education Reach summary charts
+  totals2024:{
+    girls:{Ghana:162913,Malawi:119356,Tanzania:105340,Zambia:121985,Zimbabwe:257415},
+    boys: {Ghana:71322, Malawi:54068, Tanzania:44716, Zambia:53149, Zimbabwe:111633}
+  },
   p9:{form1:{Ghana:0,Malawi:7.8,Tanzania:5.3,Zambia:0.73,Zimbabwe:0.4},form2:{Ghana:0,Malawi:23.8,Tanzania:13.1,Zambia:2.11,Zimbabwe:0},form3:{Ghana:0,Malawi:6.8,Tanzania:8.0,Zambia:0.59,Zimbabwe:3.2},form4:{Ghana:0.7,Malawi:4.2,Tanzania:1.2,Zambia:1.05,Zimbabwe:2.0}},
   districts:{Ghana:['Accra Metro','Awutu Senya','Birim Central','Ejura Sekyedumase','Kpando'],Malawi:['Balaka','Blantyre','Chiradzulu','Chikwawa','Dedza'],Tanzania:['Bagamoyo','Chalinze','Chamwino','Chato','Gairo'],Zambia:['Chililabombwe','Chingola','Chipata','Kabwe','Kafue'],Zimbabwe:['Binga','Buhera','Bulawayo','Chiredzi','Chinhoyi']}
 };
@@ -663,13 +668,12 @@ function renderEducationReachCharts() {
   const commVals = a.map(c => ddQC('Community Champions', c));
   const ccTotal  = camaVals.reduce((s, v) => s + v, 0) + commVals.reduce((s, v) => s + v, 0);
 
-  const burNewly  = a.map(c => ddQC('Children Supported in School with Education Bursaries', c));
-  const gVals    = a.map((_, i) => burNewly[i] + camaVals[i] + commVals[i]);
-  const gTotal   = gVals.reduce((s, v) => s + v, 0);
-  const camaBoys = a.map(c => ddQC('CAMA Boys', c));
-  const commBoys = a.map(c => ddQC('Community Boys', c));
-  const boVals   = a.map((_, i) => camaBoys[i] + commBoys[i]);
-  const boTotal  = boVals.reduce((s, v) => s + v, 0);
+  // Total Girls / Boys: use verified 2024 source values (D.totals2024)
+  // so the summary charts match the PBI dashboard exactly.
+  const gVals  = a.map(c => D.totals2024.girls[c] ?? 0);
+  const gTotal = gVals.reduce((s, v) => s + v, 0);
+  const boVals = a.map(c => D.totals2024.boys[c]  ?? 0);
+  const boTotal = boVals.reduce((s, v) => s + v, 0);
 
   section.innerHTML = `
     <div class="er-grid">
