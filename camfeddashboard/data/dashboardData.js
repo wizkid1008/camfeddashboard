@@ -58,12 +58,83 @@ window.DD = null;
       const kpi13Rows = await kpi13Res.json();
       window.DD_KPI13 = kpi13Rows.map(r => ({
         country: r.country,
-        gender:  r.disaggregation_level_two,   // 'Girls' or 'Boys'
+        gender:  r.disaggregation_level_two,
         year:    +r.year,
         value:   parseFloat(r.value) || 0,
       }));
     } else {
       console.warn('[CAMFED] KPI 1.3 fetch failed:', kpi13Res.status);
+    }
+
+    // ── KPI P18: MoU counts per country ────────────────────────────────────────
+    const mouRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/view_observed_kpi?select=country,value&kpi_id=eq.P18`,
+      {
+        headers: {
+          'apikey':         SUPABASE_ANON_KEY,
+          'Authorization':  `Bearer ${SUPABASE_ANON_KEY}`,
+          'Accept-Profile': 'rep_warehouse',
+        },
+      }
+    );
+    window.DD_MOU = {};
+    if (mouRes.ok) {
+      const mouRows = await mouRes.json();
+      mouRows.forEach(r => {
+        if (!r.country) return;
+        window.DD_MOU[r.country] = (window.DD_MOU[r.country] || 0) + (parseFloat(r.value) || 0);
+      });
+    } else {
+      console.warn('[CAMFED] KPI P18 (MoU) fetch failed:', mouRes.status);
+    }
+
+    // ── KPI 3.5: Children Benefitting from Improved Learning Environment ────────
+    const kpi35Res = await fetch(
+      `${SUPABASE_URL}/rest/v1/view_observed_kpi` +
+      `?select=country,disaggregation_level_one,disaggregation_level_two,year,value&kpi_id=eq.3.5`,
+      {
+        headers: {
+          'apikey':         SUPABASE_ANON_KEY,
+          'Authorization':  `Bearer ${SUPABASE_ANON_KEY}`,
+          'Accept-Profile': 'rep_warehouse',
+        },
+      }
+    );
+    window.DD_KPI35 = [];
+    if (kpi35Res.ok) {
+      window.DD_KPI35 = (await kpi35Res.json()).map(r => ({
+        country: r.country,
+        toggle:  r.disaggregation_level_one,
+        subtype: r.disaggregation_level_two,
+        year:    +r.year,
+        value:   parseFloat(r.value) || 0,
+      }));
+    } else {
+      console.warn('[CAMFED] KPI 3.5 fetch failed:', kpi35Res.status);
+    }
+
+    // ── Community Champions: CDCs, SBCs, PSGs by country (kpi_id P6) ──────────
+    const champRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/view_observed_kpi` +
+      `?select=country,disaggregation_level_one,year,value&kpi_id=eq.P6&disaggregation_level_two=eq.Members&disaggregation_level_one=in.(CDCs,SBCs,PSGs)`,
+      {
+        headers: {
+          'apikey':         SUPABASE_ANON_KEY,
+          'Authorization':  `Bearer ${SUPABASE_ANON_KEY}`,
+          'Accept-Profile': 'rep_warehouse',
+        },
+      }
+    );
+    window.DD_CHAMPIONS = [];
+    if (champRes.ok) {
+      window.DD_CHAMPIONS = (await champRes.json()).map(r => ({
+        country: r.country,
+        type:    r.disaggregation_level_one,
+        year:    +r.year,
+        value:   parseFloat(r.value) || 0,
+      }));
+    } else {
+      console.warn('[CAMFED] Champions fetch failed:', champRes.status);
     }
 
     const countriesSet = new Set();

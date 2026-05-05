@@ -990,46 +990,47 @@ function renderEducationSystems2Charts() {
   const section = document.getElementById('sublevel-stats-section');
   const a = activeCt();
   const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
+  const KPI35_YEAR = 2024;
+  const CHAMP_YEAR = 2024;
 
-  const mouVals  = a.map(c => L3.mou[c] || 0);
+  // ── MoU: live from DD_MOU, fallback to L3.mou ──────────────────────────────
+  const mouSrc  = window.DD_MOU || {};
+  const mouVals = a.map(c => mouSrc[c] || L3.mou[c] || 0);
   const mouTotal = mouVals.reduce((s,v) => s+v, 0);
 
-  // Annual totals from D.kpi35 + L3 gender split
-  const aTotal = D.kpi35.total.Total;
-  const aGirls = L3.kpi35Annual.girls;
-  const aBoys  = L3.kpi35Annual.boys;
-  const aPrim  = D.kpi35.primary.Total;
-  const aSec   = D.kpi35.secondary.Total;
-
-  // Newly supported from L3
-  const nGirls = L3.kpi35Newly.girls;
-  const nBoys  = L3.kpi35Newly.boys;
-  const nPrim  = L3.kpi35Newly.primary;
-  const nSec   = L3.kpi35Newly.secondary;
-  const nTotal = nGirls + nBoys;
-
-  function barRow(label, val, maxVal, color) {
-    const pct = maxVal > 0 ? Math.max(8, Math.round(val / maxVal * 100)) : 50;
-    return `<div class="l3-bar-row">
-      <div class="l3-bar-label">${label}</div>
-      <div class="l3-bar-track">
-        <div class="l3-bar-fill" style="width:${pct}%;background:${color};">
-          <span class="l3-bar-val">${fmt(val)}</span>
-        </div>
-      </div>
-    </div>`;
+  // ── KPI 3.5 helpers: sum subtype across active countries for a toggle ───────
+  function kpi35Sum(toggleVal) {
+    const rows = (window.DD_KPI35 || []).filter(r =>
+      a.includes(r.country) && r.toggle === toggleVal && r.year === KPI35_YEAR
+    );
+    const sum = sub => rows.filter(r => r.subtype === sub).reduce((s,r) => s + r.value, 0);
+    const pg = sum('Primary girls'),   pb = sum('Primary boys');
+    const sg = sum('Secondary girls'), sb = sum('Secondary boys');
+    return { pg, pb, sg, sb, pt: pg+pb, st: sg+sb, gt: pg+sg, bt: pb+sb, total: pg+pb+sg+sb };
   }
 
-  function buildBars(gT, bT, pT, sT) {
-    const genderTotal = gT + bT, schoolTotal = pT + sT;
-    return `
-      <div class="l3-section-title">By Gender</div>
-      ${barRow('Girls total',     gT, genderTotal, L3_GREEN)}
-      ${barRow('Boys total',      bT, genderTotal, '#aa5545')}
-      <div class="l3-section-title">By School Level</div>
-      ${barRow('Primary total',   pT, schoolTotal, L3_GREEN)}
-      ${barRow('Secondary total', sT, schoolTotal, '#aa5545')}`;
+  function buildTable(d) {
+    const c = v => `<td>${fmt(v)}</td>`;
+    return `<table class="l3-summary-table">
+      <thead><tr><th></th><th>Girls</th><th>Boys</th><th>Total</th></tr></thead>
+      <tbody>
+        <tr><td>Primary</td>${c(d.pg)}${c(d.pb)}${c(d.pt)}</tr>
+        <tr><td>Secondary</td>${c(d.sg)}${c(d.sb)}${c(d.st)}</tr>
+        <tr class="l3-total-row"><td>Total</td>${c(d.gt)}${c(d.bt)}${c(d.total)}</tr>
+      </tbody>
+    </table>`;
   }
+
+  const annData   = kpi35Sum('Annual');
+  const newlyData = kpi35Sum('Newly supported');
+
+  // ── Community Champions: per country from DD_CHAMPIONS ─────────────────────
+  const champByCountry = {};
+  (window.DD_CHAMPIONS || []).filter(r => r.year === CHAMP_YEAR).forEach(r => {
+    if (!r.country) return;
+    if (!champByCountry[r.country]) champByCountry[r.country] = { CDCs: 0, SBCs: 0, PSGs: 0 };
+    champByCountry[r.country][r.type] = (champByCountry[r.country][r.type] || 0) + r.value;
+  });
 
   section.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
@@ -1046,10 +1047,10 @@ function renderEducationSystems2Charts() {
           <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
             <label class="er-radio-opt"><input type="radio" name="l3es2-kids" value="annual" checked> Annual</label>
             <label class="er-radio-opt"><input type="radio" name="l3es2-kids" value="newly"> Newly supported</label>
-            <span class="er-total-badge" id="l3es2-kids-total">Total &nbsp;${fmt(aTotal)}</span>
+            <span class="er-total-badge" id="l3es2-kids-total">Total &nbsp;${fmt(annData.total)}</span>
           </div>
         </div>
-        <div id="l3es2-kids-bars">${buildBars(aGirls, aBoys, aPrim, aSec)}</div>
+        <div id="l3es2-kids-table">${buildTable(annData)}</div>
       </div>
       <div class="er-card" style="grid-column:1;grid-row:2;">
         <div class="er-card-header">
@@ -1064,23 +1065,20 @@ function renderEducationSystems2Charts() {
       [{ data: mouVals, backgroundColor: colors }],
       { horizontal: true });
 
-    erBar('l3es2-champ-chart', ['Members'], [
-      { label: 'CDCs', data: [L3.champions.cdcs], backgroundColor: '#5830a0' },
-      { label: 'PSGs', data: [L3.champions.psgs], backgroundColor: L3_GREEN },
-      { label: 'SBCs', data: [L3.champions.sbcs], backgroundColor: '#aa5545' }
-    ], { legend: true });
+    erBar('l3es2-champ-chart', a, [
+      { label: 'CDCs', data: a.map(c => (champByCountry[c] || {}).CDCs || 0), backgroundColor: '#5830a0' },
+      { label: 'SBCs', data: a.map(c => (champByCountry[c] || {}).SBCs || 0), backgroundColor: '#aa5545' },
+      { label: 'PSGs', data: a.map(c => (champByCountry[c] || {}).PSGs || 0), backgroundColor: L3_GREEN }
+    ], { stacked: true, legend: true, stackLabels: true });
 
     section.querySelectorAll('input[name="l3es2-kids"]').forEach(r => {
       r.addEventListener('change', e => {
-        const ann = e.target.value === 'annual';
-        const [gT, bT, pT, sT] = ann
-          ? [aGirls, aBoys, aPrim, aSec]
-          : [nGirls, nBoys, nPrim, nSec];
-        const total = ann ? aTotal : nTotal;
-        const barsEl  = document.getElementById('l3es2-kids-bars');
+        const ann  = e.target.value === 'annual';
+        const d    = ann ? annData : newlyData;
+        const tableEl = document.getElementById('l3es2-kids-table');
         const totalEl = document.getElementById('l3es2-kids-total');
-        if (barsEl)  barsEl.innerHTML  = buildBars(gT, bT, pT, sT);
-        if (totalEl) totalEl.textContent = `Total  ${fmt(total)}`;
+        if (tableEl) tableEl.innerHTML = buildTable(d);
+        if (totalEl) totalEl.textContent = `Total  ${fmt(d.total)}`;
       });
     });
   }, 0);

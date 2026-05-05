@@ -1557,6 +1557,40 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 /* ================================================================
+   L3 SUMMARY TABLE  (Children Benefitting)
+   ================================================================ */
+.l3-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-top: 12px;
+}
+.l3-summary-table th,
+.l3-summary-table td {
+  padding: 7px 10px;
+  text-align: right;
+  border-bottom: 1px solid rgba(74,26,107,0.10);
+  color: var(--text-mid);
+}
+.l3-summary-table th {
+  font-weight: 700;
+  color: var(--text-light);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.l3-summary-table td:first-child,
+.l3-summary-table th:first-child {
+  text-align: left;
+}
+.l3-total-row td {
+  font-weight: 700;
+  color: var(--purple);
+  border-top: 2px solid rgba(74,26,107,0.20);
+  border-bottom: none;
+}
+
+/* ================================================================
    ER FILTER BADGE
    ================================================================ */
 .er-filter-badge {
