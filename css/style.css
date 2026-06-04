@@ -711,7 +711,24 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   margin: 20px 0 32px;
+  position: relative;
 }
+.howto-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: var(--accent-dark);
+  background: #f2ecfb;
+  border: 1px solid #e0d6ee;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.howto-close:hover { transform: translateY(-1px); }
+.howto-close svg { width: 14px; height: 14px; }
 #landing-section {
   overflow: hidden;
 }

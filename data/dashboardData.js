@@ -38,17 +38,21 @@ window.DD = null;
     const payload = await res.json();
     const rows = payload.data || [];
 
-    const countriesSet = new Set();
-    const districts    = {};
-    const schools      = {};
-    const yearsSet     = new Set();
-    const metricsSet   = new Set();
+    const countriesSet  = new Set();
+    const districts     = {};
+    const schools       = {};
+    const yearsSet      = new Set();
+    const metricsSet    = new Set();
+    const metricTypes   = {}; // metric name → value_type string
 
     for (const r of rows) {
       if (!r.country) continue;
       countriesSet.add(r.country);
       yearsSet.add(r.year);
       metricsSet.add(r.metric);
+      if (r.metric && r.value_type && !metricTypes[r.metric]) {
+        metricTypes[r.metric] = r.value_type;
+      }
       if (!districts[r.country]) districts[r.country] = [];
       if (!districts[r.country].includes(r.district)) districts[r.country].push(r.district);
       if (r.district) {
@@ -58,12 +62,13 @@ window.DD = null;
     }
 
     window.DD = {
-      countries: [...countriesSet].sort(),
+      countries:   [...countriesSet].sort(),
       districts,
       schools,
-      years:   [...yearsSet].sort((a, b) => a - b),
-      metrics: [...metricsSet],
-      data:    rows,
+      years:       [...yearsSet].sort((a, b) => a - b),
+      metrics:     [...metricsSet],
+      metricTypes, // metric → 'Count' | 'Percentage' | 'Currency (USD)' | 'Currency (local)' | 'Text'
+      data:        rows,
     };
   } catch (err) {
     console.error('[CAMFED] Failed to load data from Supabase:', err.message);

@@ -214,6 +214,9 @@
 
         <!-- ══ DASHBOARD HOW-TO (shown when Dashboard tab active, no level selected) ══ -->
         <div id="dashboard-howto" class="landing-section" style="display:none;padding:40px 48px;max-width:700px;margin:20px auto 32px;">
+          <button type="button" class="howto-close" id="dashboard-howto-close" aria-label="Close how-to">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke-linecap="round"/></svg>
+          </button>
           <div class="landing-title">How to Use the Data Dashboard</div>
           <p class="landing-intro">Explore programme data by selecting a level, sub level, year range, and country using the filters above.</p>
           <div class="landing-steps">
@@ -536,6 +539,9 @@
       <div class="body-layout">
         <div class="main-content">
           <div id="dd-choose-geo" class="landing-section">
+            <button type="button" class="howto-close" id="dd-howto-close" aria-label="Close how-to">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke-linecap="round"/></svg>
+            </button>
             <div class="landing-title">How to Use Dynamic Data</div>
             <p class="landing-intro">Drill into country, district, and school-level data for any metric across any year range.</p>
             <div class="landing-steps">
@@ -738,6 +744,14 @@
     });
   }
 })();
+</script>
+<script>
+  document.getElementById('dashboard-howto-close').addEventListener('click', function() {
+    document.getElementById('dashboard-howto').style.display = 'none';
+  });
+  document.getElementById('dd-howto-close').addEventListener('click', function() {
+    document.getElementById('dd-choose-geo').style.display = 'none';
+  });
 </script>
 
 </body>

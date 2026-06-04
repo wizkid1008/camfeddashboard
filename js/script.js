@@ -2330,6 +2330,41 @@ document.querySelectorAll('.top-nav-mode').forEach(btn => {
 });
 
 // ═══════════════════════════════════════════════════════════════
+// ── SLICER VALUE FORMATTER ─────────────────────────────────────
+// Reads value_type from DD.metricTypes and formats accordingly.
+// value_type values: 'Count' | 'Percentage' | 'Currency (USD)' | 'Currency (local)' | 'Text'
+function slFmt(value, metric) {
+  const vt = (window.DD && window.DD.metricTypes && metric)
+    ? (window.DD.metricTypes[metric] || 'Count')
+    : 'Count';
+
+  if (vt === 'Percentage') {
+    return (value == null ? '—' : value.toFixed(1) + '%');
+  }
+  if (vt === 'Currency (USD)') {
+    return (value == null ? '—' : '$' + fmt(Math.round(value)));
+  }
+  if (vt === 'Currency (local)') {
+    return (value == null ? '—' : fmt(Math.round(value)));
+  }
+  if (vt === 'Text') {
+    return (value == null ? '—' : String(value));
+  }
+  // 'Count' or anything else
+  return (value == null ? '—' : fmt(value));
+}
+
+// Y-axis tick formatter for charts — short form
+function slFmtTick(value, metric) {
+  const vt = (window.DD && window.DD.metricTypes && metric)
+    ? (window.DD.metricTypes[metric] || 'Count')
+    : 'Count';
+  if (vt === 'Percentage')       return value.toFixed(1) + '%';
+  if (vt === 'Currency (USD)')   return '$' + fmtK(value);
+  if (vt === 'Currency (local)') return fmtK(value);
+  return fmtK(value);
+}
+
 // ── SLICER MODULE ──────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════
 
@@ -2454,7 +2489,7 @@ function slRenderNumbers(output, rows, kpis, years) {
     card.innerHTML = `
       <div class="data-card-header">${kpi}<span class="data-card-badge">Total</span></div>
       <div class="data-card-body">
-        <div class="dd-number-display">${fmt(total)}</div>
+        <div class="dd-number-display">${slFmt(total, kpi)}</div>
         <div class="dd-number-label">${years[0]}${years.length > 1 ? ' — ' + years[years.length - 1] : ''} · ${slGeoLabel()}</div>
       </div>`;
     grid.appendChild(card);
@@ -2476,22 +2511,23 @@ function slRenderCharts(output, rows, kpis, type, years) {
       <div class="data-card-header">${kpi}<span class="data-card-badge">${typeLabel}</span></div>
       <div class="data-card-body"><div class="chart-container h220"><canvas id="${canvasId}"></canvas></div></div>`;
     grid.appendChild(card);
-    setTimeout(() => slRenderOneChart(canvasId, type, rows.filter(r => r.metric === kpi), years), 0);
+    setTimeout(() => slRenderOneChart(canvasId, type, rows.filter(r => r.metric === kpi), years, kpi), 0);
   });
   output.appendChild(grid);
 }
 
-function slRenderOneChart(canvasId, type, rows, years) {
+function slRenderOneChart(canvasId, type, rows, years, kpi) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
   if (slCharts[canvasId]) { slCharts[canvasId].destroy(); }
 
+  const _kpi0 = kpi || null; // used for y-axis tick format
   const baseOpts = {
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
       x: { grid: { color: gridC }, ticks: { color: tickC, font: { size: 10 } } },
-      y: { grid: { color: gridC }, ticks: { color: tickC, font: { size: 10 }, callback: v => fmtK(v) } }
+      y: { grid: { color: gridC }, ticks: { color: tickC, font: { size: 10 }, callback: v => slFmtTick(v, _kpi0) } }
     }
   };
 
@@ -2563,7 +2599,7 @@ function slRenderTable(output, rows, kpis) {
           <td>${e}</td>
           ${kpis.map(k => {
             const val = rows.filter(r => r[dim] === e && r.metric === k).reduce((s, r) => s + r.value, 0);
-            return `<td class="r">${fmt(val)}</td>`;
+            return `<td class="r">${slFmt(val, k)}</td>`;
           }).join('')}
         </tr>`).join('')}
       </tbody>
