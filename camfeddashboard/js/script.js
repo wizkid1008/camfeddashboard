@@ -319,26 +319,12 @@ function ddQ(metric, countries, yearStart, yearEnd) {
 function ddQA(metric) { return ddQ(metric, activeCt(), sel.dateStart, sel.dateEnd); }
 // Single country, current date range
 function ddQC(metric, country) { return ddQ(metric, [country], sel.dateStart, sel.dateEnd); }
-// ── Education Reach — mapping-driven query ────────────────────────────────────
-// Returns the kpi_mapping row for a given dashlet_element number.
-function erMapping(dashletElement) {
-  if (!window.KPI_MAPPING || !window.KPI_MAPPING.length) return null;
-  return window.KPI_MAPPING.find(m => m.dashlet_element === dashletElement) || null;
-}
-
-// Query DD_ER for a single dashlet_element + country using kpi_id and
-// disaggregation filters defined in kpi_mapping.  Null disagg fields = no filter.
-function erQ(dashletElement, country) {
-  const m = erMapping(dashletElement);
-  if (!m || !window.DD_ER || !window.DD_ER.length) return 0;
-  return window.DD_ER
-    .filter(r =>
-      r.kpiId   === m.kpi_id &&
-      r.country === country &&
-      r.year >= sel.dateStart && r.year <= sel.dateEnd &&
-      (m.disaggregation_level_one == null || r.l1 === m.disaggregation_level_one) &&
-      (m.disaggregation_level_two == null || r.l2 === m.disaggregation_level_two)
-    )
+// KPI 1.3 — Total Girls / Boys: direct from rep_warehouse.view_observed_kpi
+function kpi13Q(gender, country) {
+  if (!window.DD_KPI13 || !window.DD_KPI13.length) return 0;
+  return window.DD_KPI13
+    .filter(r => r.gender === gender && r.country === country
+              && r.year >= sel.dateStart && r.year <= sel.dateEnd)
     .reduce((s, r) => s + r.value, 0);
 }
 // Apply a D-object sub-ratio to a DD total (preserves breakdown proportions)
@@ -676,23 +662,19 @@ function renderEducationReachCharts() {
   const a = activeCt();
   const colors = a.map((_, i) => ER_COLORS[i % ER_COLORS.length]);
 
-  // Data — all values driven by kpi_mapping via erQ()
-  // Bursary dashlet_element: 1=Annual, 2=Newly Supported, 9=Cum2020-30, 10=CumAll
-  const BUR_DASHLET = { annual: 1, newly: 2, cum2030: 9, cumall: 10 };
-  const burDE = BUR_DASHLET[l1BurType] || 2;
-  const bVals  = a.map(c => erQ(burDE, c));
-  const bTotal = bVals.reduce((s, v) => s + v, 0);
+  // Data
+  const BUR = BUR_METRICS[l1BurType] || BUR_METRICS.newly;
+  const bVals   = a.map(c => ddQC(BUR, c));
+  const bTotal  = bVals.reduce((s, v) => s + v, 0);
 
-  // CAMA & Community Champions — dashlet_element 3 (Annual, kpi 1.2a)
-  const ccVals  = a.map(c => erQ(3, c));
-  const ccTotal = ccVals.reduce((s, v) => s + v, 0);
+  const camaVals = a.map(c => ddQC('CAMA Members', c));
+  const commVals = a.map(c => ddQC('Community Champions', c));
+  const ccTotal  = camaVals.reduce((s, v) => s + v, 0) + commVals.reduce((s, v) => s + v, 0);
 
-  // Total Girls — dashlet_element 5 (Annual, kpi 1.3, disagg_l2='Girls')
-  const gVals  = a.map(c => erQ(5, c));
+  // Total Girls / Boys: direct from rep_warehouse.view_observed_kpi (KPI 1.3)
+  const gVals  = a.map(c => kpi13Q('Girls', c));
   const gTotal = gVals.reduce((s, v) => s + v, 0);
-
-  // Total Boys — dashlet_element 7 (Annual, kpi 1.3, disagg_l2='Boys')
-  const boVals  = a.map(c => erQ(7, c));
+  const boVals = a.map(c => kpi13Q('Boys', c));
   const boTotal = boVals.reduce((s, v) => s + v, 0);
 
   section.innerHTML = `
@@ -737,8 +719,11 @@ function renderEducationReachCharts() {
     // 1. Bursary — vertical bar, one colour per country
     erBar('er-bursary-chart', a, [{ data: bVals, backgroundColor: colors }]);
 
-    // 2. CAMA & Community Champions — single combined bar (kpi 1.2a)
-    erBar('er-cama-chart', a, [{ data: ccVals, backgroundColor: colors }]);
+    // 2. CAMA & Community — grouped bar
+    erBar('er-cama-chart', a, [
+      { label: 'CAMA',      data: camaVals, backgroundColor: '#5830a0' },
+      { label: 'Community', data: commVals, backgroundColor: '#9a8838' }
+    ], { legend: true });
 
     // 3. Total Girls — horizontal bar, one colour per country
     erBar('er-girls-chart', a, [{ data: gVals, backgroundColor: colors }], { horizontal: true });
